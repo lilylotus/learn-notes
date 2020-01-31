@@ -1,0 +1,21 @@
+default vesamenu.c32
+prompt 0
+timeout 300
+display boot.msg
+ONTIMEOUT local
+
+menu title ###### PXE Boot Menu ######
+
+label 1
+  menu label ^Install CentOS 7
+  kernel centos7/vmlinuz
+  append initrd=centos7/initrd.img ks=ftp://10.10.37.100/pub/ksdir/ks7.cfg
+label 2
+  menu label ^Install Network CentOS 7
+  kernel centos7/vmlinuz
+  append initrd=centos7/initrd.img ks=ftp://10.10.37.100/pub/ksdir/ks7-net.cfg
+label 3
+  menu default
+  menu label Boot from ^local drive
+  localboot 0xffff
+  menu end
