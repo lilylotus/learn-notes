@@ -3,6 +3,28 @@
 - Lambda expression in computer programming, also called an [anonymous function](https://en.wikipedia.org/wiki/Anonymous_function), is a defined function not bound to an identifier.
 - [Lambda expression in lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus#Definition), a formal system in mathematical logic and computer science for expressing computation by way of variable binding and substitution.
 
+###### Stream 终端操作
+
+```java
+toArray();
+toArray(IntFunction<A[]> generator);
+
+reducereduce(U identity, 
+             BiFunction<U, ? super T, U> accumulator,
+             BinaryOperator<U> combiner);
+reduce(T identity, BinaryOperator<T> accumulator);
+reduce(BinaryOperator<T> accumulator);
+
+min(Comparator<? super T> comparator);
+max(Comparator<? super T> comparator);
+
+forEach(Consumer<? super T> action);
+
+count();
+```
+
+
+
 
 
 #### Lambda 表达式
@@ -13,14 +35,11 @@
    Conceptually, a functional interface has exactly one abstract method
    
    Note that instances of functional interfaces can be created with lambda expressions, method references, or constructor references.
-   
    ```
    
    - 如果一个接口只有一个抽象方法，那么该接口就是一个函数式接口
    - 如果我们在某个接口上声明了 **FunctionalInterFace** 注解，那么编译器会按照函数式接口的定义来要求该接口
    - 如果某个接口仅有一个抽象方法，但我们没有为该接口声明 **FunctionalInterface** ，那么编译器依旧会把该接口当做函数式接口
-
-
 
 Consumer 函数式接口：接受一个参数，不返回任何结果
 
@@ -59,7 +78,10 @@ list.forEach(System.out::println); # 通过方法引用类创建一个函数式�
  () -> {} 必须要通过上下文的信息来处理， lambda 仅关系方法的参数和返回，对于方法名称不关心
 ```
 
-
+```java
+String::toUpperCase -> 这是实例方法引用，此方法的第一个输入一定是存在本调用实例
+lambda 调用传入的一个参数一定是此被调用对象的实例
+```
 
 #### 流式 stream() , parallelStream() 并行
 
@@ -88,7 +110,7 @@ Collections.sort( nameList, Comparator.reverseOrder() );
     }
 test.computeAndThen(10, v -> v * 3, v -> v * v);
     
-    andThen (先执行函数本身在执行函数参数) | compose (先执行参数函数在执行本身函数)
+andThen (先执行函数本身在执行函数参数) | compose (先执行参数函数在执行本身函数)
 ```
 
 

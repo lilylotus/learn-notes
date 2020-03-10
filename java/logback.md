@@ -1,8 +1,7 @@
 #### logback 引入依赖
 
 ```java
-gradle ->
-implementation "ch.qos.logback:logback-classic:1.2.3"
+gradle -> implementation "ch.qos.logback:logback-classic:1.2.3"
 ```
 
 #### logback 配置
@@ -120,5 +119,37 @@ filter -> ch.qos.logback.classic.filter.ThresholdFilter -> 处理大于等于 le
         <appender-ref ref="WIND" />
     </root>
 </configuration>
+```
+
+
+
+#### Springboot logback 配置
+
+```xml
+<!-- 添加 -->
+
+<!--application.yml 传递参数 -->
+<!-- log 文件生成目录 -->
+<springProperty scope="context" name="logdir" source="resources.logdir"/>
+<!-- 应用名称 -->
+<springProperty scope="context" name="appname" source="resources.appname"/>
+<!-- 项目基础包 -->
+<springProperty scope="context" name="basepackage" source="resources.basepackage"/>
+
+<!-- 开发环境-->
+<springProfile name="dev">
+    <root level="INFO">
+        <appender-ref ref="consoleLog"/>
+    </root>
+    <!--
+      additivity 是子 Logger 是否继承父 Logger 的输出源（appender） 的标志位
+      在这里 additivity 配置为 false 代表如果 ${basepackage} 中有 INFO 
+      级别日志则子 looger 打印 root 不打印
+    -->
+    <logger name="${basepackage}" level="DEBUG" additivity="false">
+        <appender-ref ref="consoleLog"/>
+        <appender-ref ref="fileLog"/>
+    </logger>
+</springProfile>
 ```
 

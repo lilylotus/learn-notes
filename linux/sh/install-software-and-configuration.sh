@@ -32,7 +32,8 @@ if [[ ! -e /root/.ssh ]]; then
 	mkdir -p /root/.ssh
 fi
 
-public_key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDgWvYwOXUSsEE7eU2ubLStlfJcsAt2EYXmkljHmgQR8DKrwW3GnK74AdV+WiVHiCHQ2u7NxNLhsHr5Vy2vJHrQezRAOV5Pra26fGJHlOQb/bGn+UJWDjAtaKymLuEaSZenYS5scu9NuGy7AwXAUQjg7LIgXklugTRb0dORqosC2zZQ/OrZgTpNeipp8X5luWRd15Yjzf1fdvL9GsvU3avBHy2Xr6WmlkquAUnSt95DVKftrO3mMRGslWcOexJP5xSnZj9wXfx1EL9nRC2KC34m3kg2jhk2VxrFCk8nBinkTTcK96ZtOXHRxkMQbylB3ITnAHRebhz4ZTptyfZU+yAoKR5T/97yJgMznr17INK9W2HFeHup3AGjvlbWnANhXvYZby9Y6kYBswhbnzrkrH2Kk7MN9EmvPc6dEewmUVNakzjQQgtSJjWXcPB+NLpIMJTCsnS+FraKZ9zxbF4PlmlPy+Q5MPc4lJiDIH5JqaYXbWmyI1XLWsOYCW2MjD/aVgc= clover@DESKTOP-URDQHEM"
+# id_rsa_2048.pub
+public_key="ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq4y0aaPw+y9th5S6K0VZEUs2ZSMtWhkHnz0VlhNQJF47DDK39FYPMwb+7psuG3aFmgg70sCfWF7hSNF7R1E9ARTm+x95J/bGbtriA7E7bbzpdfpdhgUR0lmtsNBWQK6ETIaGCvJZLd5bFk/HU7XyYW/kw/60BkblR1yLrMNUi5chiZMvC8mvcxKIVMLPPPbUrswULcyTBRd8ESJgronhtAv0UgoJCCSCPIHVtBZGUQ5oROfaoMpSuR40lYMIbFmZ34cZ0ZGqwurno7NTOanuHMr5sQhe7yvMeVq5j1h1J78FsV/fbzBSbYQPiHGuqwxhmEr2nl8zspxq1Ww/VoTwhQ=="
 if [[ -e /root/.ssh/authorized_keys ]]; then
 	echo "$public_key" >> /root/.ssh/authorized_keys
 else

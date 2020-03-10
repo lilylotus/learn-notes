@@ -35,8 +35,9 @@ http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
 yum clean all && yum makecache
 
+# 1.16.6  1.15.8 -> docker 18.09.
 yum install -y conntrack ntpdate ntp ipvsadm ipset jq sysstat libseccomp
-yum install -y kubeadm-1.15.1 kubectl-1.15.1 kubelet-1.15.1
+yum install -y kubeadm-1.16.6 kubectl-1.16.6 kubelet-1.16.6
 systemctl enable kubelet.service
 
 # 4. set time

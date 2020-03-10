@@ -149,4 +149,10 @@ x  交换模式空间与保持空间的内容
    sed -r '2i\11111' config # 在第 2 行后插入
    ```
 
+6. 替换找到某文本的行
+
+   ```bash
+   sed -rn '/^port/ c ports' redis.con # 把 port 开头的整行数据换为 ports
+   ```
+
    

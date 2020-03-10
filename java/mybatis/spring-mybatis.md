@@ -1,0 +1,33 @@
+#### springframework mybatis 自动生成代码插件
+
+```xml
+<!-- pom.xml -->
+<dependency>
+	<groupId>org.mybatis.spring.boot</groupId>
+	<artifactId>mybatis-spring-boot-starter</artifactId>
+	<version>2.1.0</version>
+</dependency>
+<!-- 分页插件 -->
+<dependency>
+	<groupId>com.github.pagehelper</groupId>
+	<artifactId>pagehelper-spring-boot-starter</artifactId>
+	<version>1.2.10</version>
+</dependency>
+
+<!-- mybatis generator 自动生成代码插件 -->
+<!-- mvn mybatis-generator:generate -e (输出详细信息) -->
+<plugin>
+	<groupId>org.mybatis.generator</groupId>
+	<artifactId>mybatis-generator-maven-plugin</artifactId>
+	<version>1.3.7</version>
+	<configuration>
+		<!-- 扫描resources/generator目录下的generatorConfig.xml配置 -->
+		<configurationFile>
+			${basedir}/src/main/resources/generator/generatorConfig.xml
+		</configurationFile>
+		<overwrite>true</overwrite>
+		<verbose>true</verbose>
+	</configuration>
+</plugin>
+```
+

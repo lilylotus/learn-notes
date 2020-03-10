@@ -42,8 +42,6 @@ max_connections = 150
 table_open_cache = 2000
 tmp_table_size = 16M
 
-autocommit = 0
-
 [client]
 default-character-set = utf8mb4
 ```

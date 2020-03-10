@@ -9,7 +9,6 @@ net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-arptables = 1
 net.ipv4.ip_forward = 1
 net.ipv4.tcp_tw_recycle = 0
-net.ipv6.conf.all.disable_ipv6 = 1
 vm.swappiness = 0
 vm.overcommit_memory = 1
 vm.panic_on_oom = 0
@@ -22,13 +21,14 @@ EOF
 sysctl -p /etc/sysctl.d/docker.conf
 
 # update system
-yum clean all && yum makecache
+# yum clean all && yum makecache
 
 # preinstall sofrware
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 
-# install docker, kubenetes version is 1.15.1
+# install docker, kubenetes version is 1.15.1 | 1.15.8
+# yum list docker-ce.x86_64  --showduplicates |sort -r
 yum install -y docker-ce-18.09.9-3.el7 docker-ce-cli-18.09.9-3.el7 containerd.io
 
 # 配置 docker 文件
@@ -55,6 +55,9 @@ EOF
 
 # config docker
 systemctl enable docker && systemctl daemon-reload && systemctl restart docker
+
+# 便于查看 ipvs 的代理规则
+yum install -y ipset ipvsadm
 
 }
 
