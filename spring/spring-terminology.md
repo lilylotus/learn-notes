@@ -162,7 +162,7 @@ maven: dependencyManagement (BOM)
             <artifactId>spring-framework-bom</artifactId>
             <version>4.3.25.RELEASE</version>
             <type>pom</type>
-            <scope>import</scope>
+            <scope>import</scope>WebMvcConfigurer
         </dependency>
     </dependencies>
 </dependencyManagement>

@@ -189,7 +189,7 @@ PSYoungGen -> 表示 YoungGen 区的
 
 `-XX:ParallelGCThreads=<N>` 控制并行处理的线程大小
 **注意：** 并行垃圾收集会在年轻代到老年代转移时会提高碎片的产生，可以减少并行处理的线程数量和增加老年代区域的大小降低碎片的产生效果。 
-![parallel collector](C:\programming\dailyRecord\images\parallel-collector.png)
+![parallel collector](..\..\images\parallel-collector.png)
 
 默认情况下，在服务器级计算机上选择并行收集器。
 
@@ -351,7 +351,7 @@ G1 的首要重点是为运行需要大堆且 GC 延迟有限的应用程序的�
 一个区别是 G1 是压缩收集器。G1将堆划分为固定大小的区域 。
 与 CMS 收集器相比，G1 提供了更多可预测的垃圾收集暂停，并允许用户指定所需的暂停目标。
 与 CMS 一样，G1 专为需要较短 GC 暂停的应用而设计。
-<img src="C:\programming\dailyRecord\images\G1-collector-heap.png" alt="Grabage-First Collector Heap" style="zoom:80%;" />
+<img src="..\..\images\G1-collector-heap.png" alt="Grabage-First Collector Heap" style="zoom:80%;" />
 
 G1 逻辑上是世代相传的，一组空区域被指定为逻辑年轻代。在图中，年轻一代是浅蓝色的。
 分配是从逻辑上年轻的一代中完成的，当年轻一代已满时，该区域集将被垃圾收集（一个年轻的集合）。

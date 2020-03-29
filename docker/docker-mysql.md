@@ -26,20 +26,15 @@ hub.nihility.cn/library/mysql:5.7.20
    collation-server = utf8mb4_unicode_ci
    init-connect = 'SET NAMES utf8mb4'
    character-set-client-handshake = FALSE
-   
    default-storage-engine = INNODB
-   
    max_connections = 300
    skip-name-resolve
-   
    server-id = 1
    log-error = /var/log/mysql/mysql-error.log
    log-bin = mysql-bin
-   
    log-output = FILE
    slow-query-log = 1
    slow-query-log-file = mysql-slow.log
-   
    sql-mode = NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
    
    [mysql]
@@ -55,7 +50,7 @@ hub.nihility.cn/library/mysql:5.7.20
    replicate-ignore-db = information_schema
    replicate-ignore-db = performance_schema
    ```
-
+   
 3. mysql 的 authentication
 
    ```bash

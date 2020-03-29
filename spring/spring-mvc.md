@@ -58,7 +58,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 这里 Spring 就会自动加载实现了 WebApplicationInitializer 接口的 MyWebApplicationInitializer 类
 ```
 
-![](C:\programming\dailyRecord\images\spring-init-class.png)
+![](..\images\spring-init-class.png)
 
 *Spring* 默认会去自动加载这个文件中声明的类，加载到 *Spring* 容器当中
 `org.springframework.web.SpringServletContainerInitializer`

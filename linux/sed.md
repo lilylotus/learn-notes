@@ -152,7 +152,73 @@ x  交换模式空间与保持空间的内容
 6. 替换找到某文本的行
 
    ```bash
-   sed -rn '/^port/ c ports' redis.con # 把 port 开头的整行数据换为 ports
+   sed -rn '/^-n/ c ports' redis.con # 把 port 开头的整行数据换为 ports
    ```
 
    
+
+---
+
+###### sed 常用示例
+
+匹配打印  (p)
+
+```bash
+sed -n '/^root/p' test.txt (-n 仅显示匹配行数据，以 root 开头)
+sed -n '/root/p' test.txt (显示包含了 root 的行数据)
+sed -n '2p' test.txt (显示第二行数据)
+sed -n '3,+3p' test.txt (显示第三行起随后三行的数据)
+sed -n '$p' test.txt (最后一行数据)
+sed -n '$!p' (不包括最后一行， ! 取反)
+
+sed -n '1~2p' (奇数行)
+sed -n '2~2p' (偶数行)
+
+变量引用
+a=1, b=2
+sed -n ''$a','$b'p'
+sed -n "$a,$b""p"
+```
+
+匹配删除 (d)
+
+```bash
+sed -n '2d' (删除第二行)
+sed -n '1,9d' (删除 1-9 行)
+sed -n '2~2d' (删除偶数行)
+
+sed -n '/^#/d;/^$/d' (删除 # 或者 $ 开头的行)
+```
+
+替换 (s///)
+
+```bash
+引用内容替换 (&) ：
+sed 's/root/&-add/g' (把所有的 root 后添加 -add [root-add])
+
+为 1,2 行添加注释
+sed '1,2s/^/#/'
+
+sed -n '/swap/s/^/#/' (在含有 swap 行前加 #)
+```
+
+添加、追加、替换 (a/i/c)
+
+```bash
+添加 (i) ：
+sed '/root/i \Root' (在搜索匹配到的上一行添加)
+
+追加 (a) ：
+sed '/root/a \Root' (在搜索匹配到行的下一行添加)
+
+替换 (c) :
+sed '/root/c \Root' (替换搜索匹配到的行)
+
+```
+
+匹配到的行号
+
+```bash
+sed -n '/root/='
+```
+

@@ -25,7 +25,7 @@ subnet 10.10.37.0 netmask 255.255.255.0 {
 	option subnet-mask 255.255.255.0;
 	next-server 10.10.37.2;
 	# the configuration  file for pxe boot
-	filename "centos7/pxelinux.0";
+	filename "pxelinux.0";
 }
 ```
 

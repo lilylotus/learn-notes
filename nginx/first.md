@@ -180,13 +180,13 @@ server accepts handled requests
  28 28 22 
 Reading: 0 Writing: 1 Waiting: 1 
 
-server 表示 Nginx 处理理接收握⼿手总次数。
-accepts 表示 Nginx 处理理接收总连接数。
-请求丢失数=(握⼿手数-连接数)可以看出,本次状态显示没有丢失请求。
+server 表示 Nginx 处理接收握⼿总次数。
+accepts 表示 Nginx 处理接收总连接数。
+请求丢失数=(握手数-连接数)可以看出,本次状态显示没有丢失请求。
 handled requests，表示总共处理理了了 22 次请求。
 Reading Nginx读取数据
 Writing Nginx写的情况
-Waiting Nginx 开启 keep-alive ⻓长连接情况下, 既没有读也没有写, 建⽴立连接情况
+Waiting Nginx 开启 keep-alive ⻓接情况下, 既没有读也没有写, 建⽴连接情况
 
 ```
 
@@ -200,14 +200,14 @@ autoindex on | off;
 
 // autoindex 常⽤用参数
 autoindex_exact_size off;
-默认为on， 显示出⽂文件的确切⼤大⼩小，单位是 bytes。
-修改为off，显示出⽂文件的⼤大概⼤大⼩小，单位是 kB 或者 MB 或者 GB。
+默认为on， 显示出文件的确切大小，单位是 bytes。
+修改为off，显示出⽂件的大概⼤小，单位是 kB 或者 MB 或者 GB。
 
 autoindex_localtime on;
-默认为 off，显示的⽂文件时间为 GMT 时间。
-修改为 on， 显示的⽂文件时间为⽂文件的服务器器时间。
+默认为 off，显示的文件时间为 GMT 时间。
+修改为 on， 显示的⽂件时间为⽂件的服务器时间。
 
-charset utf-8,gbk; # 默认中⽂文⽬目录乱码，添加上解决乱码。
+charset utf-8,gbk; # 默认中⽂⽬录乱码，添加上解决乱码。
 
 location /down {
 	root /data/nginx; # /data/nginx/down 目录
@@ -455,10 +455,18 @@ add_header 'Access-Control-Allow-Credentials' 'true';
 add_header 'Access-Control-Allow-Methods' 'GET,POST,PUT,DELETE,OPTIONS';
 add_header 'Access-Control-Allow-Headers' 'DNT,web-token,app-token,Authorization,Accept,Origin,Keep-Alive,User-Agent,X-Mx-ReqToken,X-Data-Type,X-Auth-Token,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
 add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+
 if ($request_method = 'OPTIONS') {
 	add_header 'Access-Control-Max-Age' 1728000;
 	add_header 'Content-Type' 'text/plain; charset=utf-8';
 	add_header 'Content-Length' 0;
+	
+	add_header Access-Control-Allow-Origin $http_origin;
+    add_header Access-Control-Allow-Methods $http_access_control_request_method;
+    add_header Access-Control-Allow-Credentials true;
+    add_header Access-Control-Allow-Headers $http_access_control_request_headers;
+    add_header Access-Control-Max-Age 1728000;
+
 	return 204;
 }
 

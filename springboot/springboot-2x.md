@@ -122,3 +122,64 @@ if (null != inputStream) {
 }
 ```
 
+
+
+---
+
+##### Spring Boot 启动
+
+`META-INF/services/javax.servlet.ServletContainerInitializer` 文件填写自动要加载到 Spring 容器的 Servlet，作为处理话容器。
+
+```java
+cn.nihility.app.MyServletContainerInitializer
+
+@HandlesTypes(MyApplicationInitializer.class)
+public class MyServletContainerInitializer implements ServletContainerInitializer {
+    @Override
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) throws ServletException {
+        System.out.println("=================== MyServletContainerInitializer ===================");
+
+        if (c != null) {
+            c.stream().forEach(clazz -> System.out.println(clazz.getName()));
+        }
+
+        System.out.println("=================== register servlet");
+        ServletRegistration.Dynamic registration = ctx.addServlet("myServlet", new MyServlet());
+        registration.addMapping("/servlet/*");
+
+    }
+}
+```
+
+以上就是加载自己写的 Servlet 到 Spring 容器，无需添加什么注解。
+`javax.servlet.annotation.HandlesTypes` 注解表示要加载的类或者接口，如果是接口，那么所有实现了该接口的类都会被加载到 `onStartUp` 参数 `Set<Class<?>>` 中。
+<font color="red">自定义要加载的 Servlet 初始化容器要实现`ServletContainerInitializer`接口</font>
+<font color="blue">相当于在 `web.xml` 中添加 `servlet`</font>
+
+###### 加载 *Spring webApp* 初始化容器
+
+> 相当于在 `web.xml` 当中添加的 `ContextListener` 和 `DispatcherServlet`
+
+```java
+public class MyWebApplicationInitializer implements WebApplicationInitializer {
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        System.out.println("============================== MyWebApplicationInitializer ==============================");
+        // Load Spring web application configuration
+        AnnotationConfigWebApplicationContext context =
+                new AnnotationConfigWebApplicationContext();
+        context.register(ApplicationConfig.class);
+        context.refresh();
+
+        // Create and register the DispatcherServlet
+        DispatcherServlet dispatcherServlet = new DispatcherServlet(context);
+        ServletRegistration.Dynamic registration = servletContext.addServlet("application", dispatcherServlet);
+        registration.addMapping("/mvc/*");
+        registration.setLoadOnStartup(1);
+    }
+}
+```
+
+<font color="red">*注意：* 要实现接口 `org.springframework.web.WebApplicationInitializer`</font>
+
+`org.springframework.web.context.support.AnnotationConfigWebApplicationContext` 来初始化 *Web* 上下文。

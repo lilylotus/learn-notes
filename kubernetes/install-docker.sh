@@ -44,7 +44,7 @@ fi
 
 cat <<EOF > /etc/docker/daemon.json
 {
-    "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com","https://registry.docker-cn.com","http://hub-mirror.c.163.com"],
+    "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com","https://registry.docker-cn.com"],
     "graph": "/data/docker",
     "exec-opts": ["native.cgroupdriver=systemd"],
     "log-driver": "json-file",
