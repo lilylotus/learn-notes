@@ -61,5 +61,37 @@ curl [options...] <url>
 	data 的格式为 NAME1=VALUE1;NAME2=VALUE2
 ```
 
+#### 3. rsync 同步命令 [本地或者远程]
 
+> 它有效地将文件复制到远程系统或从远程系统同步。
+> 支持复制链接，设备，所有者，组和权限。
+> 比快 **SCP（** **安全复制** ），因为 **rsync** 使用远程更新协议，允许转让只是两套文件之间的差异。
+>  第一次，它从源到目标复制文件或目录的整个内容，但从下一次，它只将已更改的块和字节复制到目标。
+>
+> rsync的消耗更少的**带宽** ，因为它使用压缩和解压缩方法在发送和接收数据两端。
+
+```bash
+# rsync options source destination
+ -v 详细信息
+ -r 递归数据到目录，但不保存时间戳和权限，同时传输数据
+ -a 归档(压缩)模式，归档模式允许递归地拷贝文件，同时也保留了符号链接，文件权限，用户组所有权和时间戳
+ 	等同于 -rlptgoD
+ -z 压缩文件中的数据
+ -h 友好的提示
+ -d 传输目录而不会递归
+
+1. 本地复制
+$ rsync -zvh sFile sFile.bak # 压缩的方式复制/同步
+
+2. 同步目录
+$ rsync -azvh sdir ddir
+
+3. 远程复制
+$ rsync -azvh dir user@remote:/dest
+$ rsync -azvh user@remote:/source dest
+
+4. 使用协议 [-e]
+$ rsync -azvh -e ssh root@remote:/source dest
+$ rsync -avz -e 'ssh -p22' ./rsync ad@u:/home/ad/rsync
+```
 
