@@ -74,3 +74,13 @@ Spring Cloud Sleuth 为 Spring Cloud 实现了分布式跟踪解决方案。
 
 该项目提供了一个在 Spring 生态系统之上构建的 API 网关，包括：Spring 5，Spring Boot 2 和 Project Reactor。
 Spring Cloud Gateway 旨在提供一种简单而有效的方法来路由到 API，并为它们提供跨领域的关注点，例如：安全性，监视/指标和弹性。
+
+
+
+---
+
+###### spring cloud *Hystrix Dashboard*
+
+*hystrix dashboard* -> `http://localhost:52102/hystrix` 监视 `http://localhost:52101/actuator/hystrix.stream`
+
+**注意：** *api gateway* 不依赖 *spring-boot-starter-web*

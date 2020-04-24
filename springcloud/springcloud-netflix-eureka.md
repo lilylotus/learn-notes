@@ -140,11 +140,9 @@ server:
 @SpringBootApplication
 @EnableEurekaServer
 public class Application {
-
     public static void main(String[] args) {
         new SpringApplicationBuilder(Application.class).web(true).run(args);
     }
-
 }
 ```
 
@@ -276,5 +274,132 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     <groupId>org.glassfish.jaxb</groupId>
     <artifactId>jaxb-runtime</artifactId>
 </dependency>
+```
+
+
+
+##### Eureka 常用配置
+
+```yaml
+eureka:
+  client: #eureka客户端配置
+    register-with-eureka: true #是否将自己注册到eureka服务端上去
+    fetch-registry: true #是否获取eureka服务端上注册的服务列表
+    service-url:
+      defaultZone: http://localhost:8001/eureka/ # 指定注册中心地址
+    enabled: true # 启用eureka客户端
+    registry-fetch-interval-seconds: 30 #定义去eureka服务端获取服务列表的时间间隔
+  instance: #eureka客户端实例配置
+    lease-renewal-interval-in-seconds: 30 #定义服务多久去注册中心续约
+    lease-expiration-duration-in-seconds: 90 #定义服务多久不去续约认为服务失效
+    metadata-map:
+      zone: jiangsu #所在区域
+    hostname: localhost #服务主机名称
+    prefer-ip-address: false #是否优先使用ip来作为主机名
+  server: #eureka服务端配置
+    enable-self-preservation: false #关闭eureka服务端的保护机制
+```
+
+#### 4. Eureka 安全认证
+
+##### 4.1 添加依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+<!-- 安全认证 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+##### 4.2 配置文件 application.yml
+
+```yaml
+spring:
+  application:
+    name: spring-cloud-eureka-server
+eureka:
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+    registryFetchIntervalSeconds: 5
+    service-url:
+      defaultZone: ${DISCOVERY_URL:http://localhost:8761}/eureka/
+  instance:
+    leaseRenewalIntervalInSeconds: 30
+    lease-expiration-duration-in-seconds: 90
+server:
+  port: ${PORT:8761}
+
+# 安全配置
+spring:
+  security:
+    user:
+      name: eureka
+      password: eureka
+```
+
+##### 4.3 添加安全配置类
+
+```java
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().ignoringAntMatchers("/eureka/**");
+        super.configure(http);
+    }
+}
+```
+
+##### 4.4 客户端连接配置
+
+```yaml
+server:
+  port: 8103
+spring:
+  application:
+    name: eureka-client
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://macro:123456@localhost:8004/eureka/
+# 连接格式 http://${username}:${password}@${hostname}:${port}/eureka/
+```
+
+##### 4.5 推荐使用 spring cloud loadbalance
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    <!-- 不容 Ribbon 相关的依赖，使用 spring-cloud 自己的 LoadBalancer -->
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-eureka</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+LoadBalancerExchangeFilterFunction that uses it under the hood will be used by default. Spring Cloud Ribbon is now in maintenance mode, so we suggest switching to ReactorLoadBalancerExchangeFilterFunction instead.
+
+```yaml
+spring:
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
 ```
 
