@@ -14,7 +14,7 @@
 ##### 1.2 RestTemplate 方式
 
 ```java
-// 注册一个负载均衡后的 RestTemplate
+// 注册一个负载均衡后的 RestTemplate ， Ribbon 的实现负载均衡
 @Bean
 @LoadBalanced
 public RestTemplate restTemplate() {
@@ -40,6 +40,21 @@ String uri = String.format("http://%s:%s%s", instance.getHost(), instance.getPor
 // 发起访问
 RestTemplate restTemplate = new RestTemplate();
 String tag = restTemplate.getForObject(uri, String.class);
+```
+
+##### 修改轮询策略方法：
+
+```yaml
+# 修改 ribbon 负载的策略， 服务名 - ribbon - NFLoadBalancerRuleClassName : 全路径策略类
+spring-cloud-service-provider:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule
+    # 重试机制
+    ConnectTimeout: 250 # Ribbon 连接超时时间
+    ReadTimeout: 1000 # Ribbon 数据读取超时时间
+    OkToRetryOnAllOperations: true # 是否对所有操作进行重试
+    MaxAutoRetriesNextServer: 1 # 切换实例的重试次数
+    MaxAutoRetries: 1 # 对当前实例的重试次数
 ```
 
 ##### 1.4 Feign 方式

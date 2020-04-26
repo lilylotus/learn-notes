@@ -403,3 +403,116 @@ spring:
         enabled: false
 ```
 
+#### 5. Eureka Server 的配置
+
+##### 5.1 开发阶段关闭自我保护
+
+```yaml
+eureka:
+  server:
+    enable-self-preservation: false # 关闭自我保护，若是 85% 都没有回应，不会剔除客户端
+    eviction-interval-timer-in-ms: 4000 # 剔除时间间隔
+  client:
+    register-with-eureka: false # 向 eureka server 注册
+    fetch-registry: false # 向 eureka server 获取信息
+    service-url:
+      defaultZone: http://localhost:53000/eureka/
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+```
+
+#### 5. Eureka 的源码
+
+##### 5.1 spring boot 自动装载
+
+###### 5.1.1 `ImportSelector` 接口
+
+```java
+public interface ImportSelector {
+    String[] selectImports(AnnotationMetadata importingClassMetadata);
+}
+```
+
+该接口是 spring 导入外部配置的核心接口，在 spring boot 自动化配置中和 `@Enablexxx` 功能起了关键性作用。
+在 `@Configuration` 注解类上使用 `@Import` 引入一个 `ImportSelector` 实现类后，会把实现类中的 Class 名称定义为 Bean。
+
+```java
+public interface DeferredImportSelector extends ImportSelector {
+}   
+```
+
+该接口是 `ImportSelector` 的一个变体，当所有的 Bean 都已经执行完成后在运行该接口类。
+
+<font color="blue">是由 `org.springframework.context.annotation.ConfigurationClassParser#processImports` 方法类处理该接口的实现</font>
+
+##### 5.2 自动装载的测试
+
+定义一个实体类
+
+```java
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
+    private String name;
+    private Integer age;
+}
+```
+
+定义一个生成 User Bean 的配置类， *注意：* 该类上面没有 `@Configuration` 注解
+
+```java
+public class UserConfiguration {
+    @Bean
+    public User getUser() {
+        return new User("自动装载机制", 20);
+    }
+}
+```
+
+实现一个自己的 `ImportSelector`
+
+```java
+public class UserImportSelector implements ImportSelector {
+    /* 根据获取配置类的名称 */
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        return new String[] {UserConfiguration.class.getName()};
+    }
+
+}
+```
+
+定义一个自己额 `@Enablexxx` 注解
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Target(ElementType.TYPE)
+// 帮助导入要的配置类
+@Import(UserImportSelector.class)
+public @interface EnableUserBean {
+}
+```
+
+测试
+
+```java
+@EnableUserBean // 添加 @Enablexx 注解
+public class TestEnableApplication {
+    public static void main(String[] args) {
+        /**
+         * --> EnableUserBean --> 自动 import UserImportSelector
+         * --> UserConfiguration --> user
+         */
+        /* 获取 spring 容器 */
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(TestEnableApplication.class);
+        final User user = context.getBean(User.class);
+        System.out.println(user);
+    }
+}
+```
+

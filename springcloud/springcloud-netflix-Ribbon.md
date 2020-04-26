@@ -77,3 +77,75 @@ ribbon:
   先过滤掉故障实例，再选择并发较小的实例
 - com.netflix.loadbalancer.ZoneAwareLoadBalancer
   采用双重过滤，同时过滤不是同一区域的实例和故障实例，选择并发较小的实例
+
+#### 4. Ribbon 在 Eureka 当中存在
+
+<font color="red">Ribbon 属于客户端的负载均衡</font>
+
+##### 4.1 Ribbon 负载均衡
+
+```java
+@Bean
+@LoadBalanced
+public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
+```
+
+`@LoadBalanced` *Ribbon* 提供的负载均衡方式
+
+##### 4.2 调用方式
+
+```java
+// 使用服务 ID 调用
+@Autowired
+private RestTemplate restTemplate;
+// 一句 service id 来访问
+restTemplate.getForObject("http://spring-cloud-service-provider/tag", String.class);
+```
+
+##### 4.3 客户端负载均衡配置
+
+获取到了服务端的所有地址，依据内置的负载算法，算出要调用的服务地址。
+
+`com.netflix.loadbalancer.IRule` 接口。
+
+![ribbon的负载实现](../images/ribbon-balancer-impl.png)
+
+常用的策略：
+
+- 轮询方式(默认) : `RoundRobinRule`
+- 权重配置：`WeightedResponseTimeRule`
+
+```yaml
+# 修改 ribbon 负载的策略， 服务名 - ribbon - NFLoadBalancerRuleClassName : 全路径策略类
+spring-cloud-service-provider:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule
+```
+
+##### 4.4 请求重试
+
+引入依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.retry</groupId>
+    <artifactId>spring-retry</artifactId>
+    <version>1.2.5.RELEASE</version>
+</dependency>
+```
+
+```yaml
+# 修改 ribbon 负载的策略， 服务名 - ribbon - NFLoadBalancerRuleClassName : 全路径策略类
+spring-cloud-service-provider:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule
+    # 重试机制
+    ConnectTimeout: 250 # Ribbon 连接超时时间
+    ReadTimeout: 1000 # Ribbon 数据读取超时时间
+    OkToRetryOnAllOperations: true # 是否对所有操作进行重试
+    MaxAutoRetriesNextServer: 1 # 切换实例的重试次数
+    MaxAutoRetries: 1 # 对当前实例的重试次数
+```
+
