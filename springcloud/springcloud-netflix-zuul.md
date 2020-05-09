@@ -97,3 +97,72 @@ zuul:
 # http://localhost:52204/spring-cloud-service-provider/employee/list
 ```
 
+#### 2. zuul 网关过滤
+
+- **PRE**
+  在请求被路由之前调用。利用这个做身份验证、在集群中选择请求的微服务、记录调试信息
+- **ROUTING**
+  将请求转发到微服务执行的过滤器。用于构建发送给微服务的请求，并使用 Apache HttpClient 或者 Netflix Ribbon 请求微服务
+- **POST**
+  在路由到微服务获取返回值后执行。为响应添加标准的 HTTP header、收集统计信息和指标、将响应从微服务发送给客户端。
+- **ERROR**
+  在其他阶段发送错误时执行该步骤
+
+![zuul lifecycle](../images/zuul-lifecycle.png)
+
+##### 2.1 定义自己的 zuul 过滤器
+
+继承 `com.netflix.zuul.ZuulFilter` 抽象类
+
+```java
+@Component
+public class LoginZuulFilter extends ZuulFilter {
+    /* 定义过滤器类型， pre|routing|post|error */
+    @Override
+    public String filterType() {
+        return "pre";
+    }
+
+    /* 过滤器的执行顺序，返回值越小，执行顺序越高 */
+    @Override
+    public int filterOrder() {
+        return 0;
+    }
+
+    /* 过滤器是否生效，true：使用此过滤器 */
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    /* 指定过滤器中的业务逻辑 */
+    @Override
+    public Object run() throws ZuulException {
+        return null;
+    }
+}
+```
+
+##### 2.2 基于 zuul 的 pre 过滤器的身份认证
+
+```java
+ @Override
+public Object run() throws ZuulException {
+    log.info("执行 LoginZuulFilter -> run()");
+    // 1. 获取 zuul 提供的 RequestContext 对象
+    final RequestContext currentContext = RequestContext.getCurrentContext();
+    // 2. 从 RequestContext 对象获取 Request 对象
+    final HttpServletRequest request = currentContext.getRequest();
+    // 3. 获取 access-token header
+    final String token = request.getParameter("access-token");
+    // 4. 校验 header
+    if (StringUtils.isEmpty(token)) {
+        // 4.1 拦截请求，校验认证失败
+        currentContext.setSendZuulResponse(false);
+        currentContext.setResponseStatusCode(HttpStatus.UNAUTHORIZED.value());
+    }
+    return null;
+}
+```
+
+请求地址：`http://localhost:52204/spring-cloud-service-provider/employee/list?access-token=ok`
