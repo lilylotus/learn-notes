@@ -70,3 +70,36 @@ $ sudo update-grub
 
 
 
+##### 1. docker 指定 ip 地址
+
+docker 安装后默认会有三种网络类型： `bridge`，`host`,`none`
+
+```bash
+# 查看网络信息
+docker network ls
+```
+
+- `bridge` 桥接网络
+  默认情况下启动、创建容器使用该模式，致使 *docker* 每次重启容器都会安装顺序重新获取对应的 *ip* 地址，那么容器每次重新启动 *ip* 都会发生改变。
+- `none` 无网络
+  启动容器时可以通过参数 `--network=none` 指定该模式，容器不会分配 *ip* 网络
+- `host` 主机网络
+  docker 容器的网络会依附在主机上，两者互通，直接使用主机的网络配置。
+
+**创建新的 bridge 网络**
+
+```bash
+docker network create --driver bridge --subnet=172.18.0.0/16 --gateway=172.18.1.1 newnet
+
+# 查看网络
+docker network ls
+# 查看指定网络详细信息
+docker network inspect newnet
+```
+
+*创建指定 ip 地址的容器*
+
+```bash
+docker run -it --rm --network=newnet --ip 172.18.1.10 busybox
+```
+

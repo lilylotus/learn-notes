@@ -10,7 +10,27 @@
 > **Java HotSpot Server VM** (*server VM*)
 > 服务器虚拟机旨在最大程度地提高程序执行速度
 
+*默认 jvm 参数值*
 
+```bash
+-XX:SurvivorRatio=8 # eden/survivor
+-XX:NewRatio=2 # old/new generation
+-Xmn10M # 年轻代最大内存
+
+-XX:PermSize10m # 永久代初始大小
+-XX:MaxPermSize50m # 永久代最大大小
+
+-Xss2m # 栈空间
+
+-XX:+PrintGCDetails
+```
+
+*Minor GC*
+当年轻一代的伊甸园空间填满时，这将触发较小的垃圾收集。又叫做 *Young Generation GC*。该 *GC* 仅发生在 *Young Generation* 区域。
+*Minor GC* 移动 live 对象从 *eden* 区域到 survivor 的 *from* 区域。还清空 survivor 的 *from* 区域通过移动 *young live* 对象到 *to* 区域。此外还提升 *old live* 对象到 *old Generation* 区域。
+
+*Full GC*
+当 *Old Generation* 区域满了触发。称为 *major garbage collection*。
 
 ##### 简介
 

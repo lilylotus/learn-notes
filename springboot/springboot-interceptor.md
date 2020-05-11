@@ -101,3 +101,32 @@ public class InterceptorConfiguration implements WebMvcConfigurer {
 }
 ```
 
+##### 1.3 等幂性校验
+
+```java
+@Override
+public boolean checkToken(HttpServletRequest request) throws Exception {
+    String token = request.getHeader(Constant.Idempotent.TOKEN_NAME);
+    // header 当中不存在
+    if (StringUtils.isBlank(token)) {
+        token = request.getParameter(Constant.Idempotent.TOKEN_NAME);
+        // parameter 中也为 空
+        if (StringUtils.isBlank(token)) {
+            throw new ServiceException("100", "参数错误");
+        }
+    }
+
+    if (!redisUtil.exists(token)) {
+        throw new ServiceException("200", "缓存中不存在 token");
+    }
+
+    /* 最后要删除缓存并校验是否删除成功 */
+    final boolean remove = redisUtil.remove(token);
+    if (!remove) {
+        throw new ServiceException("200", "删除缓存 token 失败");
+    }
+
+    return true;
+}
+```
+
