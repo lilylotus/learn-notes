@@ -42,4 +42,3 @@ mybatis:
 <mapper namespace="">
 </mapper>
 ```
-

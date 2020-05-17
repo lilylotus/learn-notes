@@ -85,14 +85,15 @@ public class MyClassLoader extends ClassLoader {
    这里符合类加载的时候会默认加载其父类 (Object)
    
    先使用 AppClassloader 加载
-   @Override
-   public Class<?> loadClass(String name) throws ClassNotFoundException {
+       @Override
+       public Class<?> loadClass(String name) throws ClassNotFoundException {
        System.out.println("loadClass name : " + name);
-       ClassLoader systemClassLoader = getSystemClassLoader();
-       Class<?> clazz = systemClassLoader.loadClass(name);
+       Class<?> clazz = findClass(name);
+       System.out.println("loadClass in findClass clazz -> " + clazz);
        if (clazz != null) { return clazz; }
-       return findClass(name);
+       return getSystemClassLoader().loadClass(name);
    }
+   // 先用自定义的类加载器加载，打破双亲委派机制，自己没有找到在交给系统类加载器加载。
    ```
 
 2. 设置当前类加载器父类加载器为 `null`，直接使用本类加载器 (不建议)
