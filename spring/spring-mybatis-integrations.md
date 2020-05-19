@@ -116,6 +116,30 @@ public @interface SpringExtensionImportScan {
 public class App {}
 ```
 
+###### 2.1.1 spring 和 mybatis 具体的整合过程
+
+添加注解 `@MapperScan` 或者 `@MapperScans` 处理多个目录
+主要类实现了 `ImportBeanDefinitionRegistrar` 接口
+
+```java
+// 关键类 MapperScannerRegistrar MapperFactoryBean
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Documented
+@Import(MapperScannerRegistrar.class)
+@Repeatable(MapperScans.class)
+public @interface MapperScan {}
+
+// 具体的 Bean 注册类, 扫描指定包下面的接口
+// 依次使用 MapperFactoryBean 放到容器 getSqlSession().getMapper(this.mapperInterface);
+public class MapperScannerRegistrar implements ImportBeanDefinitionRegistrar,
+						ResourceLoaderAware {}
+
+// 关键类 SqlSessionTemplate
+// 由 mybatis sqlSessionTemplate 代理 Mapper 放到 spring 容器中
+class MapperFactoryBean<T> extends SqlSessionDaoSupport implements FactoryBean<T> {}
+```
+
 
 
 ##### 2.2 问题2
