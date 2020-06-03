@@ -138,3 +138,51 @@ Java 常用数据类型别名
 </mappers>
 ```
 
+---
+
+#### 2. Mybatis 查询方式
+
+##### 2.1 嵌套查询
+
+```xml
+<!-- 嵌套查询 -->
+<resultMap id="selectTeachingStudentsByTeacherIdUseEmbedQueryMap" type="teacher">
+    <id column="teacher_id" property="teacherId" />
+    <result property="teacherName" column="teacher_name" />
+    <result property="teacherAge" column="teacher_age" />
+    <result property="collegeId" column="college_id" />
+    <association property="college" column="college_id" javaType="college"
+                 select="cn.nihility.mybatis.mapper.TeacherMapper.selectCollegeById" />
+    <collection property="students" column="teacher_id" ofType="student"
+                select="cn.nihility.mybatis.mapper.TeacherMapper.selectStudentsByTeacherId" />
+</resultMap>
+```
+
+嵌套查询的弊端：即嵌套查询的N+1问题
+尽管嵌套查询大量的简化了存在关联关系的查询
+弊端也比较明显：即所谓的 N+1 问题。关联的嵌套查询显示得到一个结果集，然后根据这个结果集的每一条记录进行关联查询。
+现在假设嵌套查询就一个（即 resultMap 内部就一个 association 标签），现查询的结果集返回条数为 N，那么关联查询语句将会被执行 N 次，加上自身返回结果集查询 1 次，共需要访问数据库 N+1 次。如果 N 比较大的话，这样的数据库访问消耗是非常大的！所以使用这种嵌套语句查询的使用者一定要考虑慎重考虑，确保 N 值不会很大。
+
+##### 2.2 嵌套结果
+
+```xml
+<!-- 嵌套结果  -->
+<resultMap id="studentWithTeachers" type="student">
+    <id column="teacher_id" property="teacherId" />
+    <result property="teacherName" column="teacher_name" />
+    <result property="teacherAge" column="teacher_age" />
+    <result property="collegeId" column="college_id" />
+    <association property="college" javaType="college">
+        <id property="collegeId" column="college_id" />
+        <result property="collegeName" column="college_name" />
+    </association>
+    <collection property="teachers" ofType="teacher">
+        <id property="studentId" column="student_id" />
+        <result property="studentName" column="student_name" />
+        <result property="studentAge" column="student_age" />
+    </collection>
+</resultMap>
+```
+
+嵌套语句的查询会导致数据库访问次数不定，进而有可能影响到性能。
+Mybatis 还支持一种嵌套结果的查询：即对于一对多，多对多，多对一的情况的查询，Mybatis 通过联合查询，将结果从数据库内一次性查出来，然后根据其一对多，多对一，多对多的关系和 ResultMap 中的配置，进行结果的转换，构建需要的对象。
