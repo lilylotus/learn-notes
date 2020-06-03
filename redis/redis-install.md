@@ -11,6 +11,9 @@
 make
 # 指定安装路径
 make PREFIX=/usr/local/redis install
+
+# 报错可以尝试
+make MALLOC=libc
 ```
 
 可执行文件
