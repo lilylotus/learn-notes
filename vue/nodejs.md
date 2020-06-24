@@ -58,3 +58,9 @@ npm config set cache "D:\MySoftware\nodejs\node_cache"
 npm run build
 ```
 
+#### 4. 安装 cnpm
+
+```bash
+npm install -g cnpm --registry=http://registry.npm.taobao.org
+```
+
