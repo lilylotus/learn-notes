@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder file-encoding="UTF-8" location="classpath:properties/rabbitmq.properties"/>
+
+    <context:component-scan base-package="cn.nihility.spring.rabbitmq"></context:component-scan>
+
+    <!-- 连接配置，若 MO 在远程，必须新建用户， guest 默认不允许远程登录 -->
+    <rabbit:connection-factory id="connectionFactory"
+                               channel-cache-size="${rabbitmq.channel.cache.size}"
+                               port="${rabbitmq.port}" host="${rabbitmq.host}"/>
+
+    <!-- 配置 admin，自动依据配置文件生成交换队列，无需手动配置 -->
+    <rabbit:admin id="rabbitAdmin" connection-factory="connectionFactory"/>
+
+    <!-- queue 队列声明 -->
+    <rabbit:queue name="spring.queue" durable="true" auto-delete="false" exclusive="false" declared-by="rabbitAdmin"/>
+
+    <!-- 定义 direct exchange 绑定 spring.queue -->
+    <rabbit:direct-exchange name="spring.exchange.direct" declared-by="rabbitAdmin" auto-delete="false" durable="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="spring.queue" key="spring.queue.key"></rabbit:binding>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+
+    <!-- rabbitmq template 用于数据的接受和发送 -->
+    <rabbit:template id="rabbitTemplate" routing-key="spring.queue.key"
+                     exchange="spring.exchange.direct" connection-factory="connectionFactory"/>
+
+    <bean id="mqProducerDirect" class="cn.nihility.spring.rabbitmq.omit.MQProducerDirectImpl"></bean>
+    <bean id="queueDirectListener2" class="cn.nihility.spring.rabbitmq.rec.QueueDirectListener"></bean>
+
+    <!-- queue Listener,观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象 -->
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="auto">
+        <rabbit:listener queues="spring.queue" ref="queueDirectListener2"/>
+    </rabbit:listener-container>
+
+</beans>

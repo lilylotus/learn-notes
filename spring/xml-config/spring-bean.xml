@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="cn.nihility.spring.bean" />
+
+    <bean id="dateFormat" class="java.text.SimpleDateFormat">
+        <constructor-arg name="pattern" value="yyyy-MM-dd HH:mm:ss" />
+        <!--<constructor-arg value="yyyy-MM-dd HH:mm:ss" />-->
+    </bean>
+    <bean id="date" class="java.util.Date" scope="prototype"></bean>
+
+    <bean id="person" class="cn.nihility.spring.bean.Person" scope="singleton">
+        <property name="name" value="BeanPerson" />
+        <property name="email" value="person@spring.com" />
+        <property name="age" value="20" />
+        <property name="birthDate" ref="date" />
+        <!--<property name="birthDate">
+            <bean factory-bean="dateFormat" factory-method="parse">
+                <constructor-arg value="2019-05-28 18:18:00" />
+            </bean>
+        </property>-->
+    </bean>
+
+    <bean id="pc" class="cn.nihility.spring.bean.Person">
+        <constructor-arg name="age" value="18" />
+        <constructor-arg name="name" value="构造初始化" />
+        <constructor-arg name="email" value="constructor@spring.com" />
+        <constructor-arg name="birthDate" ref="date" />
+    </bean>
+
+    <!-- personScan -->
+    <bean id="personScan" class="cn.nihility.spring.bean.PersonScan">
+        <property name="age" value="19" />
+        <property name="name" value="Person Scan" />
+    </bean>
+
+    <!-- impl -->
+    <bean id="mouth" class="cn.nihility.spring.bean.PersonMouthImpl"></bean>
+
+</beans>

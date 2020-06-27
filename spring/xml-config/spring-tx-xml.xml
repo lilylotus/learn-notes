@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <bean id="transferDao" class="cn.nihility.spring.tx.dao.TransferDaoImpl">
+        <property name="jdbcTemplate" ref="hikariJdbcTemplate" />
+    </bean>
+    <bean id="transferService" class="cn.nihility.spring.tx.service.TransferServiceTemplateImpl">
+        <property name="transferDao" ref="transferDao" />
+        <!-- 使用事务模版类自动配置异常事务 -->
+        <property name="transactionTemplate" ref="hikariTransactionTemplate" />
+    </bean>
+
+</beans>

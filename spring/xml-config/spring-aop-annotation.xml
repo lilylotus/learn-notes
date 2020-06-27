@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+    <!-- 自动扫描包 -->
+    <context:component-scan base-package="cn.nihility.spring.aop" />
+    <!-- AOP 自动为切面方法中匹配的方法所在类生成代理对象 -->
+    <!-- proxy-target-class="true" 使用CGLib动态代理技术注入增强，默认 jdk 动态代理  -->
+    <aop:aspectj-autoproxy proxy-target-class="true" />
+    
+</beans>

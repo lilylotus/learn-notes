@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="transferDao" class="cn.nihility.spring.tx.dao.TransferDaoImpl">
+        <property name="jdbcTemplate" ref="hikariJdbcTemplate" />
+    </bean>
+    <bean id="transferServiceProxyDao" class="cn.nihility.spring.tx.service.TransferServiceProxyImpl">
+        <property name="transferDao" ref="transferDao" />
+    </bean>
+
+    <!-- 定义一个代理管理具体类的事务 以后就是用这个bean来代替transactionService, 声明式的事务 -->
+    <!-- 注意：注意： 以后使用 transferServiceProxyDao 的时候要用 proxyTransactionService 来代理使用 -->
+    <bean id="proxyTransactionService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" lazy-init="true">
+        <!-- 要管理的目标类 -->
+        <property name="target" ref="transferServiceProxyDao" />
+        <!-- 进行事务管理的管理器 -->
+        <property name="transactionManager" ref="hikariDataSourceTransactionManager" />
+        <!-- 事务的管理属性 -->
+        <property name="transactionAttributes">
+            <props>
+                <!--
+                要管理事务的类方法 key : Attribute
+                                方法　　: 属性
+
+                PROPAGATION_REQUIRED    :如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。
+                PROPAGATION_SUPPORTS    :支持当前事务，如果当前没有事务，就以非事务方式执行。
+                PROPAGATION_MANDATORY   :使用当前的事务，如果当前没有事务，就抛出异常。
+                PROPAGATION_REQUIRES_NEW :新建事务，如果当前存在事务，把当前事务挂起。
+                PROPAGATION_NOT_SUPPORTED :以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+                PROPAGATION_NEVER        :以非事务方式执行，如果当前存在事务，则抛出异常。
+                PROPAGATION_NESTED :如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与PROPAGATION_REQUIRED类似的操作。
+
+                -   :表示抛出该异常时需要回滚
+                +   :表示即使抛出该异常事务同样要提交
+                示例： PROPAGATION_REQUIRED,-Exception
+
+               prop的格式:
+               * PROPAGATION   :事务的传播行为
+               * ISOTATION     :事务的隔离级别
+               * readOnly      :只读,一般用于查询的方法,优化作用.
+               * -EXCEPTION    :发生哪些异常回滚事务
+               * +EXCEPTION    :发生哪些异常不回滚事务
+                -->
+                <prop key="transfer">PROPAGATION_REQUIRED,-Exception</prop>
+            </props>
+        </property>
+    </bean>
+
+</beans>

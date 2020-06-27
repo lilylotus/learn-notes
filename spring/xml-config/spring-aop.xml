@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- Bean 注入 -->
+    <bean id="compute" class="cn.nihility.spring.aop.Compute"></bean>
+    <bean id="aspectXmlLogger" class="cn.nihility.spring.aop.AspectXMLLogger"></bean>
+
+    <aop:config>
+        <!-- 1. 配置切入点表达式 -->
+        <aop:pointcut id="computePointCut" expression="execution(* cn.nihility.spring.aop.Compute.*(..))"/>
+        <!-- 2. 配置切面通知 -->
+        <aop:aspect id="doComputeAspect" order="1" ref="aspectXmlLogger">
+            <!-- 前置通知 -->
+            <aop:before method="doBefore" pointcut-ref="computePointCut"/>
+            <!-- 后置通知 -->
+            <aop:after method="doAfter" pointcut-ref="computePointCut"/>
+            <!-- 返回通知,注意 returning -->
+            <aop:after-returning method="doAfterReturning" pointcut-ref="computePointCut" returning="result" />
+            <!-- 异常通知 -->
+            <aop:after-throwing method="doAfterThrowing" pointcut-ref="computePointCut" throwing="ex"/>
+            <!-- 环绕通知 -->
+            <aop:around method="doAround" pointcut-ref="computePointCut" />
+        </aop:aspect>
+    </aop:config>
+
+</beans>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="cn.nihility.spring.tx"></context:component-scan>
+
+    <!-- SqlSessionFactory -->
+    <bean id="SqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 配置 datasource -->
+        <property name="dataSource" ref="hikariDataSource" />
+        <!-- mybatis configuration file -->
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+        <!-- 自动定位 mapper 文件并配置 -->
+        <property name="mapperLocations" value="classpath:mybatis/mapper/*.xml" />
+        <!-- 自动扫描 entity 位置 -->
+        <property name="typeAliasesPackage" value="cn.nihility.spring.mybatis.entity" />
+    </bean>
+
+    <!-- 创建数据库映射器，扫描包下所有接口，并为其创建动态代理类 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 扫描 DAO Interface 包 -->
+        <property name="basePackage" value="cn.nihility.spring.mybatis.dao"/>
+        <!-- SqlFactory 的名称 -->
+        <property name="sqlSessionFactoryBeanName" value="SqlSessionFactory"/>
+    </bean>
+
+</beans>

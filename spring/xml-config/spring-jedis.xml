@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder file-encoding="UTF-8" location="classpath:properties/redis.properties" />
+
+    <!-- jedis pool 的配置 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.pool.maxTotal}" />
+        <property name="maxIdle" value="${redis.pool.maxIdle}" />
+        <property name="minIdle" value="${redis.pool.minIdle}" />
+        <property name="maxWaitMillis" value="${redis.pool.maxWaitMillis}" />
+        <property name="testOnReturn" value="true" />
+        <property name="testOnBorrow" value="true" />
+    </bean>
+
+    <!-- ShardedJedisPool 是 redis 集群客户端的对象池，可以通过他来操作 ShardedJedis -->
+    <bean id="shardedJedisPool" class="redis.clients.jedis.ShardedJedisPool" scope="singleton">
+        <constructor-arg name="poolConfig" ref="jedisPoolConfig"/>
+        <constructor-arg name="shards">
+            <list>
+                <bean class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg name="host" value="${redis.uri}"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <!-- 单机环境 Jedis Pool 配置 -->
+    <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+        <constructor-arg name="poolConfig" ref="jedisPoolConfig"/>
+        <constructor-arg name="host" value="${redis.host}"/>
+        <constructor-arg name="port" value="${redis.port}" type="int"/>
+        <constructor-arg name="password" value="${redis.password}"/>
+        <constructor-arg name="database" value="${redis.database}" type="int"/>
+        <constructor-arg name="timeout" value="${redis.timeout}" type="int"/>
+
+    </bean>
+
+</beans>

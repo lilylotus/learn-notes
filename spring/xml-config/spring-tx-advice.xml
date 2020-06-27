@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <bean id="transferDao" class="cn.nihility.spring.tx.dao.TransferDaoImpl">
+        <property name="jdbcTemplate" ref="hikariJdbcTemplate" />
+    </bean>
+    <bean id="transferServiceAdvice" class="cn.nihility.spring.tx.service.TransferServiceAdviceImpl">
+        <property name="transferDao" ref="transferDao" />
+    </bean>
+
+    <!-- 事务增强，进行事务通知 -->
+    <!--
+    propagation :事务传播行为
+    isolation   :事务的隔离级别
+    read-only   :只读
+    rollback-for:发生哪些异常回滚, Exception(s),以逗号分开
+    no-rollback-for :发生哪些异常不回滚
+    timeout     :过期信息
+
+    事务传播行为：（七种）
+    PROPAGATION_REQUIRED - 支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。
+    PROPAGATION_SUPPORTS - 支持当前事务，如果当前没有事务，就以非事务方式执行。
+    PROPAGATION_MANDATORY - 支持当前事务，如果当前没有事务，就抛出异常。
+
+    PROPAGATION_REQUIRES_NEW - 新建事务，如果当前存在事务，把当前事务挂起。
+    PROPAGATION_NOT_SUPPORTED - 以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+    PROPAGATION_NEVER - 以非事务方式执行，如果当前存在事务，则抛出异常。
+
+    PROPAGATION_NESTED - 如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与REQUIRED类似的操作。
+    拥有多个可以回滚的保存点，内部回滚不会对外部事务产生影响。只对DataSourceTransactionManager有效
+
+    ================================================================
+    PROPAGATION_REQUIRES_NEW
+    启动一个新的,不依赖于环境的 "内部" 事务. 这个事务将被完全 commited 或 rolled back 而不依赖于外部事务,
+    它拥有自己的隔离范围, 自己的锁等等.当内部事务开始执行时,外部事务将被挂起,内务事务结束时,外部事务将继续执行
+
+    PROPAGATION_NESTED
+    开始一个 "嵌套的" 事务,它是已经存在事务的一个真正的子事务.潜套事务开始执行时,它将取得一个 savepoint.
+    如果这个嵌套事务失败, 我们将回滚到此 savepoint. 嵌套事务是外部事务的一部分, 只有外部事务结束后它才会被提交.
+   
+    PROPAGATION_REQUIRES_NEW 和 PROPAGATION_NESTED 的最大区别在于,PROPAGATION_REQUIRES_NEW 完全是一个新的事务,
+    而 PROPAGATION_NESTED 则是外部事务的子事务, 如果外部事务 commit, 潜套事务也会被 commit, 这个规则同样适用于 roll back.
+    =================================================================
+
+    事务隔离级别：（五种）
+    DEFAULT - 使用后端数据库默认的隔离级别（Spring中的选择项）
+    READ_UNCOMMITED - 允许你读取还未提交的改变了的数据。可能导致脏、幻、不可重复读
+    READ_COMMITTED - 允许在并发事务已经提交后读取。可防止脏读，但幻读和不可重复读仍可发生
+    REPEATABLE_READ - 对相同字段的多次读取是一致的，除非数据被事务本身改变。可防止脏、不可重复读，但幻读仍可能发生
+    SERIALIZABLE - 完全服从ACID的隔离级别，确保不发生脏、幻、不可重复读。
+    这在所有的隔离级别中是最慢的，它是典型的通过完全锁定在事务中涉及的数据表来完成的
+    其中，MySQL默认采用REPEATABLE_READ隔离级别；Oracle默认采用READ_COMMITTED隔离级别
+    -->
+    <tx:advice transaction-manager="hikariDataSourceTransactionManager" id="txAdvice">
+        <tx:attributes>
+            <!-- no-rollback-for="ArithmeticException" -->
+            <!-- 默认 propagation="REQUIRED" -->
+            <tx:method name="transfer" rollback-for="Exception"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置切面 -->
+    <aop:config>
+        <aop:pointcut id="txPointcut" expression="execution(* cn.nihility.spring.tx..*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut" />
+    </aop:config>
+
+</beans>

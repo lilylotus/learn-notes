@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 加载数据库配置文件 -->
+    <context:property-placeholder location="classpath:properties/datasource.properties" file-encoding="UTF-8" />
+    <!-- 编程式即采用注解的方式,事务扫描开始 (开启注解 @Transactional )
+        proxy-target-class="false" 基于 JDK 动态代理 ，可以将 @Transactional 放置在接口（抽象类或抽象方法）和具体类（实现类或实现方法）上。
+        proxy-target-class="true" 基于 CGLIB 类代理，只能将 @Transactional 放置在具体类（实现类或实现方法）上。
+        default = "false"
+
+        <tx:annotation-driven/>：支持事务注解的（@Transactional）
+        <mvc:annotation-driven/>：支持MVC注解
+    -->
+    <tx:annotation-driven transaction-manager="hikariDataSourceTransactionManager" proxy-target-class="true" />
+
+    <!-- Hikari -->
+    <bean id="hikariDataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="${mysql.driverClass}" />
+        <property name="jdbcUrl" value="${mysql.url}" />
+        <property name="username" value="${mysql.user}" />
+        <property name="password" value="${mysql.password}" />
+
+        <property name="maxLifetime" value="${maxLifetime}" />
+        <property name="maximumPoolSize" value="${maximumPoolSize}" />
+        <property name="minimumIdle" value="${minimumIdle}" />
+        <property name="idleTimeout" value="${idleTimeout}" />
+        <property name="connectionTimeout" value="${connectionTimeout}" />
+    </bean>
+    <bean id="hikariJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="hikariDataSource" />
+    </bean>
+    <bean id="hikariDataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="hikariDataSource" />
+    </bean>
+    <bean id="hikariTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="hikariDataSourceTransactionManager" />
+    </bean>
+
+    <!-- C3P0 -->
+    <bean id="comboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${mysql.driverClass}" />
+        <property name="jdbcUrl" value="${mysql.url}" />
+        <property name="user" value="${mysql.user}" />
+        <property name="password" value="${mysql.password}" />
+
+        <property name="initialPoolSize" value="${initialPoolSize}" />
+        <property name="minPoolSize" value="${minPoolSize}" />
+        <property name="maxPoolSize" value="${maxPoolSize}" />
+        <property name="acquireIncrement" value="${acquireIncrement}" />
+        <property name="checkoutTimeout" value="${checkoutTimeout}" />
+        <property name="idleConnectionTestPeriod" value="${idleConnectionTestPeriod}" />
+        <property name="maxIdleTime" value="${maxIdleTime}" />
+        <property name="testConnectionOnCheckout" value="${testConnectionOnCheckout}" />
+        <property name="testConnectionOnCheckin" value="${testConnectionOnCheckin}" />
+        <property name="numHelperThreads" value="${numHelperThreads}" />
+    </bean>
+    <bean id="comboJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="comboPooledDataSource" />
+    </bean>
+    <bean id="comboDataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="comboPooledDataSource" />
+    </bean>
+    <bean id="comboTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="comboDataSourceTransactionManager" />
+    </bean>
+
+    <!-- Druid -->
+    <bean id="druidDataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+        <property name="driverClassName" value="${mysql.driverClass}" />
+        <property name="url" value="${mysql.url}" />
+        <property name="username" value="${mysql.user}" />
+        <property name="password" value="${mysql.password}" />
+
+        <property name="initialSize" value="${initialSize}" />
+        <property name="minIdle" value="${minIdle}" />
+        <property name="maxActive" value="${maxActive}" />
+        <property name="maxWait" value="${maxWait}" />
+        <property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
+        <property name="testOnBorrow" value="${testOnBorrow}" />
+        <property name="testOnReturn" value="${testOnReturn}" />
+        <property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+        <property name="testWhileIdle" value="${testWhileIdle}" />
+    </bean>
+    <bean id="druidJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="druidDataSource" />
+    </bean>
+    <bean id="druidDataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="druidDataSource" />
+    </bean>
+    <bean id="druidTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="druidDataSourceTransactionManager" />
+    </bean>
+
+    <!-- DBCP2 -->
+    <bean id="basicDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${mysql.driverClass}" />
+        <property name="url" value="${mysql.url}" />
+        <property name="username" value="${mysql.user}" />
+        <property name="password" value="${mysql.password}" />
+
+        <property name="initialSize" value="${initialSize}" />
+        <property name="maxTotal" value="${maxTotal}" />
+        <property name="maxIdle" value="${maxIdle}" />
+        <property name="minIdle" value="${minIdle}" />
+        <property name="maxWaitMillis" value="${maxWaitMillis}" />
+        <property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}" />
+        <property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}" />
+        <property name="testOnBorrow" value="${testOnBorrow}" />
+        <property name="testOnReturn" value="${testOnReturn}" />
+        <property name="numTestsPerEvictionRun" value="${numTestsPerEvictionRun}" />
+        <property name="testWhileIdle" value="${testWhileIdle}" />
+    </bean>
+    <bean id="basicJdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="basicDataSource" />
+    </bean>
+    <bean id="basicDataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="basicDataSource" />
+    </bean>
+    <bean id="basicTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="basicDataSourceTransactionManager" />
+    </bean>
+
+</beans>
