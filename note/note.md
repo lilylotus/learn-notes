@@ -129,17 +129,49 @@ nginx -c /nginx/nginx.conf
 ##### 3.2 项目使用 pom.xml
 
 ```xml
+<repositories>
+    <!-- 仓库地址，注意和 setting.xml 配置中 mirror 的冲突 -->
+    <repository>
+        <id>nexus</id>
+        <name>local nexus repository</name>
+        <url>http://10.10.100.6:8081/repository/maven-public/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+<!-- 插件仓库 -->
+<pluginRepositories>
+    <!-- 插件仓库，maven 的运行依赖插件，也需要从私服下载插件 -->
+    <pluginRepository>
+        <!-- 插件仓库的 id 不允许重复，如果重复后边配置会覆盖前边 -->
+        <id>nexus</id>
+        <name>private-nexus</name>
+        <url>http://10.10.100.6:8081/nexue/content/groups/pulic/</url>
+        <layout>default</layout>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
 <!-- jar 包上传的地址 -->
 <distributionManagement>
+<!-- pom.xml 中 repository 里的 id 需要和 .m2 中 setting.xml 里的 server id 名称保持一致 -->
     <repository>
         <id>releases</id>
-        <name>releases</name>
-        <url>http://192.168.134.131:8081/repository/maven-releases/</url>
+        <name>maven-releases</name>
+        <url>http://10.10.100.6:8081/repository/maven-releases/</url>
     </repository>
     <snapshotRepository>
         <id>snapshots</id>
-        <name>snapshots</name>
-        <url>http://192.168.134.131:8081/repository/maven-snapshots/</url>
+        <name>maven-snapshots</name>
+        <url>http://10.10.100.6:8081/repository/maven-snapshots/</url>
     </snapshotRepository>
 </distributionManagement>
 ```
@@ -153,5 +185,7 @@ mvn install:install-file
 -DartifactId=common-util
 -Dversion=0.0.1-SNAPSHOT 
 -Dpackaging=jar
+
+mvn clean deploy -Dmaven.test.skip=true
 ```
 
