@@ -44,3 +44,8 @@ vgcreate vgName /dev/sdb [/dev/sdc1 ...]
 lvcreate -L Size(M|G|T) -l Number -n lvName vgName
 ```
 
+#### 4. lvm 拓展容量
+
+```bash
+vgextend vg2000 /dev/sdb2
+```

@@ -41,3 +41,16 @@ find . -maxdepth 3 -type d -name "log" -print0 | xargs -0 -n1 -I {} rm -rf {}
 find / -maxdepth 4 -type d -name "log" -o -name "out" -print0 | xargs -0 -n1 -t rm -rf
 ```
 
+#### 3. ssh-keygen
+
+```bash
+ssh-keygen -t rsa -b 4096
+ssh-keygen -t dsa
+ssh-keygen -t ecdsa -b 521
+ssh-keygen -t ed25519
+
+# 指定文件名称
+ssh-keygen -f ~/ssh-key-ecdsa -t ecdsa -b 521
+ssh-keygen -t rsa -b 4096 -f ./ssh-rsa
+```
+

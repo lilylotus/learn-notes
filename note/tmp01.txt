@@ -1,0 +1,5 @@
+10.10.37.108	k8s-master
+10.10.37.107	k8s-node01
+10.10.37.109	k8s-node02
+
+kubeadm join 10.10.37.108:6443 --token abcdef.0123456789abcdef --discovery-token-ca-cert-hash sha256:e48024d9ba440fef5f2c2bcab11bbd920c1567a1c0fff07ec2c7d72c3ee3b50d
