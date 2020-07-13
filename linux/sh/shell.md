@@ -33,3 +33,52 @@ then
 fi
 ```
 
+#### 2. 字符串处理
+
+```bash
+#!/bin/bash
+str="truncate-test-script.sh"
+line="---------------------------------"
+
+echo "opoeration string = $str"
+echo $line
+
+echo "$str len = ${#str}"
+echo $line
+
+echo "truncate to left = [${str#*-}]"
+echo "truncate to max left = [${str##*-}]"
+echo $line
+
+echo "truancate right = [${str%-*}]"
+echo "truncate right max = [${str%%-*}]"
+echo $line
+
+echo "pattern left = [${str:0:8}]"
+echo "pattern left = [${str:9}]"
+echo $line
+
+echo "pattern right = [${str:0-10:2}]"
+echo "pattern right = [${str:0-10}]"
+echo $line
+```
+
+```
+opoeration string = truncate-test-script.sh
+---------------------------------
+truncate-test-script.sh len = 23
+---------------------------------
+truncate to left = [test-script.sh]
+truncate to max left = [script.sh]
+---------------------------------
+truancate right = [truncate-test]
+truncate right max = [truncate]
+---------------------------------
+pattern left = [truncate]
+pattern left = [test-script.sh]
+---------------------------------
+pattern right = [-s]
+pattern right = [-script.sh]
+---------------------------------
+```
+

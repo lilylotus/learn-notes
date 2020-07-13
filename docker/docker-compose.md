@@ -361,3 +361,59 @@ DIR_TOMCAT_LOGS=/opt/dockerdata/tomcat9/logs
 #DIR_TOMCAT_CONF=/opt/dockerdata/tomcat9/conf
 ```
 
+##### 3.6 mysql+redis
+
+docker-compose.yml
+
+```yml
+version: '3.7'
+services:
+  mysql:
+    image: "mysql:${MYSQL_VERSION}"
+    container_name: "${MYSQL_CONTAINER_NAME}"
+#    network_mode: "${MYSQL_NETWORK_MODE}"
+#    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+    volumes:
+      - "${MYSQL_DIR_CONF}:/etc/mysql/conf.d"
+      - "${MYSQL_DIR_DATA}:/var/lib/mysql"
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - backend
+  redis:
+    image: "redis:${REDIS_VERSION}"
+#    network_mode: "${REDIS_NETWORK_MODE}"
+#    restart: always
+    container_name: "${REDIS_CONTAINER_NAME}"
+    command: redis-server /etc/redis/redis.conf
+    volumes:
+      - "${REDIS_DIR_CONF}:/etc/redis/redis.conf"
+      - "${REDIS_DIR_DATA}:/data"
+    ports:
+     - "${REDIS_PORT}:6379"
+    networks:
+      - backend
+networks:
+  backend:
+```
+
+.env
+
+```properties
+MYSQL_PORT=50000
+MYSQL_PASSWORD=mysql
+MYSQL_VERSION=5.7.28
+MYSQL_CONTAINER_NAME=mysql
+MYSQL_DIR_CONF=/data/container/compose/mysql/conf
+MYSQL_DIR_DATA=/data/container/compose/mysql/data
+MYSQL_NETWORK_MODE=bridge
+REDIS_PORT=50001
+REDIS_VERSION=4.0.14
+REDIS_NETWORK_MODE=bridge
+REDIS_DIR_CONF=/data/container/compose/redis/conf/redis.conf
+REDIS_DIR_DATA=/data/container/compose/redis/data
+REDIS_CONTAINER_NAME=redis
+```
+

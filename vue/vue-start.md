@@ -68,3 +68,14 @@ npm config ls -l ## 查看所有配置项
 npm config get cache ## 查看缓存配置， get 后可以跟想查看的配置
 npm config edit # 直接编辑 config 文件
 ```
+
+#### 3. npm install 权限问题
+
+> gyp ERR! stack Error: EACCES: permission denied, mkdir
+
+> npm 出于安全考虑不支持以 root 用户运行，即使你用 root 用户身份运行了，npm 会自动转成一个叫 nobody 的用户来运行，而这个用户几乎没有任何权限
+
+```bash
+npm i --unsafe-perm # 执行
+npm install --unsafe-perm
+```
