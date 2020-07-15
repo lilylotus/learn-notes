@@ -1,6 +1,97 @@
-###### 打包为可执行 jar
+#### 1. springboot gradle 打包
+
+文件操作：https://docs.gradle.org/current/userguide/working_with_files.html
+springboot: https://docs.spring.io/spring-boot/docs/2.2.2.RELEASE/gradle-plugin/reference/html/
 
 build.gradle
+
+```groovy
+// 执行命令，返回结果
+def branchName = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+def branchCommitId = "git rev-parse HEAD".execute().text.trim()
+
+bootJar {
+    excludes = ["*.jar", "*.xml", "*.yml"]
+    manifest {
+        attributes "branchName": "$branchName"
+        attributes "commitId": "$branchCommitId"
+    }
+}
+
+task packageDistribution(type: Zip) {
+    archiveFileName = "distribution.zip"
+    destinationDirectory = file("$buildDir/dist")
+
+    from "$buildDir/toArchive"
+    from("$buildDir/toArchive") {
+        exclude "**/*.pdf"
+    }
+    from("$buildDir/toArchive") {
+        include "**/*.pdf"
+        into "docs"
+    }
+}
+
+tasks.withType(JavaCompile) { options.encoding = "UTF-8" }
+
+/* source / doc 包 */
+/* sourceSets.main.allJava / sourceSets.main.allSource */
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+    options.addStringOption('charSet', 'UTF-8')
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+```
+
+build.gradle.kts
+
+```kotlin
+configurations {
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(module = "logback-classic")
+        exclude(module = "log4j-over-slf4j")
+        exclude(module = "slf4j-log4j12")
+    }
+}
+
+tasks.named<BootJar>("bootJar") {
+    excludes.add("**/*.yml")
+}
+
+tasks.create<Zip>("zip") {
+    archiveFileName.set("KIAM-DataDistribute.zip")
+    destinationDirectory.set(file("$buildDir/distributions"))
+
+    from("$buildDir/libs") {
+        into("target")
+    }
+    from("bin/main") {
+        into("conf")
+    }
+    from("bin") {
+        include("*.sh")
+        into("bin")
+    }
+}.dependsOn("bootJar")
+```
+
+#### 2. gradle java 插件打包
 
 ```groovy
 plugins {
