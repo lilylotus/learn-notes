@@ -1,0 +1,132 @@
+1. 数据绑定
+数据绑定是将用户输入绑定到领域模型的一种特性，在Spring MVC的controller和view数据传递中，
+基于HTTP请求的特性，所有HTTP请求参数的类型均为字符串，如果模型领域需要绑定的类型为double或int，
+则需要手动进行类型转换，而有了数据绑定后，就不需要手动将HTTP请求中的String类型转换为模型需要的类型了，
+数据绑定的另一个好处是，当输入验证失败时，会重新生成一个HTML表单，无需重新填写输入字段。
+
+2. 表单标签库
+表单标签库中包含了可以用在JSP页面中渲染HTML元素的标签。
+为了使用这些标签，必须在JSP页面开头处声明taglib指令。
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+
+3. form标签
+使用Spring的form标签主要有两个作用，
+第一是它会自动的绑定来自Model中的一个属性值到当前form对应的实体对象，默认是command属性，
+这样我们就可以在form表单体里面方便的使用该对象的属性了；
+第二是它支持我们在提交表单的时候使用除GET和POST之外的其他方法进行提交，包括DELETE和PUT等。
+
+表单标签库中有
+input、password、hidden、textarea、checkbox、checkboxes
+radiobutton、radiobuttons、select、option、options、errors
+表单标签有
+acceptCharset、commandName、cssClass、cssStyle、htmlEscape、modelAttribute
+
+--------------------------------------------------------------------------
+1. input标签：
+input标签渲染<input type="text"/>元素，这个标签最重要的是path属性，
+该字段将输入绑定到form backing object的一个属性。
+2. password标签：
+渲染<input type="password"/>元素，password标签与input标签相似，只不过它有一个showPassword属性。
+3. textare标签：
+渲染一个HTML的textarea元素。textarea基本上就是支持多行输入的input元素。
+4. checkbox标签：
+渲染<input type="checkbox"/>元素，
+同样是通过path属性实现数据绑定，同时checkboxes渲染多个checkbox元素。
+5. radiobutton标签:
+渲染<input type="radio"/>元素，radiobuttons渲染多个radio元素。
+7. select标签：
+渲染一个HTML的select元素，
+被渲染元素的选项可能来自赋予其items属性的Collection、Map、Array，一个嵌套的option或options标签。
+
+--------------------------------------------------------------------------
+1.  input标签
+SpringMVC的input标签会被渲染为一个type为text的普通Html input标签。
+使用SpringMVC的input标签的唯一作用就是它能绑定表单数据。
+SpringMVC表单标签最大的好处就是它支持数据绑定，当我们的表单标签不需要绑定的数据的时候，
+我们应该使用普通的Html标签。
+关于input标签绑定表单数据的方法已经在介绍form标签的时候顺带介绍过了，这里就不再过多的赘述了。
+
+2. hidden标签
+hidden标签会被渲染为一个type为hidden的普通Html input标签。
+用法跟input标签一样，也能绑定表单数据，只是它生成的是一个隐藏域。
+
+3. checkbox标签
+checkbox标签会被渲染为一个type为checkbox的普通HTML input标签。
+checkbox标签也是支持绑定数据的。
+checkbox复选框，有选中和不选中两种状态
+checkbox标签的选中与否状态是根据它绑定的值来判断的
+
+绑定boolean数据
+当checkbox绑定的是一个boolean数据的时候，
+那么checkbox的状态跟该boolean数据的状态是一样的
+即true对应选中，false对应不选中
+
+4. Checkboxes标签
+checkbox标签只能生成一个对应的复选框
+checkboxes标签将根据其绑定的数据生成N个复选框。
+checkboxes绑定的数据可以是数组、集合和Map。
+checkboxes有两个属性是必须指定的，一个是path，另一个是items。
+Items表示当前要用来展现的项有哪些，而path所绑定的表单对象的属性表示当前表单对象拥有的项
+即在items所展现的所有项中表单对象拥有的项会被设定为选中状态
+
+注意:
+List作为复选框项的数据源，所呈现出来的标签Label和它的值是一样的。Array和Set作为数据源也是这种情况。
+使用Map作为checkboxes的items属性的数据源时Key将作为真正的复选框的value，而Map的value将作为Label进行展示。当使用Map作为checkboxes的items属性的数据源时，绑定的表单对象属性的类型可以是Array、集合和Map，
+这种情况就是判断items Map中是否含有对应的key来决定当前的复选框是否处于选中状态。
+
+Array或者集合作为数据源，且里面的元素都是POJO时，
+可以使用checkboxes标签的itemLabel和itemValue属性来
+示使用数组或者集合中元素对象的哪一个属性作为需要呈现的单选框的label和value。
+
+5.  radiobutton标签
+radiobutton标签会被渲染为一个type为radio的普通HTML input标签。radiobutton标签也是可以绑定数据
+
+6. radiobuttons标签
+radiobuttons标签的时候将生成多个单选按钮。
+radiobuttons有两个属性也是我们必须指定的，
+一个是path属性，表示绑定的表单对象对应的属性，
+另一个是items属性，表示用于生成单选按钮的数据源。
+radiobuttons的items属性和path属性都可以是Array、集合或者是Map。
+
+7. password标签
+password标签将会被渲染为一个type为password的普通HTML input标签。
+
+8. select标签
+select标签将会被渲染为一个普通的HTML select标签
+items属性是用于指定当前select的所有可选项的，但是它对于select标签而言不是必须的，
+因为可以手动的在select标签中间加上option标签来指定select可选的option。
+select标签支持的items属性的数据类型可以是Array、Collection和Map，
+当数据类型为Array或Collection时且其中的元素为一个POJO时，
+我们可以通过属性itemLabel和itemValue来指定将用于呈现的option Label和Value，
+其他情况下Array和Collection数据源中的元素将既作为可选项option的value又作为它的Label
+当items的数据类型为Map时，Map的key将作为可选项option的value，而Map的value将作为option的Label标签
+
+9.  option标签
+option标签会被渲染为一个普通的HTML option标签。
+当一个SpringMVC select标签没有通过items属性指定自己的数据源的时候，
+可以在select标签中通过普通HTML option标签或者SpringMVC option标签来指定可以选择的项
+
+注意: 当select标签指定了items属性的时候，它会忽略其标签体的内容，而使用items指定的内容来渲染出可选项。
+
+SpringMVC option标签和普通HTML option标签的区别就在于普通HTML option标签不具备数据绑定功能，
+而SpringMVC option标签具有数据绑定功能，它能把当前绑定的表单对象的属性对应的值对应的option置为选中状态。
+
+10. options标签
+options标签需要指定其items属性，根据其items属性生成一系列的普通HTML option标签。
+这里的items属性的可取数据类型及其对应的渲染规则跟select的items属性是一样的。
+
+11. textarea标签
+SpringMVC textarea标签将被渲染为普通HTML textarea标签。
+
+12.  errors标签
+SpringMVC errors标签是对应于SpringMVC的Errors对象的。
+展现Errors对象中包含的错误信息的。
+利用errors标签来展现Errors的时候是通过errors标签的path属性来绑定一个错误信息的
+我们可以通过path属性来展现两种类型的错误信息。
+
+注意：在 <form:errors modelAttribute="">
+modelAttribute 的值应该和绑定的 POJO 的类名首字母小写相同。
+这样才能回显错误信息。
+
+所有的错误信息，这个时候path的值应该置为“*”
+当前对象的某一个域的错误信息，这个时候path的值应为所需展现的域的名称

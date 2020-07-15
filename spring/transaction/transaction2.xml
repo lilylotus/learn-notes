@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 引入properties数据库配置文件 -->
+    <context:property-placeholder location="classpath:dbconfig/*.properties" />
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.classDriver}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
+        <property name="user" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="minPoolSize" value="${pool.minPoolSize}" />
+        <property name="maxPoolSize" value="${pool.maxPoolSize}" />
+        <property name="initialPoolSize" value="${pool.initialPoolSize}" />
+        <property name="acquireIncrement" value="${pool.acquireIncrement}" />
+        <property name="acquireRetryAttempts" value="${pool.acquireRetryAttempts}" />
+        <property name="acquireRetryDelay" value="${pool.acquireRetryDelay}" />
+        <property name="maxIdleTime" value="${pool.maxIdleTime}" />
+        <property name="numHelperThreads" value="${pool.numHelperThreads}" />
+        <property name="maxStatementsPerConnection" value="${pool.maxStatementsPerConnection}" />
+    </bean>
+
+    <!-- 定义一个事务的管理器，从而进行所有事务的统一管理 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+
+    <bean id="transactionDao" class="cn.nihility.transaction2.dao.TransactionDaoImpl">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <bean id="transactionService" class="cn.nihility.transaction2.service.TransactionServiceImpl">
+        <property name="transactionDao" ref="transactionDao"/>
+    </bean>
+
+    <!-- 定义一个代理管理具体类的事务 以后就是用这个bean来代替transactionService　-->
+    <bean id="proxyTransactionService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <!-- 要管理事务的目标类　-->
+        <property name="target" ref="transactionService" />
+        <!-- 进行事务管理的事务管理器　-->
+        <property name="transactionManager" ref="transactionManager" />
+        <!-- 事务的管理属性　-->
+        <property name="transactionAttributes">
+            <props>
+                <!--
+                    要管理事务的类方法 key : Attribute
+                                方法　　: 属性
+                -->
+                <!--
+               prop的格式:
+               * PROPAGATION   :事务的传播行为
+               * ISOTATION     :事务的隔离级别
+               * readOnly      :只读
+               * -EXCEPTION    :发生哪些异常回滚事务
+               * +EXCEPTION    :发生哪些异常不回滚事务
+                -->
+                <prop key="transfer">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+
+    </bean>
+
+</beans>

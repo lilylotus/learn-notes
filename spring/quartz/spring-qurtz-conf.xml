@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- MVC静态资源过路 -->
+	<mvc:resources location="/WEB-INF/static/html/**.html"
+		mapping="/**.html" />
+	<mvc:resources location="/WEB-INF/static/css/" mapping="/css/**" />
+	<mvc:resources location="/WEB-INF/static/js/" mapping="/js/**" />
+	<mvc:resources location="/WEB-INF/static/images/"
+		mapping="/images/**" />
+
+	<!-- 包扫描路径 -->
+	<context:component-scan base-package="cn.nihility.controller,cn.nihility.quartz"></context:component-scan>
+	<!-- 添加注解驱动 -->
+	<mvc:annotation-driven />
+
+	<!-- 编码问题 UTF-8 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.StringHttpMessageConverter">
+					<constructor-arg value="UTF-8" />
+					<property name="defaultCharset" value="UTF-8" />
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/html;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	<!-- 1.1. JobDetail -->
+	<bean id="simpleJobDetail"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="myBean"></property>
+		<property name="targetMethod" value="printMessage"></property>
+		<property name="group" value="group1"></property>
+		<property name="name" value="simpleJobDetail"></property>
+	</bean>
+	<!-- 1.2. ComplexJobDetail -->
+	<bean id="firstComplexJobDetail"
+		class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="jobClass" value="cn.nihility.quartz.FirstScheduleJob"></property>
+		<property name="jobDataMap">
+			<map>
+				<entry key="anotherBean" value-ref="anotherBean"></entry>
+			</map>
+		</property>
+		<property name="group" value="group1"></property>
+		<property name="name" value="firstComplexJobDetail"></property>
+		<property name="durability" value="true"></property>
+	</bean>
+
+	<!-- 2.1 SimpleTrigger -->
+	<bean id="mySimpleTrigger"
+		class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+		<property name="jobDetail" ref="simpleJobDetail"></property>
+		<property name="startDelay" value="2000"></property>
+		<property name="repeatInterval" value="2000"></property>
+		<property name="group" value="group1"></property>
+		<property name="name" value="mySimpleTrigger"></property>
+	</bean>
+
+	<!-- 2.2 CronTrigger -->
+	<bean id="myCronTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="firstComplexJobDetail"></property>
+		<property name="cronExpression" value="0/5 * * ? * *"></property>
+		<property name="group" value="group1"></property>
+		<property name="name" value="myCronTrigger"></property>
+	</bean>
+	
+	<!-- 3.1 Scheduler -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="jobDetails">
+			<list>
+				<ref bean="simpleJobDetail"/>
+				<ref bean="firstComplexJobDetail"/>
+			</list>
+		</property>
+		<property name="triggers">
+			<list>
+				<ref bean="mySimpleTrigger"/>
+				<ref bean="myCronTrigger"/>
+			</list>
+		</property>
+	</bean>
+
+</beans>

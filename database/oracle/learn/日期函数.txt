@@ -1,0 +1,175 @@
+select to_char(sysdate, 'yyyy-mm-dd hh24:mi:ss') as time from dual;
+两个日期间的天数      
+    select floor(sysdate - to_date('20020405','yyyymmdd')) from dual;    
+
+--1：  SYSDATE
+用来得到系统的当前日期
+
+SELECT SYSDATE FROM DUAL;
+
+--2：  ADD_MONTHS
+增加或减去月份
+
+SELECT TO_CHAR(ADD_MONTHS(TO_DATE('20080818','YYYYMMDD'),2), 'YYYY-MM-DD') FROM DUAL;
+SELECT TO_CHAR(Add_Months(sysdate, 5), 'YYYY-MM-DD') FROM DUAL
+2018-01-20
+
+--3:   LAST_DAY
+返回日期的最后一天
+
+SELECT LAST_DAY(SYSDATE) FROM DUAL;
+SELECT LAST_DAY(ADD_MONTHS(SYSDATE, -2)) FROM DUAL;
+
+select to_char(Last_Day(Sysdate), 'YYYY-MM-DD') from dual;
+2017-08-31
+
+--4:   MONTHS_BETWEEN(date2,date1)
+给出date2-date1的月份
+
+--参数的格式需要注意
+SELECT MONTHS_BETWEEN(TO_DATE('2011-05-03', 'YYYY-MM-DD'), TO_DATE('2011-01-23', 'YYYY-MM-DD')) FROM DUAL;
+SELECT MONTHS_BETWEEN('19-12月-1999','19-3月-1999') mon_between FROM DUAL;
+--SELECT MONTHS_BETWEEN('2011-1月-23', '2011-9月-1') FROM DUAL;  文字与格式字符串不匹配
+
+--6：    NEXT_DAY 
+ 返回与制定日期在同一个星期或之后一个星期内的，你所要求的星期天数的确切日期。
+ 
+--星期日 = 1  星期一 = 2  星期二 = 3  星期三 = 4  星期四 = 5  星期五 = 6  星期六 = 7  
+SELECT NEXT_DAY(SYSDATE, 2) FROM DUAL;
+select next_day(sysdate,1) from dual;
+27-8月 -17
+
+--7:    CURRENT_DATE
+当前会话时区中的当前日期 
+
+SELECT CURRENT_DATE FROM DUAL;
+
+--8:    CURRENT_TIMESTAMP
+以timestamp with time zone数据类型返回当前会话时区中的当前日期
+
+SELECT CURRENT_TIMESTAMP FROM DUAL;
+
+--9:   DBTIMEZONE() 
+返回时区
+
+SELECT DBTIMEZONE FROM DUAL;
+
+--10:   SESSIONTIMEZONE
+返回回话时区  其中DBTIMEZONE是数据库的，session是针对当前会话的，因为时区在会话级可以改变
+
+SELECT SESSIONTIMEZONE FROM DUAL;  
+ALTER SESSION SET TIME_ZONE = '8:00';
+SELECT SESSIONTIMEZONE FROM DUAL;  
+
+--11：EXTRACT 
+找出日期或间隔值的字段值 
+
+SELECT EXTRACT(MONTH FROM SYSDATE) "MONTH" FROM DUAL;
+SELECT EXTRACT(DAY  FROM SYSDATE)  AS "DAY" FROM DUAL;
+SELECT EXTRACT(YEAR FROM SYSDATE) AS "YEAR" FROM DUAL;
+
+--12：LOCALTIMESTAMP 
+返回会话中的日期和时间 
+
+SELECT LOCALTIMESTAMP FROM DUAL;
+
+--13:  TRUNC(for dates)
+　　TRUNC函数为指定元素而截去的日期值。
+　　其具体的语法格式如下：
+　　TRUNC（date[,fmt]）
+　　其中：
+　　date 一个日期值
+　　fmt 日期格式，该日期将由指定的元素格式所截去。忽略它则由最近的日期截去
+　　下面是该函数的使用情况：
+　　TRUNC(TO_DATE('24-Nov-1999 08:00 pm'),'dd-mon-yyyy hh:mi am')
+　　='24-Nov-1999 12:00:00 am'
+　　TRUNC(TO_DATE('24-Nov-1999 08:37 pm','dd-mon-yyyy hh:mi am'),'hh') ='24-Nov-1999 08:00:00 am'
+　  SELECT TRUNC(SYSDATE,'YYYY') FROM DUAL; --返回当年第一天.
+　  SELECT TRUNC(SYSDATE,'MM') FROM DUAL; --返回当月第一天.
+　　SELECT TRUNC(SYSDATE,'D') FROM DUAL; --返回当前星期的第一天.
+　　SELECT TRUNC(SYSDATE,'DD') FROM DUAL;--返回当前年月日
+
+----  上月最后一天
+SELECT TO_CHAR(LAST_DAY(ADD_MONTHS(SYSDATE, -1)), 'YYYY/MM/DD') FROM DUAL;
+
+----: 上各月的今天
+SELECT TO_CHAR(ADD_MONTHS(SYSDATE, -1), 'YYYY-MM-DD') FROM DUAL;
+
+---- 上个月第一天
+SELECT TO_CHAR(ADD_MONTHS(LAST_DAY(SYSDATE)+1,-2),'YYYY-MM-DD') FirstDay FROM DUAL;
+
+---  按照每周进行统计
+SELECT TO_CHAR(SYSDATE, 'WW') FROM DUAL;
+
+---  按照每月进行统计
+SELECT TO_CHAR(SYSDATE, 'MM') FROM DUAL;
+
+----  按照每季度进行统计
+SELECT TO_CHAR(SYSDATE, 'Q') FROM DUAL;
+
+---  按照每年进行统计
+SELECT TO_CHAR(SYSDATE, 'YYYY') FROM DUAL;
+
+---  要找到某月中所有周五的具体日期 
+SELECT TO_CHAR(T.D, 'YY-MM-DD')
+FROM
+(
+    SELECT TRUNC(SYSDATE, 'MM') + ROWNUM -1 AS D
+    FROM DBA_OBJECTS
+    WHERE ROWNUM < 32
+) T
+WHERE TO_CHAR(T.D, 'MM') = TO_CHAR(SYSDATE, 'MM')
+    AND TRIM(TO_CHAR(T.D, 'DAY')) = '星期五'
+
+下面的内容应该属于格式化函数，但是为了对日期函数做详细叙述，就把TO_CHAR的内容放到这里了
+
+Y或YY或YYY 年的最后一位，两位或三位  
+SELECT TO_CHAR(SYSDATE, 'YYY') FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'YY') FROM DUAL;
+
+SYEAR或YEAR SYEAR使公元前的年份前加一负号
+SELECT TO_CHAR(SYSDATE, 'SYEAR') FROM DUAL;    --TWENTY ELEVEN
+
+
+Q 季度，1～3月为第一季度 
+SELECT TO_CHAR(SYSDATE, 'Q') FROM DUAL;        -- 2表示第二季度
+
+MM 月份数 
+SELECT  TO_CHAR(SYSDATE, 'MM') FROM DUAL;      --04表示4月 
+
+RM 月份的罗马表示 
+SELECT TO_CHAR(SYSDATE, 'RM') FROM DUAL;       --IV表示4月 
+
+Month 用9个字符长度表示的月份名 
+SELECT TO_CHAR(SYSDATE, 'MONTH') FROM DUAL;    -- 4月 
+
+WW 当年第几周 
+SELECT TO_CHAR(SYSDATE, 'WW') FROM DUAL;       -- 24表示2002年6月13日为第24周 
+
+W 本月第几周 
+SELECT TO_CHAR(SYSDATE, 'W') FROM DUAL;        -- 2011年04月26日为第4周 
+
+DDD 当年第几天. 1月1日为001，2月1日为032 
+SELECT TO_CHAR(SYSDATE, 'DDD') FROM DUAL;
+
+DD 当月第几天 
+SELECT TO_CHAR(SYSDATE, 'DD') FROM DUAL;
+
+D 周内第几天 
+SELECT TO_CHAR(SYSDATE, 'D') FROM DUAL;
+
+DY 周内第几天缩写 
+SELECT TO_CHAR(SYSDATE, 'DY') FROM DUAL;
+
+HH或HH12 12进制小时数
+SELECT TO_CHAR(SYSDATE, 'HH') FROM DUAL;
+
+HH24 24小时制 
+SELECT TO_CHAR(SYSDATE, 'HH24') FROM DUAL;
+
+MI 分钟数(0～59) 
+SELECT TO_CHAR(SYSDATE, 'MI') FROM DUAL;
+提示注意不要将MM格式用于分钟(分钟应该使用MI)。MM是用于月份的格式，将它用于分钟也能工作，但结果是错误的。
+
+SS 秒数(0～59) 
+SELECT TO_CHAR(SYSDATE, 'SS') FROM DUAL;

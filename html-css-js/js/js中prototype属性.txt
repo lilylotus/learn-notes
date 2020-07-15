@@ -1,0 +1,33 @@
+prototype 属性使您有能力向对象添加属性和方法。
+
+javascript的方法可以分为三类：
+1 类方法
+2 对象方法
+3 原型方法
+
+javascript中的每个对象都有prototype属性，Javascript中对象的prototype属性的解释是：返回对象类型原型的引用。
+A.prototype = new B();
+理解prototype不应把它和继承混淆。
+A的prototype为B的一个实例，可以理解A将B中的方法和属性全部克隆了一遍。
+A能使用B的方法和属性。这里强调的是克隆而不是继承。
+可以出现这种情况：A的prototype是B的实例，同时B的prototype也是A的实例。
+
+extendClass.prototype = new baseClass();
+var instance = new extendClass();
+instance.showMsg();//显示extendClass::showMsg
+函数运行时会先去本体的函数中去找，如果找到则运行，找不到则去prototype中寻找函数。
+或者可以理解为prototype不会克隆同名函数。
+
+如果我想使用extendClass的一个实例instance调用baseClass的对象方法showMsg
+baseinstance.showMsg.call(instance);//显示baseClass::showMsg
+这里的baseinstance.showMsg.call(instance);
+阅读为“将instance当做baseinstance来调用，调用它的对象方法showMsg”
+
+好了，这里可能有人会问，为什么不用baseClass.showMsg.call(instance);
+这就是对象方法和类方法的区别，我们想调用的是baseClass的对象方法
+
+
+===========================================================================================
+在谈到构造在JS定义构造函数的方法是最好使用原型的方式：
+将方法定义到构造方法的prototype上，这样的好处是，
+通过该构造函数生成的实例所拥有的方法都是指向一个函数的索引，这样可以节省内存。

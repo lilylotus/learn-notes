@@ -1,0 +1,7 @@
+1. EJB
+Enterprise Java Beans(EJB)称为Java 企业Bean，是Java的核心代码，
+分别是会话Bean（Session Bean），实体Bean（Entity Bean）和消息驱动Bean（MessageDriven Bean）
+2. JPA
+JPA是Java Persistence API的简称，中文名Java持久层API
+3. POJO
+POJO - plain old java object 基于面向对象编程可以作为EJB的替代品，它的持久化可以采用大量的持久化框架

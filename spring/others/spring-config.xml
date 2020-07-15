@@ -1,0 +1,213 @@
+<!-- spring配置文件开始 -->
+ <context-param>
+   <param-name>contextConfigLocation</param-name><!-- spring配置文件，请根据需要选取 -->
+   <param-value>classpath*:webconfig/service-all.xml</param-value>
+ </context-param>
+ <listener><!-- Spring负责监听web容器启动和关闭的事件 --><!-- Spring ApplicationContext载入 -->
+   <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+ </listener>
+ <listener><!-- Spring监听HTTP请求事件 -->
+   <!-- 使spring支持request与session的scope,如: -->
+   <!-- <bean id="loginAction" class="com.foo.LoginAction" scope="request"/> -->
+   <!-- 使用： -->
+   <!-- 1、注解获取：@Autowired HttpServletRequest request; -->
+   <!-- 2、java代码：HttpServletRequest request = 
+   ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest(); -->
+   <!-- 3、直接在参数中传递：public String sayHi(HttpServletRequest request) -->
+   <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+ </listener>
+ <listener><!-- Spring 刷新Introspector防止内存泄露 -->
+   <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+ </listener>
+ <filter>
+   <filter-name>encodingFilter</filter-name>
+   <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+   <init-param>
+     <param-name>encoding</param-name>
+     <param-value>UTF-8</param-value>
+   </init-param>
+   <init-param>
+     <param-name>forceEncoding</param-name>
+     <param-value>false</param-value>
+   </init-param>
+ </filter>
+ <filter-mapping>
+   <filter-name>encodingFilter</filter-name>
+   <url-pattern>/*</url-pattern>
+ </filter-mapping>
+ <!-- spring配置文件结束 -->
+
+
+<!-- spring mvc配置开始 -->
+ <servlet>
+   <servlet-name>Spring-MVC</servlet-name>
+   <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+   <init-param>
+     <param-name>contextConfigLocation</param-name>
+     <param-value>classpath*:spring/spring-mvc.xml</param-value>
+<!-- spring mvc配置文件 -->
+   </init-param>
+   <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet-mapping>
+   <servlet-name>Spring-MVC</servlet-name>
+   <url-pattern>*.do</url-pattern>
+ </servlet-mapping>
+ <!-- spring mvc配置结束 -->
+
+
+spring-mvc.xml需要配置以下
+
+1）（可选）多部分请求解析器（MultipartResolver）配置，
+与上传文件有关 需要类库commons-io、commons-fileupload
+<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+   <property name="defaultEncoding" value="utf-8"></property>
+<!-- 默认编码-->
+   <property name="maxUploadSize" value="104857600"></property>
+<!-- 文件大小最大值-->
+   <property name="maxInMemorySize" value="40960"></property>
+<!-- 内存中的最大值-->
+ </bean>
+
+2）（可选）本地化（LocaleResolver）配置
+3）（可选）主题解析器（ThemeResolver）配置
+4）（必选）处理器映射器（HandlerMapping）配置，可以配置多个，
+一般采用RequestMappingHandlerMapping或者自定义
+自定义了一个处理器映射器，继承重写RequestMappingHandlerMapping，
+支持@RequestMapping无需任何path参数自动装载类名或方法作为url路径匹配。
+<bean id="handlerMapping"
+   class="io.flysium.framework.web.servlet.mvc.method.annotation.CustomHandlerMapping">
+   <property name="order" value="-1" />
+ </bean>
+
+ CustomHandlerMapping实现：
+@Override
+ protected RequestMappingInfo getMappingForMethod(Method method, Class handlerType) {
+   RequestMappingInfo info = createRequestMappingInfoDefault(method);
+   if (info != null) {
+     RequestMappingInfo typeInfo = createRequestMappingInfoDefault(handlerType);
+     if (typeInfo != null)
+       info = typeInfo.combine(info);
+   }
+   return info;
+ }
+
+ private RequestMappingInfo createRequestMappingInfoDefault(AnnotatedElement element) {
+   RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(element,
+       RequestMapping.class);
+   RequestCondition condition = (element instanceof Class)
+       ? getCustomTypeCondition((Class) element)
+       : getCustomMethodCondition((Method) element);
+   /**
+   * 以类名和方法名映射请求，参照@RequestMapping
+   * 默认不需要添加任何参数(如：/className/methodName.do)
+   */
+   String defaultName = (element instanceof Class)
+       ? ((Class) element).getSimpleName()
+       : ((Method) element).getName();
+   return requestMapping == null
+       ? null
+       : createRequestMappingInfo(requestMapping, condition, defaultName);
+ }
+
+ protected RequestMappingInfo createRequestMappingInfo(RequestMapping annotation,
+     RequestCondition<?> customCondition, String defaultName) {
+   String[] patterns = resolveEmbeddedValuesInPatterns(annotation.value());
+   if (patterns != null && (patterns.length == 0)) {
+     patterns = new String[]{defaultName};
+   }
+   return new RequestMappingInfo(
+       new PatternsRequestCondition(patterns, getUrlPathHelper(), getPathMatcher(),
+           this.useSuffixPatternMatch, this.useTrailingSlashMatch,
+           this.fileExtensions),
+       new RequestMethodsRequestCondition(annotation.method()),
+       new ParamsRequestCondition(annotation.params()),
+       new HeadersRequestCondition(annotation.headers()),
+       new ConsumesRequestCondition(annotation.consumes(), annotation.headers()),
+       new ProducesRequestCondition(annotation.produces(), annotation.headers(),
+           this.contentNegotiationManager),
+       customCondition);
+ }
+
+
+5）（必选）处理器适配器（HandlerAdapter）配置，可以配置多个，主要是配置messageConverters，其主要作用是映射前台传参与handler处理方法参数。一般扩展RequestMappingHandlerAdapter，或者自定义。如果我们需要json请求的处理，这里必须扩展。同时我们需要注意的是日期格式的转换。
+
+Spring 4.2新特性，加之注解会自动注入@ControllerAdvice，可以定义RequestBodyAdvice、ResponseBodyAdvice，可以更方便地在参数处理方面着手自定义。
+<bean id="handlerAdapter"
+ class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+ <property name="order" value="-1" />
+ <property name="messageConverters">
+   <list>
+   <!-- <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" 
+     /> -->
+     <ref bean="mappingJacksonHttpMessageConverter" />
+   </list>
+ </property>
+ <property name="webBindingInitializer">
+   <bean
+     class="org.springframework.web.bind.support.ConfigurableWebBindingInitializer">
+     <property name="conversionService">
+       <!-- 针对普通请求(非application/json) 前台的日期字符串与后台的Java Date对象转化,
+       此情况,应使用spring 
+         mvc本身的内置日期处理 -->
+       <!-- 可以在VO属性上加注解：@DateTimeFormat 需要类库joda-time -->
+   <bean
+   class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+   </bean>
+     </property>
+   </bean>
+ </property>
+</bean>
+<!-- json请求(application/json)返回值Date转String，全局配置 -->
+<bean name="jacksonObjectMapper"
+ class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+ <property name="featuresToDisable">
+   <array>
+   <util:constant
+static-field="com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS" />
+   </array>
+ </property>
+ <!-- 如果想自定义，可以在VO属性上加注解：@JsonFormat(shape = JsonFormat.Shape.STRING, pattern 
+   = Consts.DATE_PATTERN.DATE_PATTERN_OBLIQUE,timezone = "GMT+8") -->
+ <property name="simpleDateFormat">
+   <value>yyyy-MM-dd HH:mm:ss</value>
+ </property>
+</bean>
+<!--避免IE执行Ajax时，返回JSON出现下载文件 -->
+<!-- 自定义 -->
+<bean id="mappingJacksonHttpMessageConverter"
+ class="io.flysium.framework.http.converter.json.CustomJackson2HttpMessageConverter">
+ <property name="objectMapper" ref="jacksonObjectMapper" />
+ <property name="supportedMediaTypes">
+   <list>
+     <value>text/html;charset=UTF-8</value>
+     <value>application/json;charset=UTF-8</value>
+   </list>
+ </property>
+</bean>
+
+
+6）（可选）处理器异常解析器（HandlerExceptionResolver）配置，可以配置多个，配置Controller异常抛出后，我们是怎么样处理的，一般需要日志或做反馈的可以自定义。
+
+7）（可选）请求到视图名翻译器（RequestToViewNameTranslator）配置，RequestToViewNameTranslator可以在处理器返回的View为空时使用它根据Request获得viewName。
+
+8）（可选）视图解析器（ViewResolver）配置，可以配置多个，定义跳转的文件的前后缀 ，视图模式配置，主要针对@Controller返回ModelAndView的视图路径解析，动给后面控制器的方法return的字符串 加上前缀和后缀，变成一个 可用的url地址 。
+<bean id="viewResolver"
+   class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+   <property name="prefix" value="/" />
+   <property name="suffix" value=".jsp" />
+   <property name="viewClass"
+     value="org.springframework.web.servlet.view.JstlView" />
+ </bean>
+
+最后给Controller加入组件扫描吧，这样减少xml配置，直接在Java代码中加入注解即可。
+<!-- 自动扫描类包，将标志Spring注解的类自动转化为Bean，同时完成Bean的注入 -->
+ <!-- 扫描控制器 -->
+ <context:component-scan base-package="io.flysium" use-default-filters="false">
+   <context:include-filter type="annotation" 
+     expression="org.springframework.stereotype.Controller" />
+   <context:include-filter type="annotation" 
+     expression="org.springframework.web.bind.annotation.RestController" />
+   <context:include-filter type="annotation" 
+     expression="org.springframework.web.bind.annotation.ControllerAdvice" />
+ </context:component-scan>

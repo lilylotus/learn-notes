@@ -1,0 +1,87 @@
+配置环境变量
+
+NLS_LANG
+AMERICAN_AMERICA.AL32UTF8 或 SIMPLIFIED CHINESE_CHINA.ZHS16GBK
+
+TNS_ADMIN
+D:\instantclient_11\network\ADMIN
+D:\app\sakura\product\11.2.0\dbhome_1\NETWORK\ADMIN
+
+-------------------------------------
+instantclient_11\network\ADMIN\tnsnames.ora
+APPORCL =
+(   DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 115.28.**.**)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = corcl)
+    )
+)
+
+APPORCL ：连接名，连接数据库的别名，可以自己起。
+HOST = 115.28.. ：host后面是数据库地址ip。
+SERVICE_NAME ：是数据库名（对应jdbc:oracle:thin:@10...**:1521:corcl）
+
+
+------------------------------------------------------------------------
+ORA817 =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = sun62)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVICE_NAME = ora817.huawei.com)
+    )
+  )
+
+INST1_HTTP =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = sun62)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = SHARED)
+      (SERVICE_NAME = ora817.huawei.com)
+      (PRESENTATION = http://admin)
+    )
+  )
+
+EXTPROC_CONNECTION_DATA =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = IPC)(KEY = EXTPROC))
+    )
+    (CONNECT_DATA =
+      (SID = PLSExtProc)
+      (PRESENTATION = RO)
+    )
+  )
+
+ADDRESS_LIST
+表示该客户机要经由多种协议与一台或多台服务器连接。
+在该样式文件中就表示该客户机要用TCP/IP协议来和服务器相连
+
+PROTOCOL
+指明要连接使用的协议
+
+SERVICE_NAME
+“SERVICE_NAME”就是“GlobalDatabase Name”，ORACLE8i数据库使用“GlobalDatabaseName”来唯一标识自己，通常的格式为“name.domain”，此处的值为“ora817.huawei.com”
+HOST        是TCP/IP协议使用的服务器IP地址
+PORT        是TCP/IP使用的端口地址
+SID         指定要连接的服务器上ORACLE数据库的ORACLE_SID
+SERVER=DEDICATED    表示用专用服务器连接ORACLE数据库。
+
+ora = //连接描述符名：ora
+    (description =  //描述
+        (address =  //网络地址之一
+            (protocol = tcp)  //网络协议（tcp表示TCP/IP协议）
+            (host = 129.9.114.22)  //服务器IP地址：129.9.114.22
+            (port = 1251)           //服务器端口号:1251
+        )
+       (connect_data =   //连接数据
+                (sid = ora7)    //数据库标识名：ora7
+                (SERVER = DEDICATED)
+                (SERVICE_NAME = ora9i)
+        )
+    )

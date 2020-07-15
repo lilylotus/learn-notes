@@ -1,0 +1,94 @@
+https://blog.csdn.net/qq_41701956/article/details/81664921
+
+内存分配是在 JVM 在内存分配的时候，新生代内存不足时，把新生代的存活的对象搬到老生代，然后新生代腾出来的空间用于为分配给最新的对象。
+这里老生代是担保人。在不同的GC机制下，也就是不同垃圾回收器组合下，担保机制也略有不同。
+在 Serial+Serial Old 的情况下，发现放不下就直接启动担保机制；
+在 Parallel Scavenge+Serial Old 的情况下，却是先要去判断一下要分配的内存是不是 >=Eden 区大小的一半，
+如果是那么直接把该对象放入老生代，否则才会启动担保机制
+
+-XX:+UseSerialGC (串行，客户端)
+-XX:+UseParallelGC (并行，服务端)
+
+===========================================================================
+JVM -XX:NewRatio、-XX:SurvivorRatio 参数含义
+-XX:NewRatio
+	- 新生代(eden + 2*s) 和老年代 (不包含永久区) 的比值
+	- 4 表示 新生代:老年代 = 1:4, 即年轻代占堆的 1/5
+-XX:SurvivorRatio
+	- 设置两个 Survivor 区和 eden 的比
+	- 8 表示两个 Survivor:eden = 2:8 即一个 Survivor 占年轻代的 1/10
+
+一般情况下该参数使用默认值即可，除非你在JVM优化领域有着非常丰富的经验。
+总之，尽可能最小化"短暂对象"移动到老年代的数量，同时最小化年轻代 GC 的次数和持续时间，
+要找到适当的折衷方案，首先要了解应用程序中对象年龄的分布情况
+
+Java Heap分为3个区
+1).Young（分为两个同等大小的survior区和一个eden区，JVM 默认分配内存大小为 survior：eden = 1 : 8, 可配置）
+2).Old (一个Old区，JVM默认分配内存大小为 Old：Young = 2:1, 可配置)
+3).Permanent
+Young保存刚实例化的对象。当该区被填满时，GC会将对象移到Old区，按照一定的算法,如 GC 超过15次后某一对象还存活，则会移动到 Old 区
+
+JVM规范
+JVM 规范对 Java 运行时的内存划定了几块区域，
+有: JVM栈（Java Virtual Machine Stacks）、堆（Heap）、方法区（Method Area）、
+常量池（Runtime Constant Pool）、本地方法栈（Native Method Stacks）
+但对各块区域的内存布局和地址空间却没有明确规定，而留给各JVM厂商发挥的空间。
+
+
+Eden Space：新生代Eden区内存使用情况
+(200.00M，34.125M): 31.52M，109 collections，612.827ms
+表示Eden区的最大容量为200M，当前容量为34.125M，当前已使用31.52M，
+从开始监控到现在在该内存区域一共发生了109次gc(Minor GC)，gc总耗时为612.827ms。
+===========================================================================
+经验
+1.年轻代大小选择
+1.1 响应时间优先的应用: 尽可能设大,直到接近系统的最低响应时间限制(根据实际情况选择).
+在此种情况下,年轻代收集发生的频率也是最小的同时,减少到达年老代的对象.
+1.2 吞吐量优先的应用: 尽可能的设置大,可能到达 Gbit 的程度,因为对响应时间没有要求,垃圾收集可以并行进行,一般适合 8CPU 以上的应用.
+1.3 避免设置过小,当新生代设置过小时会导致:
+    1.YGC 次数更加频繁 2.可能导致 YGC 对象直接进入旧生代,如果此时旧生代满了,会触发 FGC.
+
+===========================================================================
+
+客户端模式下的Serial+Serial Old
+2M + 2M + 2M + 4M
+D:\libs\jvm>java -jar -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:+UseSerialGC jvm.jar
+
+[GC (Allocation Failure) [DefNew: 7456K->689K(9216K), 0.0070131 secs] 7456K->6833K(19456K), 0.0093420 secs] [Times: user=0.00 sys=0.00, real=0.01 secs]
+Heap
+ def new generation   total 9216K, used 4868K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)
+  eden space 8192K,  51% used [0x00000000fec00000, 0x00000000ff014930, 0x00000000ff400000)
+  from space 1024K,  67% used [0x00000000ff500000, 0x00000000ff5ac788, 0x00000000ff600000)
+  to   space 1024K,   0% used [0x00000000ff400000, 0x00000000ff400000, 0x00000000ff500000)
+ tenured generation   total 10240K, used 6144K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)
+   the space 10240K,  60% used [0x00000000ff600000, 0x00000000ffc00030, 0x00000000ffc00200, 0x0000000100000000)
+ Metaspace       used 3084K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 337K, capacity 386K, committed 512K, reserved 1048576K
+  
+
+服务端模式（Parallel Scavenge+Serial Old的组合）
+2M + 2M + 2M + 4M
+D:\libs\jvm>java -jar -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:+UseParallelGC jvm.jar
+Heap
+ PSYoungGen      total 9216K, used 7620K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)
+  eden space 8192K, 93% used [0x00000000ff600000,0x00000000ffd71200,0x00000000ffe00000)
+  from space 1024K, 0% used [0x00000000fff00000,0x00000000fff00000,0x0000000100000000)
+  to   space 1024K, 0% used [0x00000000ffe00000,0x00000000ffe00000,0x00000000fff00000)
+ ParOldGen       total 10240K, used 4096K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)
+  object space 10240K, 40% used [0x00000000fec00000,0x00000000ff000010,0x00000000ff600000)
+ Metaspace       used 3083K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 337K, capacity 386K, committed 512K, reserved 1048576K  
+  
+2M + 2M + 2M + 3M
+D:\libs\jvm>java -jar -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:+UseParallelGC jvm.jar
+[GC (Allocation Failure) [PSYoungGen: 7456K->784K(9216K)] 7456K->6936K(19456K), 0.0281291 secs] [Times: user=0.03 sys=0.00, real=0.03 secs]
+[Full GC (Ergonomics) [PSYoungGen: 784K->0K(9216K)] [ParOldGen: 6152K->6832K(10240K)] 6936K->6832K(19456K), [Metaspace: 3078K->3078K(1056768K)], 0.0086581 secs] [Times: user=0.05 sys=0.00, real=0.01 secs]
+Heap
+ PSYoungGen      total 9216K, used 3154K [0x00000000ff600000, 0x0000000100000000, 0x0000000100000000)
+  eden space 8192K, 38% used [0x00000000ff600000,0x00000000ff914930,0x00000000ffe00000)
+  from space 1024K, 0% used [0x00000000ffe00000,0x00000000ffe00000,0x00000000fff00000)
+  to   space 1024K, 0% used [0x00000000fff00000,0x00000000fff00000,0x0000000100000000)
+ ParOldGen       total 10240K, used 6832K [0x00000000fec00000, 0x00000000ff600000, 0x00000000ff600000)
+  object space 10240K, 66% used [0x00000000fec00000,0x00000000ff2ac3a8,0x00000000ff600000)
+ Metaspace       used 3085K, capacity 4486K, committed 4864K, reserved 1056768K
+  class space    used 337K, capacity 386K, committed 512K, reserved 1048576K  

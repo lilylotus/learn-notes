@@ -1,0 +1,60 @@
+sshd -> openssh
+SSH 为 Secure Shell 的缩写
+SSH是一种网络协议，用于计算机之间的加密登录。
+SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安全性的协议
+第一种级别（基于口令的安全验证）
+第二种级别（基于密匙的安全验证）
+
+rpm -qa | grep ssh
+rpm -ql openssh
+rpm (-a, -f, -p, -l, -i)
+
+centos7.x 启动脚本 /usr/lib/systemd/system/xx.service
+1. SSH
+/usr/lib/systemd/system/sshd.service 启动脚本
+/etc/ssh/ssh_config     客户端配置文件
+/etc/ssh/sshd_config    服务端配置文件
+
+command :
+-p port
+-l userName
+ssh 192.168.40.182 默认以 root 登录，端口 22
+ssh ssh@192.168.40.182      普通用户登录
+
+1. 日志
+/etc/rsyslog.conf
+authpriv.*                                              /var/log/secure
+sshd : SyslogFacility AUTHPRIV
+
+Port 22
+ListenAddress 0.0.0.0
+SyslogFacility AUTHPRIV
+LoginGraceTime 2m // 允许登录停留时间，无单位默认为秒
+PermitRootLogin no
+PasswordAuthentication yes
+PermitEmptyPasswords no
+LoginGraceTime 2m
+PrintMotd yes // 登录成功提示， /etc/motd 内容
+PrintLastLog yes // 显示上次登录时间
+UsePrivilegeSeparation sandbox // 系统安全，仅获取登录用户的权限
+
+-UseDNS no   // 判断客户端来源是否正常
+-GSSAPIAuthentication no // 二者必须同时修改
+
+// 公钥登录
+RSAAuthentication yes
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+-----------------------------------------
+
+密钥 sshd 认证
+ssh-keygen 生成密钥 .ssh/id_rsa  .ssh/id_rsa.pub
+公钥发布：ssh-copy-id -i 本地位置
+ssh-copy-id -i /root/.ssh/id_rsa.pub ssh@192.168.40.182
+注意： 是服务器的公钥传给要登录的客户端
+
+
+-------------------------------------------
+远程拷贝
+scp /etc/passwd root@192.168.40.180:/tmp
+scp root@192.168.40.180:/tmp/scp.txt ./

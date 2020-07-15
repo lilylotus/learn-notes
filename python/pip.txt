@@ -1,0 +1,44 @@
+https://pypi.python.org/pypi/pip/9.0.1
+
+1. pip安装
+# tar -xzvf pip-9.0.1.tar.gz 
+# cd pip-9.0.1.tar.gz 
+# python setup.py install
+
+----------------------------------------------------
+2. pip <command> [options]
+
+Commands:
+  install                     Install packages.
+  download                    Download packages.
+  uninstall                   Uninstall packages.
+  freeze                      Output installed packages in requirements format.
+  list                        List installed packages.
+  show                        Show information about installed packages.
+  check                       Verify installed packages have compatible dependencies.
+  search                      Search PyPI for packages.
+  wheel                       Build wheels from your requirements.
+  hash                        Compute hashes of package archives.
+  completion                  A helper command used for command completion.
+  help                        Show help for commands.
+
+2.1  pip安装包
+# pip install SomePackage
+
+2.2 pip查看已安装的包
+# pip show --files SomePackage
+
+2.3 pip检查哪些包需要更新
+# pip list --outdated
+
+# pip list --format=legacy[columns, freeze, json]
+  -o, --outdated              List outdated packages
+  -u, --uptodate              List uptodate packages
+  -e, --editable              List editable projects
+
+2.4 pip升级包
+# pip install --upgrade SomePackage
+
+2.5 pip卸载包
+# pip uninstall SomePackage
+

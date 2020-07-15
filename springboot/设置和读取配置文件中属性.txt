@@ -1,0 +1,67 @@
+1. 配置文件application.properties
+修改端口号
+#端口号
+server.port=8089
+
+spring.profiles.active=dev  -->  指定使用application-dev.properties文件进行配置
+
+注意：application.properties中的各个参数之间也可以直接引用来使用
+demo.name=demo
+demo.age=12
+demo.say=你好${demo.name}年龄${demo.age}
+
+-------------------------------------------------------------------
+1. 手动注入值
+@Value() + @PropertySource()
+
+2. 自动装配
+@ConfigurationProperties() + @PropertySource()
+
+-------------------------------------------------------------------
+配置文件属性的读取
+1. @PropertySource配置文件路径设置
+多配置文件引用，若取两个配置文件中有相同属性名的值，则取值为最后一个配置文件中的值
+@PropertySource({"classpath:config/my.properties","classpath:config/config.properties"})
+public class TestController {
+    @Value("${my.name}")
+    private String myName;
+}
+
+2. 对象映射方式读取
+首先建立对象与配置文件映射关系
+方法中使用自动注入方式，将对象注入，调用get方法获取属性值
+注意：新版本的@ConfigurationProperties没有了location属性，使用@PropertySource来指定配置文件位置
+prefix=”obj”指的是配置文件中的前缀，如obj.name，在定义对象属性名时为private String name;
+读取配置文件中的集合时，使用List来接收数据，但List必须先实例化
+@Controller
+@RequestMapping("/testController")
+@PropertySource({"classpath:config/my.properties","classpath:config/config.properties"})
+public class TestController {
+    //在application.properties中的文件，直接使用@Value读取即可，applicarion的读取优先级最高
+    @Value("${my.name}")
+    private String myName;
+    //如果多个文件有重复的名称的属性话，最后一个文件中的属性生效
+    @Value("${my.name1}")
+    private String myName1;
+    @Value("${my.name2}")
+    private String myName2;
+    @Autowired
+    ObjectProperties objectProperties;
+
+#自定义属性读取
+obj.name=obj.name
+obj.age=obj.age
+obj.className[0]=obj.className[0]
+obj.className[1]=obj.className[1]
+
+@Component
+@PropertySource("classpath:config/object.properties")
+@ConfigurationProperties(prefix="obj")
+public class ObjectProperties {
+    private String name;
+    private String age;
+    //集合必须初始化，如果找不到就是空集合，会报错
+    private List<String> className = new ArrayList<String>();
+
+
+

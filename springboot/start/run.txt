@@ -1,0 +1,28 @@
+Maven : mvn spring-boot:run
+gradle : gradlew bootRun
+
+==============================================
+一. 启动原理
+@SpringBootApplication 注解等于下三个注解结合：
+@Configuration（ @SpringBootConfiguration 点开查看发现里面还是应用了 @Configuration ）
+@EnableAutoConfiguration
+@ComponentScan
+
+1. @Configuration
+JavaConfig 形式的 Spring IoC 容器的配置类使用的那个 @Configuration
+Spring容器中为了简化XMl配置，允许使用 JavaConfig 注册一个 Bean
+使用 @Configuration 每个拥有注解 @Bean 的函数的返回值，都将会在SPring启动时候注册到容器中，可以使用自动装配
+
+1.1 @EnableAutoConfiguration  -> @Import(EnableAutoConfigurationImportSelector.class)
+借助 @Import 的支持，收集和注册特定场景相关的 bean 定义，将所有符合自动配置条件的 bean 定义加载到 IoC 容器
+最关键的要属 @Import(EnableAutoConfigurationImportSelector.class)，
+借助 EnableAutoConfigurationImportSelector, @EnableAutoConfiguration 帮助 SpringBoot 应用
+将所有符合条件的 @Configuration 配置都加载到当前 SpringBoot 创建并使用的 IoC 容器，就跟一只"八爪鱼"一样
+借助于 Spring 框架原有的一个工具类：SpringFactoriesLoader 的支持，
+@EnableAutoConfiguration可以“智能”地自动配置功效才得以大功告成！ 
+
+SpringBoot的autoconfigure 依赖包中的 META-INF/spring.factories 配置文件
+@EnableAutoConfiguration 自动配置的魔法其实就变成了：从 classpath 中搜寻所有META-INF/spring.factories 配置文件
+并将其中 org.spring-framework.boot.autoconfigure.EnableAutoConfiguratio n对应的配置项通过
+反射（Java Reflection）实例化为对应的标注了 @Configuration的JavaConfig 形式的IoC容器配置类，
+然后汇总为一个并加载到IoC容器

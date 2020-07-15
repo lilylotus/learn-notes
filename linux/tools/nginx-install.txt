@@ -1,0 +1,18 @@
+yum -y install make zlib zlib-devel gcc-c++ libtool  openssl openssl-devel
+wget https://downloads.sourceforge.net/project/pcre/pcre/8.42/pcre-8.42.tar.gz
+tar -zx -f pcre-8.42.tar.gz -C /usr/local/src/
+cd /usr/local/src/pcre-8.42
+make && make install
+pcre-config --version
+
+wget http://nginx.org/download/nginx-1.14.0.tar.gz
+tar -zx -f nginx-1.14.0.tar.gz -C /usr/local/src/
+cd /usr/local/src/nginx-1.14.0
+./configure --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --with-pcre=/usr/local/src/pcre-8.42
+make && make install
+/usr/local/nginx/sbin/nginx -v
+
+nginx/sbin/nginx -t                   # 检查配置文件nginx.conf的正确性
+nginx/sbin/nginx -s reload            # 重新载入配置文件
+nginx/sbin/nginx -s reopen            # 重启 Nginx
+nginx/sbin/nginx -s stop              # 停止 Nginx

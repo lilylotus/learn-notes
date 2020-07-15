@@ -1,0 +1,25 @@
+Java中Class类的getResource()和getResourceAsStream()方法的使用
+
+获取配置文件的方法
+1. File file = new File("c:/test.txt");
+2. File file1 = new File(Test.class.getResource("/com/file1.txt").getFile());
+3. File file4 = new File(Test.class.getResource("/file2.txt").getFile());
+示例:
+3. StringTest.class.getResource("application.properties").getFile());
+4. StringTest.class.getResource("/application.properties").getFile());
+5. StringTest.class.getClassLoader().getResource("cn/nihility/test/application.properties").getFile());
+6. StringTest.class.getClassLoader().getResource("application.properties").getFile());
+// -> 3. /E:/codingdir/oxygen-jee/dailycoding/bin/cn/nihility/test/application.properties
+// -> 4. /E:/codingdir/oxygen-jee/dailycoding/bin/application.properties
+// -> 5. /E:/codingdir/oxygen-jee/dailycoding/bin/cn/nihility/test/application.properties
+// -> 6. /E:/codingdir/oxygen-jee/dailycoding/bin/application.properties
+
+注意： Test.class.getResource(); 没有加 "/" 是获取当前类路径, 加了 "/" 是获取根目录开始
+    Test.class.getClassLoader().getResource() 也是同理, 但是不用加 "/" (cn/test/test.txt 或者 test.txt)
+
+当传入的参数是没有 "/" 的时候，获取的是当前类所在包下的对应文件。
+而当参数带有 "/" ，则是从ClassPath根目录下获取文件。
+该方法的本质其实只是通过传入path构造一个绝对路径，最终还是由ClassLoader获取资源。
+
+还有一个 getResourceAsStream() 方法，参数是与 getResouce() 方法是一样的，
+它相当于你用getResource()取得File文件后，再 new InputStream(file) 获取到输入流。

@@ -1,0 +1,65 @@
+上传 jar 到自己的私服：
+mvn deploy:deploy-file -DgroupId=cn.nihility.nexus -DartifactId=ojdbc6 -Dversion=6.0.2-RELEASE -Dpackaging=jar -Dfile=D:\ojdbc6.jar -Durl=http://localhost:50000/repository/third-part/ -DrepositoryId=third-part
+
+-DgroupId       对应<groupId>
+-DartifactId    对应<artifactId>
+-Dversion       版本
+-Dpackaging     对应<version>
+-Dfile          本地jar包所在路径，注意，jar包名字不要有版本号
+-Durl           创建的仓库地址
+-DrepositoryId  仓库的id，创建时候起的名字
+
+==============================================================
+POM 配置：
+<distributionManagement>
+    <!-- 两个ID必须与 setting.xml中的<server><id>nexus-releases</id></server>保持一致-->
+    <repository>
+        <id>nexus-releases</id>
+        <name>Nexus Release Repository</name>
+        <url>http://localhost:50000/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+        <id>nexus-snapshots</id>
+        <name>Nexus Snapshot Repository</name>
+        <url>http://localhost:50000/repository/maven-snapshots/</url>
+    </snapshotRepository>
+</distributionManagement>
+
+
+setting 配置 :
+<server>
+  <id>nexus-snapshots</id>
+  <username>admin</username>
+  <password>admin123</password>
+</server>
+<server>
+  <id>nexus-releases</id>
+  <username>admin</username>
+  <password>admin123</password>
+</server>
+--------------------------------------
+<mirror>
+    <id>nexus-releases</id>
+    <name>nexus-releases</name>
+    <url>http://localhost:50000/repository/maven-releases/</url>
+    <mirrorOf>*</mirrorOf>
+</mirror>
+<mirror>
+    <id>nexus-snapshots</id>
+    <name>nexus-snapshots</name>
+    <url>http://localhost:50000/repository/maven-snapshots/</url>
+    <mirrorOf>*</mirrorOf>
+</mirror>
+<mirror>
+    <id>nexus-public</id>
+    <name>nexus-public</name>
+    <url>http://localhost:50000/repository/maven-public/</url>
+    <mirrorOf>central</mirrorOf>
+</mirror>
+<mirror>
+    <id>alimaven</id>
+    <name>aliyun maven</name>
+    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+    <mirrorOf>central</mirrorOf>       
+</mirror>
+

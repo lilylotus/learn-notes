@@ -1,0 +1,34 @@
+CHAR    固定长度字符串     最大长度2000bytes   　
+VARCHAR2    可变长度的字符串,   最大长度4000bytes   可做索引的最大长度749
+NCHAR   根据字符集而定的固定长度字符串     最大长度2000bytes   　
+NVARCHAR2   根据字符集而定的可变长度字符串     最大长度4000bytes   　
+DATE    日期（日-月-年）   DD-MM-YY(HH-MI-SS),经过严格测试，无千虫问题     　
+TIMESTAMP   日期（日-月-年）   DD-MM-YY(HH-MI-SS:FF3),经过严格测试，无千虫问题     与DATE相比较，TIMESTAMP有小数位秒信息
+LONG    超长字符串   最大长度2G,足够存储大部头著作    　
+RAW     固定长度的二进制数据  最大长度2000bytes   可存放多媒体图象声音等
+LONG RAW    可变长度的二进制数据  最大长度2G  可存放多媒体图象声音等
+BLOB    二进制数据   最大长度4G  　
+CLOB    字符数据    最大长度4G  　
+NCLOB   根据字符集而定的字符数据    最大长度4G  　
+BFILE   存放在数据库外的二进制数据   最大长度4G  　
+ROWID   数据表中记录的唯一行号     10bytes     ********.****.****格式，*为0或1
+NROWID  二进制数据表中记录的唯一行号  最大长度4000bytes   　
+NUMBER(P,S)     数字类型    P为整数位，S为小数位     　
+DECIMAL(P,S)    数字类型    P为整数位，S为小数位     　
+INTEGER     整数类型    小的整数    　
+FLOAT   浮点数类型   NUMBER(38)，双精度  　
+REAL    实数类型    NUMBER(63)，精度更高
+
+---------------------------------------------------------------------------
+CHAR(n)     n -> 1 to 2000(字节)
+VARCHAR2(n) n -> 1 to 4000(字节)
+NUMBER(m, n)
+    NUMBER(n) : 表示整数，可以使用INT
+    NUMBER(n,m) : m小数位，n-m整数位，也可用FLOAT
+DATE 日期类型无毫秒，无时间
+TIME 包含时间，无日期
+TIMESTAMP 日期、时间、含毫秒
+CLOB    大量的文字
+BLOB    二进制文件
+
+常用类型： VARCHER2,NUMBER,DATE,CLOB

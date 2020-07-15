@@ -1,0 +1,57 @@
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+</properties>
+
+<build>
+    <plugins>
+        <!-- 编译插件 -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.0</version>
+            <configuration>
+                <source>${maven.compiler.source}</source>
+                <target>${maven.compiler.target}</target>
+                <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+        </plugin>
+
+        <!-- 包含第三方 jar 包 -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>2.4.3</version>
+            <executions>
+                <execution>
+                    <!-- 与阶段相互绑定 -->
+                    <phase>package</phase>
+                    <goals>
+                        <!-- 指定目标 -->
+                        <goal>shade</goal>
+                    </goals>
+                    <!-- 可执行的 jar 打包 META-INF/MANIFEST-MAF -->
+                    <configuration>
+                        <transformers>
+                            <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <manifestEntries>
+                                    <Main-Class>cn.lifecycle.jmeter.lambdadrill.ApiSampler</Main-Class>
+                                    <X-Compile-Source-JDK>${maven.compile.source}</X-Compile-Source-JDK>
+                                    <X-Compile-Target-JDK>${maven.compile.target}</X-Compile-Target-JDK>
+                                </manifestEntries>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+</properties>

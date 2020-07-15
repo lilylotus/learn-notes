@@ -1,0 +1,55 @@
+一. Install
+github: https://github.com/docker/compose/releases
+
+yum install -y py-pip python-dev libffi-dev openssl-dev gcc libc-dev make
+
+chmod +x /usr/local/bin/docker-compose
+
+docker-compose --version
+
+
+在Compose中有两个重要的概念：
+服务（service）：一个应用的容器，实际上可以包括若干运行相同镜像的容器实例。
+项目（project）：由一组关联的应用容器组成的一个完成业务单元，在 docker-compose.yml 中定义。
+以上可以理解为：
+服务（service）就是在它下面可以定义应用需要的一些服务，代表配置文件中的每一项服务。
+每个服务都有自己的名字、使用的镜像、挂载的数据卷、所属的网络、依赖哪些其他服务等等，即以容器为粒度，用户需要 Compose 所完成的任务。
+
+项目（project）代表用户需要完成的一个项目，即是Compose的一个配置文件可以解析为一个项目，
+即 Compose 通过分析指定配置文件，得出配置文件所需完成的所有容器管理与部署操作。
+Compose的默认管理对象时项目，通过子命令对项目中的一组容器进行便捷地生命周期管理。
+
+2. 基本使用命令 | docker-compose [-f <arg>...] [options] [COMMAND] [ARGS...]
+3. docker Compose 文件: 默认名称: docker-compose.yml
+Docker Compose的模板文件主要分为3个区域，为：
+services
+服务，在它下面可以定义应用需要的一些服务，每个服务都有自己的名字、使用的镜像、挂载的数据卷、所属的网络、依赖哪些其他服务等等
+volumes
+数据卷，在它下面可以定义的数据卷（名字等等），然后挂载到不同的服务下去使用。
+networks
+应用的网络，在它下面可以定义应用的名字、使用的网络类型等等。
+
+注意：每个服务都必须通过 image 指令指定镜像或 build 指令（需要Dockerfile）等来自动构建生成镜像
+如果使用 build 指令，在 Dockefile 中设置的选项
+（例如：CMD、EXPOSE、VOLUME、ENV等）将会自动被获取，无需在docker-compose.yml中再次设置
+
+4. 常用命令
+docker-compose up [-d] | 开启服务, -d 守护进程方式启用
+docker-compose start | stop [name]  | 停止或者开启服务
+docker-compose rm [name] | -f 停止服务,不会删除应用的网络和数据卷
+docker-compose down    | 删除数据卷、网络、应用
+
+============================================
+二. start using
+1. vim app.py
+1.1 create requirement.txt
+2. vim Dockerfile
+3. vim docker-compose.yml
+4. run : docker-compose up
+
+
+三. docker-compose 其他命令
+1. 后台运行: docker-compose up -d
+2. 查看当前运行: docker-compose ps
+3. 仅运行一个 services: docker-compose run web env
+4. 停止: docker-compose stop

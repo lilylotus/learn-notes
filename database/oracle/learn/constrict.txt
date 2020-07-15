@@ -1,0 +1,23 @@
+　　　　非空约束 　　　　NN_表名_列名 
+　　　　唯一约束 　　　　UK_表名_列名
+　　　　主键约束 　　　　PK_表名
+　　　　外键约束 　　　　FK_表名_列名
+　　　　条件约束 　　　　CK_表名_列名
+　　　　默认约束 　　　　DF_表名_列名
+外键约束
+ALTER TABLE childTable
+ADD CONSTRAINT FK_xxxx_xxx
+FOREIGH KEY(columnName)
+REFERENCES parentTalbe(primaryKeyColumn) [ON DELETE CASCADE|SET NULL];
+
+ON DELETE SET NULL子句：当主表中的一行数据被删除时，Oracle系统会自动地将所有从表中依赖于它的数据记录的外键改成空值；
+ON DELETE CASCADE：当主表中的一行数据被删除时，Oracle系统会自动地将所有从表中依赖于它的数据记录删除；
+
+外键约束对DML与DDL的影响：
+INSERT：只有操作是在子表或从表这一端时才会产生违反引用完整性约束的问题，父表则不然。
+DELETE：只有操作是在父表或主表这一端时才会产生违反引用完整性约束的问题，子表则不然。
+UPDATE：子表父表直接操作都会违反引用完整性约束。两种解决方法：
+1）先更新子表的引用列为空，再更新父表的主键的列的值，然后把子表的引用列更新成新的父表的值；
+2）使用ON DELETE SET NULL，先更新父表，然后将子表外键为空的记录更新为新的值。
+DDL语句：DROP TABLE与TRUNCATE TABLE，操作父表，违反引用完整性约束，子表则不然。
+

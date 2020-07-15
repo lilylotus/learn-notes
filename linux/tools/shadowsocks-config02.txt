@@ -1,0 +1,73 @@
+apt install shadowsocks
+pip install shadowsocks
+
+shadowsocks软件包附带两个命令
+ssserver 服务端配置
+sslocal 客户端配置
+
+shadowsocks有两种配置方法，一种是命令行参数配置，一种是配置文件。
+-s  服务器地址
+-p  服务器端口号
+-k  服务器密码
+-m  服务器加密方式
+-t  服务器超时时间
+-c  配置文件路径
+–fast-open  快速打开模式，仅Unix/Linux系统可用
+–workers    工作者数量
+
+{
+    "server":"my_server_ip",
+    "server_port":8388,
+    "local_address": "127.0.0.1",
+    "local_port":1080,
+    "password":"mypassword",
+    "timeout":300,
+    "method":"aes-256-cfb",
+    "fast_open": false
+}
+
+rc4-md5
+服务器地址就写服务器的ip地址，不要写127.0.0.1。端口号可以自己写，但是不要占用其他服务的端口。
+本地地址和本地端口是客户端使用的，服务端可以不用理会。
+密码尽量采用复杂一点的密码，以保证安全性。加密方式使用aes-256-cfb就可以了。
+如果服务器是Linux系统的话，打开fast_open。
+
+ssserver -c /etc/shadowsocks.json -d start
+ssserver -c /etc/shadowsocks.json -d stop
+以上都是在root用户下运行的。以root方式运行可能会有一些安全问题。
+一般都是使用普通用户运行：
+ssserver -c /etc/shadowsocks.json --user nobody -d start
+ssserver -c /etc/shadowsock.json --user shadowscoks --pid-file /tmp/ss1.pid --log-file /var/log/shadowsock.log -d start
+/var/log/shadowsocks.log
+----------------------------------------
+调整内核参数
+尽可能重用连接和端口号,尽可能增大队列和缓冲区，高延迟和高流量选择合适的TCP拥塞算法
+
+/etc/sysctl.conf
+
+fs.file-max = 51200
+
+net.core.rmem_max = 67108864
+net.core.wmem_max = 67108864
+net.core.netdev_max_backlog = 250000
+net.core.somaxconn = 4096
+
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_tw_recycle = 0
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_keepalive_time = 1200
+net.ipv4.ip_local_port_range = 10000 65000
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_fastopen = 3
+net.ipv4.tcp_mem = 25600 51200 102400
+net.ipv4.tcp_rmem = 4096 87380 67108864
+net.ipv4.tcp_wmem = 4096 65536 67108864
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_congestion_control = hybla
+
+sysctl -p 重载配置
+
+---------------------------------
+yum install -y python-setuptool

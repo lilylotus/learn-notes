@@ -1,0 +1,13 @@
+@EnableCaching  开启缓存功能，放在配置类或启动类上
+@CacheConfig    缓存配置，设置缓存名称
+@Cacheable  执行方法前先查询缓存是否有数据。有则直接返回缓存数据；否则查询数据再将数据放入缓存
+@CachePut   执行新增或更新方法后，将数据放入缓存中
+@CacheEvict 清除缓存
+@Caching    将多个缓存操作重新组合到一个方法中
+
+radis
+opsForValue()   操作简单属性的数据
+opsForList()    操作含有 list 的数据
+opsForSet() 操作含有 set 的数据
+opsForZSet()    操作含有 zset 的数据
+opsForHash()    操作含有 hash 的数据

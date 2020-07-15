@@ -1,0 +1,103 @@
+proxy_pass http://backup/;
+proxy_pass定义的末尾没有指定URI，意味着客户端发送的URI请求会被原样发送给上游。
+当加上了 / ，相当于是绝对根路径，nginx 不会把location 中匹配的路径部分代理走;
+如果没有/，则会把匹配的路径部分也给代理走。
+
+location ^~ /static/ {
+    proxy_pass http://www.test.com/; # 只要proxy_pass后面有东西就不带location中的东西 http://backup/
+}
+# location中的匹配路径为/static/。加了/之后proxy_pass 不会加上/static/ (匹配URI)
+# curl http://localhost:3000/static/index.html
+# proxy_pass 转发为 http://www.test.com/index.html
+
+location ^~ /static/ {
+    proxy_pass http://www.test.com; # 带上location中的东西
+}
+# location中的匹配路径为/static/。不加 / 后proxy_pass会加上 /static/
+# curl http://localhost:3000/static/index.html
+# proxy_pass 转发为 http://www.test.com/static/index.html
+
+2. 用在 location 的正则匹配中的坑
+location 中 ~ （区分大小写）与 ~* （不区分大小写）标识均为正则匹配，想在这里用的话，
+则 proxy_pass 中的 http://backup; 后面不能带有url。
+
+location ~* /static/(.*) {
+    proxy_pass http://www.test.com/test; # 此处 location 为正则匹配，proxy_pass 后面不能有 /test
+}
+如果 http://backup; 不带url, 这么写是没有问题的
+location ~* /static/(.*) {
+    proxy_pass http://www.test.com; # 此处 location 为正则匹配，proxy_pass 后面不能有 /test
+}
+
+3. rewrite 重写后的 url 会忽略proxy_pass后路径
+
+------------------------------------
+proxy_http_version # proxy_http_version 1.0 | 1.1; 设置代理的HTTP协议版本。默认版本1.0
+proxy_method #转发到代理服务器的请求中使用的HTTP方法，不是客户端请求的方法。参数值可以包含变量
+
+------------------------------------
+1. 更改负载均衡算法
+我们可以在upstream内容块中使用如下条目或标识（flag）以更改负载均衡算法：
+round robin ：默认生效的算法，队列中的服务器按次序接收请求。
+least_conn ： 新请求被发送给当前活动连接数最少的服务器。对于长连接较多的场景，这个算法比较合适。
+ip_hash ：根据客户端的IP地址分发请求。IP地址中的前三位作为决定分发目标的键值。其结果是来自同一个客户端的请求更容易被同一台服务器处理，这对于需要会话一致性的场景比较合适。
+hash ：主要用于memcached代理。服务器们按照一个用户指定的哈希键值被分组，该键值可以是纯文本、变量或两者的组合。这是唯一一个需要用户提供数据的负载均衡算法。
+
+upstream backend_hosts {
+    least_conn;
+    # hash $remote_addr$remote_port consistent;
+    server host1.example.com weight=3;
+    server host2.example.com;
+    server host3.example.com;
+}
+
+2. 用缓冲解放后端
+代理过程中，有两个连接的速度会影响客户端体验：
+从客户端到Nginx的连接
+从Nginx到后端的连接
+
+proxy_buffering：控制本内容块下（包括子内容块）是否启用缓冲，默认为“on”。
+proxy_buffers：有两个参数，第一个控制缓冲区请求数量，第二个控制缓冲区大小。默认值为8个、一页（一般是4k或8k）。这个值越大，缓冲的内容越多。
+proxy_buffer_size：后端回复结果的首段（包含header的部分）是单独缓冲的，本条目定义这部分的缓冲区大小。这个值默认与proxy_buffer的值相同，我们可以把它设置的小一些，因为header内容一般比较少。
+proxy_busy_buffers_size：设置被标记为“client-ready”（客户端就绪）的缓冲区大小。客户端一次只能从一个缓冲读取数据，而缓冲是按照队列次序被分批发送给客户端的。本条目设置的值就是这个队列的大小。
+proxy_max_temp_file_size：每个请求可以存储临时文件的最大大小。如果上游发来的结果太大以至于无法放入一个缓冲，则Nginx会为其创建临时文件。
+proxy_temp_path：定义Nginx存储临时文件的路径
+
+# proxy_buffers 和 proxy_buffer_size 值得调整一下
+
+# http context
+proxy_buffering on;
+proxy_buffer_size 1k;
+proxy_buffers 24 4k;
+proxy_busy_buffers_size 8k;
+proxy_max_temp_file_size 2048m;
+proxy_temp_file_write_size 32k;
+
+注意： 缓冲功能禁用时，只有proxy_buffer_size配置项可用：
+
+3. 代理缓存的配置
+# http context
+proxy_cache_path /var/lib/nginx/cache levels=1:2 keys_zone=backcache:8m max_size=50m;
+proxy_cache_key "$scheme$request_method$host$request_uri$is_args$args";
+proxy_cache_valid 200 302 10m;
+proxy_cache_valid 404 1m;
+
+# server context
+location /proxy-me {
+    proxy_cache backcache;
+    proxy_cache_bypass $http_cache_control;
+    add_header X-Proxy-Cache $upstream_cache_status;
+    proxy_pass http://backend;
+}
+
+sudo mkdir -p /var/lib/nginx/cache
+sudo chown www-data /var/lib/nginx/cache
+sudo chmod 700 /var/lib/nginx/cache
+
+levels=参数定义了缓存区的分类方法。根据上面的设置，Nginx会基于一个键值（在下面有定义）哈希生成一个缓存键（cache key），该键的最后一个字母作为一级目录名，倒数第二、三个字母作为二级目录名。这主要是方便Nginx快速索引内容，我们不需要太关注。
+
+keys_zone=参数定义了缓冲区的命名，我们在此命名为backcache。我们还在这里定义了要存储的元数据大小，即8 MB的键值。每个MB能够存储差不多8000条内容。max_size参数设置了实际缓存数据的大小。
+
+我们还用到了一个proxy_cache_key条目，该条目定义了一个键值，即上述用于区分目录用的键值。通过该键值，Nginx可以判断一个客户端请求需要的内容是否可以直接从缓存里找给它。对于这个键值，我们用scheme（http或https）、HTTP请求方式、host和URI的组合来创建。
+
+proxy_cache_valid条目可以多次设置，用于配置缓存保存的时间，时间长短取决于状态码（status code）。我们在这里为success（200 成功）和redirect（302 转发）保存10分钟的缓存，并且每分钟将404的缓存清理过期。

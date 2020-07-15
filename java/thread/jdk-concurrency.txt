@@ -1,0 +1,93 @@
+一. synchronized, Object.wait(), Object.notify() 的替代，重入锁
+java.util.concurrent.locks.ReentrantLock
+lock(), unlock()
+开发人员必须手动的指定何时加锁和何时解锁，所以重入锁对逻辑的控制灵活性要远远好于 synchronized
+但是要注意，在退出临界区时必须手动的释放锁，否则其他线程没有机会访问临界区了。
+之所以叫重入锁是因为这种锁可以重复进入，但是得相应的解锁，且仅限于一个线程。
+但是释放次数多了就会抛出 IllegalMonitorStateException 异常。
+
+1. 中断响应
+对于 synchronized 来说，若一个线程等待锁，结果就只有两种情况，要么获得此锁继续执行，
+要么保持等待。而重入锁可以被中断，也就是在等待锁的过程当中依据需要取消对锁的请求。
+
+lock1.lockInterruptibly();
+if (lock1.isHeldByCurrentThread()) { lock1.unlock(); }
+
+2. 锁申请等待限时
+得不到锁一定时间后自动放弃。
+lock.tryLock(5, TimeUnit.SECONDS) ： 最多等待 5 秒，超过后还未得到锁，返回 false
+lock1.tryLock() ： 未得到锁，返回 false，不会造成死锁。
+
+3. 公平锁
+会按照时间的先后顺序，保证先到先得。 synchronized 是非公平锁。
+ReentrantLock 默认是非公平锁。
+ReentrantLock(boolean fair); true : 公平， false : 非公平
+
+总结：
+lock() : 获得锁，若锁被占用则等待。
+lockInterruptibly() : 获得锁，但是有先响应中断。
+tryLock() : 尝试获取锁，若成功返回 true，失败返回 false，不等待立即返回
+tryLock(long time, TimeUnit unti) :
+unlock() : 释放锁
+
+3.1. 原子状态，原子状态使用 CAS 操作来存储当期锁的状态，判断是否已经被别的线程持有
+3.2. 等待队列，所有没有请求到锁的线程，会进入等待队列进行等待，若有线程释放则从队列中唤醒一个线程继续工作。
+3.3. 阻塞原语 park() 和 unpark(),用来挂起和恢复线程，没有得到锁的线程会被挂起。
+
+4. 重入锁的 ： condition 条件
+(Object.wait() 和 Object.nofity() 配合 synchronized 使用) 类似
+Lock 接口的 newCondition 生成与当期重入锁绑定的 Condition， 可在适当的时候等待或通知。
+
+await() 使当期线程等待，同事释放当期锁，当其他线程使用 signal() 或 signalAll() 线程会重新获得锁并继续执行，或当线程中断也可跳出等待。
+awaitUninterruptibly() 和await() 类似，不会在等待过程中响应中断。
+signal() 唤醒一个等待线程
+
+注意：和 Object.await() 和 notify() 一样，当线程使用 Condition.await() 时，要求线程持有相关的重入锁。在 Condition.await() 调用后，此线程会释放此锁，当 signal() 调用后，系统会从当前线程中唤醒一个等待线程，一旦线程被唤醒就会尝试获取与之绑定的重入锁，成功获取就会继续执行。
+
+5. 允许多线程同时访问，(信号量 Semaphore)
+synchorized 和 ReentrantLock 一次都仅允许一个线程访问一个资源，而信号量则可以指定多个线程
+同时访问一个资源。
+public Semaphore(intn permits);
+public Semaphore(int permits, boolean fair);
+
+public void acquire()
+public void acquireUninterruptibly()
+public boolean tryAcquire()
+public boolean tryAcquire(long timeout, TimeUnit unit)
+public void release()
+
+acquire() 会尝试获取一个准入许可，若无法获得则线程会等待，直到一个线程释放许可或中断。
+release() 线程访问资源后释放该许可。
+
+6. ReadWriteLock 读写锁(读写分离锁)
+可以有效的减少锁竞争提高系统性能。
+锁分离机制 ：
+读-读： 不互斥，不互相阻塞
+读-写： 读阻塞写，写也会阻塞读
+写-写：写写阻塞
+
+Lock lock = new ReentrantLock();
+ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+Lock readLock = readWriteLock.readLock();
+Lock writeLock = readWriteLock.writeLock()
+
+7. 倒计时器 ：  CountDownLatch (倒计数门闩)
+countDown() --> await() --> begin running
+
+8. 循环栅栏　CyclicBarrier  (另一种多线程并发控制工具)
+计数器可以反复使用，仅当凑齐指定计数器个数的线程后，计数器会归零执行，然就再次计数。
+
+CyclicBarrier.await() 方法可能抛出两个异常，
+InterruptedException,等待中线程被中断，这是非常通用的异常。
+特有的 BrokerBarrierException，一旦遇到此异常表示当前 CyclicBarrier 已经被损坏了，
+系统能没有办法等待所以线程到齐，因此就此散伙。
+
+10. 线程阻塞工具类： LockSupport
+可在线程内任意位置让线程阻塞，弥补了 Thread.suspend() 由于 resume() 在之前导致线程无法继续执行的情况，和 Object.await() 相比，不需要获得某个对象的锁也不会抛出 InterruptedException 异常。
+
+静态方法： park() 可以阻塞当前线程， parkNanos(), parkUntil() 等实现了有限等待。
+不论 park() 或 unpark() 谁在前谁在后，都不会导致线程被永久挂起。
+因为 LockSupport 使用了类似信号量的机制，为每个线程准备了一个许可，若许可可用那么 park() 会立即返回，并且消费掉此许可(也就是许可不可在用)，若许可不可用则会阻塞。
+unpark() 使一个许可变为可用，但和信号量不同的是许可只有一个，永远不会超过一个。
+
+除了阻塞功能外，还支持中断影响，但是和其他接受中断函数不同， LockSupport.park() 不会抛出 InterruptedException() 异常，只会默默返回，但可从 Thread.Interrupted() 获得中断标记。

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+
+    <timestamp key="byHour" datePattern="yyyyMMddHH"/>
+    <timestamp key="byDay" datePattern="yyyy-MM-dd"/>
+    
+    <!-- 普通的日志窗口输出 -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- 对日志进行格式化 -->
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%n</pattern>
+		</encoder>
+		<!-- 日志级别过滤 -->
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+		    <level>DEBUG</level>
+		</filter>
+	</appender>
+	
+	<!-- 文件日志输出 -->
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logback-dir/logbackfile/${byDay}/logback-file-${byHour}.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+    </appender>
+    
+    <!-- 文件滚动日志基于时间的输出 -->
+	<appender name="ROLLFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>logback-dir/logbacktime/%d{yyyyMMdd}/logback-rollfile-%d{yyyyMMddHH}.log</fileNamePattern>
+			<maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%n</pattern>
+		</encoder>
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+	</appender>
+    
+    <!-- 文件输出基于文件大小和时间 -->
+	<appender name="ROLLSIZEFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logback-dir/logbacksizetime/logback-size.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+		    <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+			<fileNamePattern>logback-dir/logbacksizetime/%d{yyyyMMdd}/logback-size-time-%d{yyyyMMddHH}-%i.log</fileNamePattern>
+			<maxFileSize>2MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%n</pattern>
+		</encoder>
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+	</appender>
+	
+	<!-- 文件输出基于窗口滚动 -->
+	<appender name="WIND" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logback-dir/logbackwind/logback-wind.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+			<fileNamePattern>logback-dir/logbackwind/${byDay}/logback-wind-%i.log</fileNamePattern>
+			<minIndex>1</minIndex>
+            <maxIndex>20</maxIndex>
+		</rollingPolicy>
+		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+		    <maxFileSize>2MB</maxFileSize>
+		</triggeringPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%n</pattern>
+		</encoder>
+        <!-- 日志级别过滤 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+	</appender>
+
+	<root level="DEBUG">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+        <appender-ref ref="ROLLFILE" />
+        <appender-ref ref="ROLLSIZEFILE" />
+        <appender-ref ref="WIND" />
+	</root>
+</configuration>

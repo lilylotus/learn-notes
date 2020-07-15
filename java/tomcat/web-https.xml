@@ -1,0 +1,11 @@
+<Connector port="8080" protocol="HTTP/1.1" connectionTimeout="20000" redirectPort="8443" />
+
+<Connector port="8443"  protocol="org.apache.coyote.http11.Http11NioProtocol" SSLEnabled="true"
+           maxThreads="150" schema="https" secure="true"
+           clientAuth="false" SSLProtocol="TLSv1+TLSv1.1+TLSv1.2"
+           keystoreFile="E:/ssl-niswirl/Tomcat/ssl.jks" keystorePass="860838234u5"
+           ciphers="TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256"/>
+           
+<Connector port="8009" enableLookups="false" protocol="AJP/1.3" redirectPort="8443" />
+
+keystoreFile="E:\ssl_tomcat\ssl.pfx" keystorePass="T1N1ileJ" keystoreType="PKCS12"

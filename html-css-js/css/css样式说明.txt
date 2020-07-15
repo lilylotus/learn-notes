@@ -1,0 +1,85 @@
+background 背景
+    背景色
+        background-color:颜色值 英文单词 十六进制 rgb
+    背景图
+        background-image:url("图片路径")
+    背景图平铺
+        background-repeat:no-repeat repeat-x repeat-y
+    背景图定位
+        background-position:第一个值(X轴的位置) 第二个值(Y轴的位置);
+            第一个值: left center right 30px;
+            第二个值: top center bottom 100px;
+    复合写法
+        background: color image position repeat;
+    背景图滚动
+        background-attachment:fixed; 
+    背景图尺寸
+        background-size:第一个值(X轴的比例) 第二个值(Y轴的比例);
+        温馨小提示：css3的样式 不兼容
+
+------------------------------------------------------------------------------
+border 边框
+    复合写法
+    border: border-width border-style border-color;
+
+    border-width 边框宽度
+    border-style 边框样式 solid 实线 dashed 虚线 dotted 点线 （点线IE6不认）
+    border-color 边框颜色 英文单词 十六进制 rgb
+
+    border-radius 圆角 
+
+    透明 transparent
+
+------------------------------------------------------------------------------
+margin 的特殊点
+    标签的嵌套 确定父子级关系         
+    1. 第一个子级的margin-top会在特定的情况下穿透父级
+        规避方法：
+            1.给父级加边框
+            2.给父级加overflow:hidden;
+            3.不要用margin-top，父级的padding-top代替
+    2. 兄弟关系的 margin-top 和 margin-bottom 会叠压
+
+
+------------------------------------------------------------------------------
+标签特性
+    块属性的标签 特性：
+        1.默认是父级100%的宽
+        2.支持所有CSS样式
+        3.独占一行
+    标签类型的转换
+        显示为无  display:none;
+        块属性  display:block;
+        内联属性
+            内联 display:inline;
+            内联块 display:inline-block;
+    内联标签
+        特性：
+            1.同属性的标签排在同一排
+            2.内容撑开宽度
+            3.不支持宽高，不支持上下的padding和margin
+            4.代码换行被解析 间距大小取决于父级的font-size的大小
+    内联块属性 
+        特性：
+            1.同属性的标签排在同一排
+            2.内容撑开宽度
+            3.支持所有的css的样式
+            4.代码换行被解析，间距大小取决于父级的font-size大小
+
+    浮动的特性
+        1.浮动的元素排在同一排
+        2.浮动的元素内容撑开宽度
+        3.浮动的元素支持所有的css样式
+        4.浮动的元素脱离文档流
+        5.浮动的元素提升层级半级
+
+    1.overflow 溢出  会重新计算元素的空间
+        hidden 溢出隐藏
+        auto   溢出出现滚动条
+        scroll 出现滚动条的位置
+    2.元素的居中
+        margin:0 auto;
+    3.元素的伪类
+        伪类：就是CSS一些元素身上的特殊属性
+        :hover 鼠标停留
+        :after 在元素内容之后插入一些内容

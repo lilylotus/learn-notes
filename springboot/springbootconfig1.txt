@@ -1,0 +1,74 @@
+@RestController
+class WebApp{
+@RequestMapping("/")
+String greetings(){
+
+@SpringBootApplication
+public class SimpleWebApp {
+public static void main(String[] args) {
+    SpringApplication.run(SimpleWebApp.class, args);
+}
+}
+
+=====================================================================
+spring run *.java
+
+mvn spring-boot:run
+
+mvn spring-boot:run
+
+spring init -dweb,data-jpa,h2,thymeleaf --build maven myapp --force
+
+curl -s https://start.spring.io/starter.zip -o myapp.zip -d type=maven-project -d dependencies=web
+
+curl -s https://start.spring.io/pom.xml -d packaging=war -o pom.xml -d dependencies=web,data-jpa
+
+mvn package
+java -jar target/spring-boot-journal-0.0.1-SNAPSHOT.jar
+=====================================================================
+
+=====================================================================
+1. web应用必须包含 spring-boot-start-web 依赖
+
+
+=====================================================================
+
+=====================================================================
+1. Spring-Boot 的配置文件
+application.properties 或者 application.yml
+.yml ->
+server:
+  port: 8082
+  context-path: /springyml
+
+2. spring-boot的启动使用配置
+
+application.yml -->
+    spring:
+      profiles:
+        active: app
+java -jar spring-boot.jar --spring.profiles.active=dev
+
+application-dev.yml
+application-app.yml
+=====================================================================
+
+=====================================================================
+Controller的使用
+1. @Controller
+2. @RestController -> Spring4后新加的注解，返回JSON，@ResponseBody + @Controller
+3. @RequestMapping
+
+
+@RequestMapping(value = {"/gitID/{id}"}, method = RequestMethod.GET)
+public String getId(@PathVariable("id") Integer id) {
+    return "get id : " + id;
+}
+
+// /gitID?id=100
+@RequestMapping(value = {"/gitID1"}, method = RequestMethod.GET)
+public String getId1(@RequestParam(value = "id", required = false, defaultValue = "100") Integer id) {
+    return "get id : " + id;
+}
+
+=====================================================================

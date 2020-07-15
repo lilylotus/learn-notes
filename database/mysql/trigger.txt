@@ -1,0 +1,151 @@
+CREATE TRIGGER trigger_name
+trigger_time
+trigger_event ON tbl_name
+FOR EACH ROW
+trigger_stmt
+
+trigger_name：触发器的名称
+tirgger_time：触发时机，为BEFORE或者AFTER
+trigger_event：触发事件，为INSERT、DELETE或者UPDATE
+tb_name：表示建立触发器的表明，就是在哪张表上建立触发器
+trigger_stmt：触发器的程序体，可以是一条SQL语句或者是用BEGIN和END包含的多条语句
+
+所以可以说MySQL创建以下六种触发器：
+BEFORE INSERT,BEFORE DELETE,BEFORE UPDATE
+AFTER INSERT,AFTER DELETE,AFTER UPDATE
+
+INSERT 语句，有时候等价于一条 DELETE 语句加上一条 INSERT 语句。
+INSERT 型触发器：插入某一行时激活触发器，可能通过 INSERT、LOAD DATA、REPLACE 语句触发；
+UPDATE 型触发器：更改某一行时激活触发器，可能通过 UPDATE 语句触发；
+DELETE 型触发器：删除某一行时激活触发器，可能通过 DELETE、REPLACE 语句触发。
+
+示例:
+DELIMITER $
+create trigger tri_stuInsert after insert
+on student for each row
+begin
+declare c int;
+set c = (select stuCount from class where classID=new.classID);
+update class set stuCount = c + 1 where classID = new.classID;
+end$
+DELIMITER ;
+
+-----------------------------------------------------------------
+NEW 与 OLD 详解
+在 INSERT 型触发器中，NEW 用来表示将要（BEFORE）或已经（AFTER）插入的新数据；
+在 UPDATE 型触发器中，OLD 用来表示将要或已经被修改的原数据，NEW 用来表示将要或已经修改为的新数据；
+在 DELETE 型触发器中，OLD 用来表示将要或已经被删除的原数据；
+使用方法： NEW.columnName （columnName 为相应数据表某一列名）
+另外，OLD 是只读的，
+而 NEW 则可以在触发器中使用 SET 赋值，
+这样不会再次触发触发器，造成循环调用（如每插入一个学生前，都在其学号前加“2013”）。
+
+查看触发器的语法如下：
+SHOW TRIGGERS [FROM schema_name];
+
+
+删除触发器
+DROP TRIGGER [IF EXISTS] [schema_name.]trigger_name
+触发器的执行顺序
+我们建立的数据库一般都是 InnoDB 数据库，其上建立的表是事务性表，也就是事务安全的。
+这时，若SQL语句或触发器执行失败，MySQL 会回滚事务，有：
+如果 BEFORE 触发器执行失败，SQL 无法正确执行。
+SQL 执行失败时，AFTER 型触发器不会触发。
+AFTER 类型的触发器执行失败，SQL 会回滚。
+
+------------------------------------------------------
+Mysql 运算符:
+1. 算数运算符
++（加）、 -（减）、 *（乘）、 /（除）、 %（求余或者模）
+/(除)结果保存到了小数点后面四位 1 / 3 = 0.3333
+
+2. 比较运算符:
+=、<=>、<> (!=)、<=、>=、>、IS NULL、IS NOT NULL、
+LEAST、GREATEST、BETWEEN . . . AND. . . 、ISNULL、IN、NOT IN、LIKE、REGEXP
+
+3. 逻辑运算符有:
+NOT 或者 !
+AND 或者 &&
+OR 或者 ||
+XOR（异或）
+
+4. 位运算符有：
+位或（|）
+位与（&）
+位异或（^ ）
+位左移（<<）
+位右移（<<）
+位取反（~）
+
+------------------------------------------------------
+逻辑语句：
+1. IF
+    IF i = 1 THEN
+        SELECT 1;
+    ELSEIF i = 2 THEN
+        SELECT 2;
+    ELSE
+        SELECT 7;
+    END IF;
+2. WHILE
+    WHILE num < 10 DO
+        SELECT
+            num ;
+        SET num = num + 1 ;
+    END WHILE ;
+3. REPEAT
+    REPEAT
+        SELECT I;
+        SET I = I + 1;
+        UNTIL I >= 5
+    END REPEAT;
+4. LOOP
+    loop_label: loop
+        set i=i+1;
+        if i<8 then
+            ITERATE loop_label;
+        end if;
+        if i>=10 then
+            LEAVE loop_label;
+        end if;
+        select i;
+    end loop loop_label;
+
+------------------------------------------------------
+DELIMITER $$
+DROP TRIGGER IF EXISTS student_insert_bak;
+CREATE TRIGGER student_insert_bak
+AFTER INSERT
+ON student
+FOR EACH ROW
+BEGIN
+    IF NEW.sid % 2 = 0 THEN
+        INSERT INTO student_bak VALUES(NEW.sid, NEW.sname, NEW.sage);
+    END IF;
+END
+$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS student_delete_bak;
+CREATE TRIGGER student_delete_bak
+AFTER DELETE
+ON student
+FOR EACH ROW
+BEGIN
+    INSERT INTO student_bak VALUES(OLD.sid, CONCAT(OLD.sname, '-DELETED'), OLD.sage);
+END
+$$
+DELIMITER ;
+
+DELIMITER $$
+DROP TRIGGER IF EXISTS student_update_bak;
+CREATE TRIGGER student_update_bak
+AFTER UPDATE
+ON student
+FOR EACH ROW
+BEGIN
+    INSERT INTO student_bak VALUES(OLD.sid, CONCAT(OLD.sname, '-', NEW.sname), NEW.sage);
+END
+$$
+DELIMITER ;

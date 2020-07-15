@@ -1,0 +1,7 @@
+泛化（Generalization） 带三角箭头的实线，箭头指向父类
+实现（Realization）    带三角箭头的虚线，箭头指向接口
+关联（Association)     带普通箭头的实心线，指向被拥有者
+聚合（Aggregation）    带空心菱形的实心线，菱形指向整体
+组合(Composition)      带实心菱形的实线，菱形指向整体
+依赖(Dependency)       带箭头的虚线，指向被使用者
+实现 = 泛化 > 组合 > 聚合 > 关联 > 依赖

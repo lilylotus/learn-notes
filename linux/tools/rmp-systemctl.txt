@@ -1,0 +1,82 @@
+rpm
+    -q -d -c -l
+    -a
+    -i
+
+systemctl
+
+service [服务] start
+systemctl start [unit type] 启动服务
+
+service [服务] stop
+systemctl stop [unit type]  停止服务
+
+service [服务] restart
+systemctl restart [unit type]   重启服务
+-----------------------------------------
+chkconfig [服务] on
+systemctl enable [unit type]    设置服务开机启动
+
+chkconfig [服务] off
+systemctl disable [unit type]   设备服务禁止开机启动
+================================================
+systemctl [command] [–type=TYPE] [–all]
+参数详解：
+list-units：依据unit列出所有启动的unit。加上 –all 才会列出没启动的unit;
+list-unit-files:依据/usr/lib/systemd/system/ 内的启动文件，列出启动文件列表
+type=TYPE - 为unit type, 主要有service, socket, target
+--------------------------------------------------
+systemctl   列出所有的系统服务
+systemctl list-units    列出所有启动unit
+systemctl list-unit-files   列出所有启动文件
+systemctl list-units -–type=service –all 列出所有service类型的unit
+systemctl list-units -–type=service –all grep cpu    列出 cpu电源管理机制的服务
+systemctl list-units -–type=target –all  列出所有target
+---------------------------------------------------
+systemctl is-active [unit type] 查看服务是否运行
+systemctl is-enabled [unit type] 查看服务是否设置为开机启动
+systemctl mask [unit type]  注销指定服务
+systemctl unmask [unit type]    取消注销指定服务
+
+list-units list-unit-files list-scokets list-timers start stop restart reload status show enable disable preset is-enable list-jobs
+
+----------------------------------------------------
+运行级别对应表
+init级别  systemctl target
+0           shutdown.target
+1           emergency.target
+2           rescure.target
+3           multi-user.target
+4           无
+5           graphical.target
+6           无
+getty.target用来设置tty的数量
+
+设置运行级别
+get-default :取得当前的target
+set-default :设置指定的target为默认的运行级别
+isolate :切换到指定的运行级别
+unit.target :为5.1表中列出的运行级别
+-----------------------------------------------------------
+systemctl get-default   获得当前的运行级别
+systemctl set-default multi-user.target 设置默认的运行级别为mulit-user
+systemctl isolate multi-user.target 在不重启的情况下，切换到运行级别mulit-user下
+systemctl isolate graphical.target  在不重启的情况下，切换到图形界面下
+
+------------------------------------------------------
+分析各服务之前的依赖关系
+systemctl list-dependencies [unit] [–reverse]
+–reverse是用来检查寻哪个unit使用了这个unit
+
+------------------------------------------------------
+hostnamectl
+hostname有三种状态 static-永久 transient-瞬态 pretty-灵活
+设置
+# hostnamectl set-hostname Your-New-Host-Name-Here
+# hostnamectl set-hostname "Your New Host Name Here" --pretty
+# hostnamectl set-hostname Your-New-Host-Name-Here --static
+# hostnamectl set-hostname Your-New-Host-Name-Here --transient
+删除
+# hostnamectl set-hostname ""
+# hostnamectl set-hostname "" --static
+# hostnamectl set-hostname "" --pretty

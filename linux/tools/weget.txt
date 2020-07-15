@@ -1,0 +1,9 @@
+wget [OPTION]... [URL]...
+
+-b,  --background        go to background after startup.
+-o,  --output-file=FILE    log messages to FILE.
+
+-O,  --output-document=FILE    write documents to FILE.
+-t,  --tries=NUMBER            set number of retries to NUMBER (0 unlimits).
+-c,  --continue                resume getting a partially-downloaded file.
+

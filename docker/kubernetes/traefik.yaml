@@ -1,0 +1,21 @@
+serviceType: NodePort
+replicas: 1
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+dashbord:
+  enable: true
+  domain: traefik.nihility.cn
+service:
+  nodePorts:
+    http: 30080
+    https: 30443
+rbac:
+  enable: true
+metrics:
+  prometheus:
+    enabled: true

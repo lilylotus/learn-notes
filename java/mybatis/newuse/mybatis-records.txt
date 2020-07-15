@@ -1,0 +1,40 @@
+SqlSessionFactoryBuilder 的最佳生命周期在 方法 范围之内
+SqlSessionFactory 在 应用程序 的生命周期内，最好别重复创建初始化，保持单例
+SqlSession 最佳生命周期是在 一次请求或者方法 范围之内
+Mapper instance 的范围最好在 方法 范围之内
+
+
+======================== 配置文件 mybatis-conf.xml
+一. properties :
+Mybatis 加载 properties 数据的顺序：
+1. Properties specified in the body of the properties element are read first
+2. Properties loaded from the classpath resource or url attributes of the properties element are read
+second, and override any duplicate properties already specified
+3. Properties passed as a method parameter are read last, and override any duplicate properties that
+may have been loaded from the properties body and the resource/url attributes.
+
+注意： Since the MyBatis 3.4.2, your can specify a default value into placeholder as follow ： ${username:ut_user}
+<properties resource="org/mybatis/example/config.properties">
+    <!-- Enable this feature -->
+    <property name="org.apache.ibatis.parsing.PropertyParser.enable-default-value" value="true"/>
+    <!-- Change default value of separator , default is ':' -->
+    <property name="org.apache.ibatis.parsing.PropertyParser.default-value-separator" value="?:"/>
+</properties>
+
+二. typeAliases
+
+<typeAliases>
+    <typeAlias alias="Author" type="domain.blog.Author"/>
+    <package name="domain.blog"/>
+</typeAliases>
+Annotation Alias is greater priority, @Alias("author") > package (uncapitalized non-qualified) = typeAlias
+default alias :
+int -> _int
+Integer -> int
+
+
+<databaseIdProvider type="DB_VENDOR">
+  <property name="SQL Server" value="sqlserver"/>
+  <property name="DB2" value="db2"/>
+  <property name="Oracle" value="oracle" />
+</databaseIdProvider>

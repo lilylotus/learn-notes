@@ -1,0 +1,108 @@
+sed [-nefr] [动作]
+选项与参数：
+-n ：使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN 的数据一般都会被列出到终端上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。
+-e ：直接在命令列模式上进行 sed 的动作编辑；
+-f ：直接将 sed 的动作写在一个文件内， -f filename 则可以运行 filename 内的 sed 动作；
+-r ：sed 的动作支持的是延伸型正规表示法的语法。(默认是基础正规表示法语法)
+-i ：直接修改读取的文件内容，而不是输出到终端。
+
+动作说明： [n1[,n2]]function
+n1, n2 ：不见得会存在，一般代表『选择进行动作的行数』，举例来说，如果我的动作是需要在 10 到 20 行之间进行的，则『 10,20[动作行为]
+
+function：
+a ：新增， a 的后面可以接字串，而这些字串会在新的一行出现(目前的下一行)～
+c ：取代， c 的后面可以接字串，这些字串可以取代 n1,n2 之间的行！
+d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；
+i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；
+p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～
+s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s/old/new/g 就是啦
+
+
+## sed并没有对文件的内容改变，只是把处理过后的内容输出，如果你要写回文件，你可以使用重定向
+==========================================
+一. s 命令替换
+sed "s/my/Hao Chen's/g" pets.txt
+    /g 表示一行上的替换所有的匹配
+注意：单引号没办法通过\’这样来转义，双引号可以用\”来转义
+    -i 参数直接修改文件内容
+sed -i "s/my/Hao Chen's/g" pets.txt
+sed 's/<[^>]*>//g' html.txt
+
+sed "3,6s/my/your/g" pets.txt # 只替换第3到第6行的文本
+sed "3s/my/your/g" pets.txt # 只替换第3的文本
+sed "3,$s/my/your/g" pets.txt # 替换第3到末尾的文本
+
+sed 's/s/S/1' my.txt  只替换每一行的第一个s
+sed 's/s/S/2' my.txt  只替换每一行的第二个s
+sed 's/s/S/3g' my.txt  只替换第一行的第3个以后的s：
+
+二. 多个匹配
+如果需要一次替换多个模式，可参看下面的示例：
+第一个模式把第一行到第三行的my替换成your，第二个则把第3行以后的This替换成了That
+sed '1,3s/my/your/g; 3,$s/This/That/g' my.txt
+上面的命令等价于：（注：下面使用的是sed的-e命令行参数）
+sed -e '1,3s/my/your/g' -e '3,$s/This/That/g' my.txt
+-e 参数
+
+三. 使用 & 来当做被匹配的变量，然后可以在基本左右加点东西
+sed 's/my/[&]/g' my.txt
+
+四. 圆括号匹配，圆括号括起来的正则表达式所匹配的字符串会可以当成变量来使用，sed中使用的是\1,\2…
+sed 's/This is my \([^,&]*\),.*is \(.*\)/\1:\2/g' my.txt
+
+grep 'This is my \([^,]*\), .* is \(.*\)' my.txt
+
+五. 
+5.1 (a 命令就是append， i命令就是insert，它们是用来添加行的)
+# 其中的1i表明，其要在第1行前插入一行（insert）
+sed "1 i This is my monkey, my monkey's name is wukong" my.txt
+# 其中的1a表明，其要在最后一行后追加一行（append）
+sed "$ a This is my monkey, my monkey's name is wukong" my.txt
+运用匹配来添加文本
+# 注意其中的/fish/a，这意思是匹配到/fish/后就追加一行
+sed "/fish/a This is my monkey, my monkey's name is wukong" my.txt
+
+5.2 (c 命令是替换匹配行)
+sed "2 c This is my monkey, my monkey's name is wukong" my.txt
+sed "/fish/c This is my monkey, my monkey's name is wukong" my.txt
+
+5.3 (d 删除匹配行)
+sed '/fish/d' my.txt
+sed '2d' my.txt
+sed '2,$d' my.txt
+
+5.4 (p命令 打印命令)
+# 匹配fish并输出，可以看到fish的那一行被打了两遍，
+# 这是因为sed处理时会把处理的信息输出, 使用n参数就好了
+sed '/fish/p' my.txt
+
+# 从一个模式到另一个模式
+$ sed -n '/dog/,/fish/p' my.txt
+
+#从第一行打印到匹配fish成功的那一行
+sed -n '1,/fish/p' my.txt
+
+六. Address [address[,address]][!]{cmd}
+address可以是一个数字，也可以是一个模式，你可以通过逗号要分隔两个address 表示两个address的区间，参执行命令cmd
+# 其中的+3表示后面连续3行
+sed '/dog/,+3s/^/# /g' pets.txt
+
+6.1 命令打包
+# 对3行到第6行，执行命令/This/d
+sed '3,6 {/This/d}' pets.txt
+
+# 对3行到第6行，匹配/This/成功后，再匹配/fish/，成功后执行d命令
+sed '3,6 {/This/{/fish/d}}' pets.txt
+
+# 从第一行到最后一行，如果匹配到This，则删除之；如果前面有空格，则去除空格
+sed '1,${/This/d;s/^ *//g}' pets.txt
+
+----
+正则表达式的基本：
+^   表示一行的开头。如：/^#/ 以#开头的匹配。
+$   表示一行的结尾。如：/}$/ 以}结尾的匹配。
+\<  表示词首。 如：\<abc 表示以 abc 为首的詞。
+\>  表示词尾。 如：abc\> 表示以 abc 結尾的詞。
+.   表示任何单个字符。
+*   表示某个字符出现了0次或多次。
+[ ] 字符集合。 如：[abc] 表示匹配a或b或c。如果其中有^表示反，如 [^a] 表示非a的字符

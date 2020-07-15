@@ -1,0 +1,116 @@
+# user www www;
+user nobody nobody;
+worker_processes 8;
+worker_rlimit_nofile 65535;
+error_log logs/error.log info;
+pid logs/nginx.pid;
+
+#一个Nginx进程打开的最多文件描述数目 建议与ulimit -n一致
+#如果面对高并发时 注意修改该值 ulimit -n 还有部分系统参数 而并非这个单独确定
+worker_rlimit_nofile 65535;
+
+events{
+    use epoll;
+    worker_connections 65535;
+}
+
+http{
+    include mime.types;
+    default_type application/octet-stream;
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for"’;
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    #日志
+    access_log logs/access.log;
+    error_log logs/error.log;
+
+    #gzip 压缩传输
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 16 64K;
+    gzip_http_version 1.1;
+    gzip_comp_level 6;
+    gzip_types text/plain application/x-javascript text/css application/xml application/javascript;
+    gzip_vary on;
+
+    #负载均衡组,静态服务器组
+    upstream nihility.static {
+        server 127.0.0.1:808 weight=1;
+    }
+
+    #动态服务器组
+    upstream nihility.dynamic {
+        server 127.0.0.1:8080;
+        #server 192.168.8.203:8080;
+    }
+
+    #配置代理参数
+    proxy_redirect off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    client_max_body_size 10m;
+    client_body_buffer_size 128k;
+    proxy_connect_timeout 65;
+    proxy_send_timeout 65;
+    proxy_read_timeout 65;
+    proxy_buffer_size 4k;
+    proxy_buffers 4 32k;
+    proxy_busy_buffers_size 64k;
+
+    #缓存配置
+    proxy_cache_key '$host:$server_port$request_uri';
+    proxy_temp_file_write_size 64k;
+    proxy_temp_path porxy/proxy_temp_path;
+    proxy_cache_path proxy/proxy_cache_path levels=1:2 keys_zone=cache_one:200m ctive=5d max_size=1g;
+    proxy_ignore_headers X-Accel-Expires Expires Cache-Control Set-Cookie;
+
+    server{
+        listen 80;
+        server_name nihility.com;
+        location / {
+            index index; #默认主页为 /index
+            #proxy_pass http://jieli;
+        }
+
+        location ~ .*.(js|css|ico|png|jpg|eot|svg|ttf|woff) {
+            proxy_cache cache_one;
+            proxy_cache_valid 200 304 302 5d;
+            proxy_cache_valid any 5d;
+            proxy_cache_key '$host:$server_port$request_uri';
+            add_header X-Cache '$upstream_cache_status from $host';
+            proxy_pass http://static.zh-jieli.com;
+
+            #所有静态文件直接读取硬盘
+            #   root /var/lib/tomcat7/webapps/JieLiERP/WEB-INF ;
+            expires 30d; #缓存30天
+        }
+
+        #其他页面反向代理到tomcat容器
+        location ~ .*$ {
+            index index;
+            proxy_pass http://zh-jieli.com;
+        }
+    }
+    server{
+        listen 808;
+        server_name static;
+
+        location / {
+
+        }
+
+        location ~ .*.(js|css|ico|png|jpg|eot|svg|ttf|woff) {
+            #所有静态文件直接读取硬盘
+            root /var/lib/tomcat7/webapps/JieLiERP/WEB-INF ;
+            expires 30d; #缓存30天
+        }
+    }
+}

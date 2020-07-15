@@ -1,0 +1,65 @@
+一. 事务的四大特性 ACID
+原子性（Atomicity） : 原子性是指事务包含的所有操作要么全部成功，要么全部失败回滚
+一致性（Consistency）: 事务必须使数据库从一个一致性状态变换到另一个一致性状态，事务执行前后都必须处于一致性状态
+隔离性（Isolation）: 多个并发事务可以独立运行，而不能相互干扰，一个事务修改数据未提交前，其他事务看不到它所做的更改
+持久性（Durability）: 持久性是指一个事务一旦被提交了，那么对数据库中的数据的改变就是永久性的
+
+二. ANSI/ISO Transaction Isotation Levals(ANSI/ISO事务隔离级别)
+1.1 脏读：一个事务读取了另一个事务没有提交的数据
+事务T1更新了一行记录，还未提交所做的修改，这个T2读取了更新后的数据，
+然后T1执行回滚操作，取消刚才的修改，所以T2所读取的行就无效，也就是脏数据。
+
+1.2 不可重复读：一个事务重复读取刚才已读过的数据，结果两次数据不一致，在此期间，其它事务对此数据已修改并提交.
+事务T1读取一行记录，紧接着事务T2修改了T1刚刚读取的记录并commit，
+然后T1再次查询，发现与第一次读取的记录不同，这称为不可重复读。
+
+1.3 幻影读：一个事务重复读取满足查询条件的记录数，结果两次数据不一致，在此期间，其它事务插入了符合此查询条件的数据.
+事务T1读取一条指定where条件的语句，返回结果集。
+此时事务T2插入一行新记录并commit，恰好满足T1的where条件。
+然后T1使用相同的条件再次查询，结果集中可以看到T2插入的记录，这条新纪录就是幻想
+
+SQL标准中根据隔离级别允许发生的现象，定义了四种隔离级别：
+事务隔离级别          允许脏读    允许不可重复读     允许幻影读
+Read Uncommitted      Y             Y                Y
+Read Committed        N             Y                Y
+Repeatabled Read      N             N                Y
+Serializable          N             N                N
+
+注意： Oracle 数据库提供了 READ COMMITTED (默认系统事务隔离级别), SERIALIZABLE, READ-ONLY
+READ COMMITTED -- 不允许脏读，允许幻想读和不可重复读
+SERIALIZABLE -- 以上三种都不允许
+
+2.1 ORALCE 事务相关语句概括
+SET TRANSACTION----设置事务属性
+SET CONSTRAINT -----设置约束
+SAVEPOINT ------------建立存储点
+RELEASE SAVEPOINT --释放存储点
+ROLLBACK ---------------回滚
+COMMIT ------------------ 提交
+
+2.2 建立事务、隔离级别分析
+SET TRANSACTION READ ONLY -- 事务中不能有任何修改数据库中数据的操作语句，这包括 insert、update、delete、create语句
+SET TRANSACTION READ WRITE -- 默认设置,该选项表示在事务中可以有访问语句、修改语句
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE--serialzable可以执行DML操作
+SET TRANSACTION ISOLATION LEVEL [READ UNCOMMITTED|READ COMMITTED|REPEATABLE READ|SERIALIZABLE]
+注意：这些语句是互斥的，不能够同时设置两个或者两个以上的选项
+
+=============================================================
+ORACLE 示例：
+1. read only
+set transaction read only; // insert、update、delete、create 不能执行
+ORA-01456: 不能在 READ ONLY 事务处理中执行插入/删除/更新操作
+
+2. 
+set transaction read write 
+update test set var = 'AMRICAN' where id = 1
+(允许读写)
+
+3. 
+set transaction isolation level read committd
+隔离级别为 isolation level read committed, 支持不可重复读，允许幻想读
+
+4. 
+set transaction isolation level serializable
+隔离级别为 isolation level serializable, 不支持不可重复读，不支持幻想读

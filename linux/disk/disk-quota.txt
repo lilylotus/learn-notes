@@ -1,0 +1,52 @@
+磁盘配额(quota) : 限制用户对磁盘空间的使用量
+
+1.分配 quota 磁盘配额功能
+    > mount -o remount,usrquota,grpquota /lvm/lv1
+
+2. 检测磁盘配额并生成配额文件 (quotacheck)
+命令参数 :
+    -c 创建配额文件
+    -u 针对扫描情况与目录的使用情况建立aquota.user
+    -g 针对用户扫描文件与使用情况建立aquota.group
+    -f, --force     force check even if quotas are enabled
+    -a  check all filesystems
+    -v 显示扫描过程
+    -R 排除根目录所在分区
+    > quotacheck -cugv [配额分区]
+
+3. 用户帐号和组的配额限制 (edquota)
+命令参数 ：
+    -u, --user                    edit user data
+    -g, --group                   edit group data
+    -r, --remote                  edit remote quota (via RPC)
+    -m, --no-mixed-pathnames      trim leading slashes from NFSv4 mountpoints
+
+    > edquota -g quotagroup 
+
+Filesystem下显示实现磁盘配额的分区；
+blocks下为当前已经使用的大小，不用修改；
+soft为软限制，超出后会给出警告，超出的部分默认会保存7天；
+hard为硬限制，不可超越的限制（软硬限制默认单位都是KB）；
+inode为文件数目限制
+后面的两个相同的soft、hard分别表示分区中这个用户可以创建的文件数目软硬限制；
+
+本例中,qingsword可以使用/dev/sdb1分区的软限制大小10KB，硬限制20KB，
+可创建的文件个数软限制是3个，硬限制5个；
+Filesystem blocks soft hard inodes soft hard
+/dev/sdb1    0     10   20    0(文件数)     3    5
+
+4. 激活磁盘配额 (quotaon)
+参数 :
+    -a, --all                turn quotas on for all filesystems
+    -f, --off                turn quotas off
+    -u, --user               operate on user quotas
+    -g, --group              operate on group quotas
+    -p, --print-state        print whether quotas are on or off
+    -v, --verbose            print more messages
+
+    > quotaon -ugv /lvm/lv1
+
+5. 取消磁盘配额 (quotaoff)
+    > quotaoff [磁盘]
+-------------------------
+磁盘配额中的 block 指的是 1KB

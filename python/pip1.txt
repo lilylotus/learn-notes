@@ -1,0 +1,105 @@
+1. 安装必要的准备包
+安装过程将用到gcc，方便起见，安装“Development Tools”
+yum groupinstall "Development tools"
+
+另外，Python安装中需要的一些依赖包
+yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel
+
+3.安装pip
+pip是python的安装工具，很多python的常用工具，都可以通过pip进行安装。
+要安装pip，首先要安装setuptools。下面的链接可以得到相关信息，最新版本是21.0.0:
+https://pypi.python.org/pypi/setuptools
+下载链接：
+https://pypi.python.org/packages/ff/d4/209f4939c49e31f5524fa0027bf1c8ec3107abaf7c61fdaad704a648c281/setuptools-21.0.0.tar.gz#md5=81964fdb89534118707742e6d1a1ddb4
+
+tar vxf setuptools-21.0.0.tar.gz 
+cd setuptools-21.0.0
+python setup.py  install
+
+
+安装完成后，下载pip。其信息在如下网站：
+https://pypi.python.org/pypi/pip
+最新版是8.1.1，下载链接：
+https://pypi.python.org/packages/41/27/9a8d24e1b55bd8c85e4d022da2922cb206f183e2d18fee4e320c9547e751/pip-8.1.1.tar.gz#md5=6b86f11841e89c8241d689956ba99ed7
+同样的，进行安装
+
+tar vxf pip-8.1.1.tar.gz 
+cd pip-8.1.1
+python setup.py install
+
+
+1 先安装setuptools
+下载地址：https://pypi.python.org/pypi/setuptools#downloads
+将下载后的tar文件解压，用CMD模式进入到解压后的文件所在的目录执行命令：python setup.py install
+
+2 安装pip 
+下载地址：https://pypi.python.org/pypi/pip#downloads
+将下载后的tar文件解压，用CMD模式进入
+
+ deactivate
+
+1、安装包：   
+pip install SomePackage
+pip install Django==1.7.1 --proxy=web-proxyhk.oa.com:8080  例如：设置代理
+2、查看安装包时安装了哪些文件：
+pip show --files SomePackage
+3、查看哪些包有更新：
+pip show --files SomePackage
+4、更新一个软件：
+pip install --upgrade SomePackage
+5、卸载软件：
+pip uninstall SomePackage
+
+搜索包：
+# pip search "django"
+
+pip介绍与使用
+时间：2016-05-02 17:14:03      阅读：504      评论：0      收藏：0      [点我收藏+]
+
+标签：python   pip   pip freeze   requirements.txt   
+
+一、简介  
+
+  pip 是一个安装和管理 Python 包的工具，python安装包的工具有easy_install, setuptools, pip，distribute等。distribute是setuptools的替代品，是对标准库disutils模块的增强，我们知道disutils主要是用来更加容易的打包和分发包，特别是对其他的包有依赖的包。distribute被创建是因为Setuptools包不再维护了。而pip是easy_install的替代品。
+
+二、安装pip
+
+# apt-get install python-pip
+
+升级:
+
+# pip install -U pip
+
+三、pip包管理
+
+安装包：
+
+root@localhost:~# pip install django
+Collecting django
+  Using cached Django-1.9.5-py2.py3-none-any.whl
+Installing collected packages: django
+Successfully installed django-1.9.5
+
+指定安装的软件包版本：
+
+通过使用==, >=, <=, >, <来指定一个版本号。
+
+root@localhost:~# pip install markdown==2.0
+
+升级包：
+
+升级包到当前最新的版本，可以使用-U 或者 --upgrade
+
+# pip install -U django
+
+搜索包：
+# pip search "django"
+列出已安装的包：
+pip freeze
+
+
+
+默认情况下，虚拟环境会依赖系统环境中的site packages，
+就是说系统中已经安装好的第三方package也会安装在虚拟环境中，
+如果不想依赖这些package，那么可以加上参数 
+--no-site-packages　

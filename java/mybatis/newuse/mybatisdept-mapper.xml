@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.nihility.mybatis.dao.MybatisDeptMapper">
+
+    <cache eviction="LRU" flushInterval="60000" size="512" readOnly="true"/>
+    <!-- <cache eviction="FIFO" flushInterval="60000" readOnly="false" size="1024"></cache> -->
+    <!--
+        创建了一个LRU缓存，并每隔60秒刷新，最大存储512个对象，而且返回的对象被认为是只读
+	    eviction: 缓存的回收策略
+	        • LRU – 最近最少使用的：移除最长时间不被使用的对象
+	        • FIFO – 先进先出：按对象进入缓存的顺序来移除它们
+	        • SOFT – 软引用：移除基于垃圾回收器状态和软引用规则的对象
+	        • WEAK – 弱引用：更积极地移除基于垃圾收集器状态和弱引用规则的对象
+	        • 默认的是 LRU
+	    flushInterval：缓存刷新间隔 缓存多长时间清空一次，默认不清空，设置一个毫秒值
+	    readOnly:是否只读
+	        true：只读；mybatis认为所有从缓存中获取数据的操作都是只读操作，不会修改数据。直接就会将数据在缓存中的引用交给用户。不安全，速度快
+	        false：非只读：mybatis觉得获取的数据可能会被修改。 mybatis会利用序列化&反序列的技术克隆一份新的数据，安全，速度慢
+	    size：缓存存放多少元素
+	    type=""：指定自定义缓存的全类名； 实现Cache接口即可
+    -->
+
+    <resultMap type="MybatisDept" id="MybatisDeptRM">
+        <id property="id" column="id" />
+        <result property="info" column="info"/>
+        <result property="dept" column="dept"/>
+        <result property="age" column="age"/>
+    </resultMap>
+
+    <resultMap type="MybatisTestBean" id="MybatisTestBeanRM">
+        <id property="id" column="id" />
+        <result property="age" column="age"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="testAddress" column="test_address"/>
+        <result property="gender" column="gender"/>
+    </resultMap>
+
+    <resultMap type="MybatisTestBean" id="MybatisTestBeanDiscriminator">
+        <id property="id" column="id" />
+        <result property="age" column="age"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="testAddress" column="test_address"/>
+        <result property="gender" column="gender"/>
+        <discriminator javaType="String" column="gender">
+            <case value="M" resultType="MybatisTestBean">
+                <association property="dept" column="age" select="selectDeptByAge"></association>
+            </case>
+            <case value="F" resultType="MybatisTestBean">
+                <association property="dept">
+	                <id property="id" column="id"/>
+	                <result property="info" column="test_address"/>
+	                <result property="age" column="age"/>
+	                <result property="dept" column="email"/>
+	                <collection property="beans" column="age" ofType="MybatisTestBean" select="selectMybatisBeansByAge"></collection>
+                </association>
+            </case>
+        </discriminator>
+    </resultMap>
+
+    <resultMap type="MybatisTestBean" id="MybatisTestBeanRM2">
+        <id property="id" column="id" />
+        <result property="age" column="age"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="testAddress" column="test_address"/>
+        <result property="dept.id" column="d_id"/>
+        <result property="dept.age" column="age"/>
+        <result property="dept.info" column="info"/>
+        <result property="dept.dept" column="dept"/>
+    </resultMap>
+
+    <!-- association 一对一关系，一个人仅在一个部门 -->
+    <resultMap type="MybatisTestBean" id="MybatisTestBeanAssociation">
+        <id property="id" column="id" />
+        <result property="age" column="age"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="testAddress" column="test_address"/>
+        <result property="gender" column="gender"/>
+        <association property="dept" javaType="MybatisDept">
+            <id property="id" column="d_id"/>
+	        <result property="info" column="info"/>
+	        <result property="dept" column="dept"/>
+	        <result property="age" column="age"/>
+        </association>
+    </resultMap>
+
+    <resultMap type="MybatisTestBean" id="MybatisTestBeanAssociation2">
+        <id property="id" column="id" />
+        <result property="age" column="age"/>
+        <result property="name" column="name"/>
+        <result property="email" column="email"/>
+        <result property="testAddress" column="test_address"/>
+        <result property="gender" column="gender"/>
+        <association property="dept" column="age" select="selectDeptByAge"></association>
+    </resultMap>
+
+    <!-- 一对多的问题 -->
+    <resultMap type="MybatisDept" id="MybatisDeptCollection">
+        <id property="id" column="id" />
+        <result property="info" column="info"/>
+        <result property="dept" column="dept"/>
+        <result property="age" column="age"/>
+        <collection property="beans" ofType="MybatisTestBean">
+            <id property="id" column="b_id" />
+	        <result property="age" column="age"/>
+	        <result property="name" column="name"/>
+	        <result property="email" column="email"/>
+	        <result property="testAddress" column="test_address"/>
+	        <result property="gender" column="gender"/>
+        </collection>
+    </resultMap>
+
+    <resultMap type="MybatisDept" id="MybatisDeptCollection2">
+        <id property="id" column="id" />
+        <result property="info" column="info"/>
+        <result property="dept" column="dept"/>
+        <result property="age" column="age"/>
+        <collection property="beans" column="age" ofType="MybatisTestBean" select="selectMybatisBeansByAge"></collection>
+    </resultMap>
+
+    <select id="getDeptById" parameterType="_int" resultMap="MybatisDeptRM">
+        select id, dept, info, age from mybatis_test_dept where id = #{id}
+    </select>
+    <select id="selectDeptByAge" parameterType="_int" resultMap="MybatisDeptRM">
+        select id, dept, info, age from mybatis_test_dept where age = #{age}
+    </select>
+
+    <select id="getBeanById" parameterType="_int" resultMap="MybatisTestBeanRM">
+        select id, age, gender, name, email, test_address from mybatis_test where id = #{id}
+    </select>
+    <select id="selectMybatisBeansByAge" parameterType="_int" resultMap="MybatisTestBeanRM">
+        select id, age, gender, name, email, test_address from mybatis_test where age = #{age}
+    </select>
+    <select id="getBeanByIdDiscriminator" parameterType="_int" resultMap="MybatisTestBeanDiscriminator">
+        select id, age, gender, name, email, test_address from mybatis_test where id = #{id}
+    </select>
+    <select id="getBeanAanDeptCascadeById" parameterType="_int" resultMap="MybatisTestBeanRM2">
+        select mt.id, mt.age, mt.gender, mt.name, mt.email, mt.test_address, md.id d_id, md.info, md.dept
+        from mybatis_test_dept md, mybatis_test mt
+        where md.age = mt.age
+        and mt.id = #{id}
+    </select>
+
+    <select id="selectBeanAndDeptById" parameterType="_int" resultMap="MybatisTestBeanAssociation">
+		select mt.id, mt.age, mt.gender, mt.name, mt.email, mt.test_address, md.id d_id, md.info, md.dept
+		from mybatis_test_dept md, mybatis_test mt
+		where md.age = mt.age
+		and mt.id = #{id}
+    </select>
+    <select id="selectBeanAndDeptById2" parameterType="_int" resultMap="MybatisTestBeanAssociation2">
+		select mt.id, mt.age, mt.gender, mt.name, mt.email, mt.test_address
+		from mybatis_test mt
+		where mt.id = #{id}
+    </select>
+
+    <select id="selectDeptAndBeansByAge" parameterType="_int" resultMap="MybatisDeptCollection">
+        select mt.id b_id, mt.age, mt.gender, mt.name, mt.email, mt.test_address, md.id, md.info, md.dept
+        from mybatis_test_dept md, mybatis_test mt
+        where md.age = mt.age
+        and md.age = #{age}
+    </select>
+    <select id="selectDeptAndBeansByAge2" parameterType="_int" resultMap="MybatisDeptCollection2">
+        select md.id, md.age, md.info, md.dept
+        from mybatis_test_dept md
+        where md.age = #{age}
+    </select>
+
+    <!--
+        mysql支持自增主键，自增主键值的获取，mybatis 也是利用 statement.getGenreatedKeys()
+        useGeneratedKeys="true" 使用自增主键获取主键值策略
+        keyProperty 指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装给 javaBean 的哪个属性
+    -->
+    <insert id="insertMybatisDeptByBean" parameterType="MybatisDept"
+            databaseId="mysql" useGeneratedKeys="true" keyProperty="id">
+        insert into mybatis_test_dept (dept, info, age)
+        values (#{dept}, #{info}, #{age})
+    </insert>
+    <!--
+        Oracle不支持自增；Oracle使用序列来模拟自增，每次插入的数据的主键是从序列中拿到的值
+        keyProperty:查出的主键值封装给javaBean的哪个属性
+
+        order: BEFORE : 当前sql在插入sql之前运行
+               AFTER  ：当前sql在插入sql之后运行
+        resultType    : 查出的数据的返回值类型
+
+        BEFORE运行顺序：先运行 selectKey 查询 id 的 sql；查出 id 值封装给 javaBean 的 id 属性, 在运行插入的sql；就可以取出id属性对应的值
+        AFTER运行顺序： 先运行插入的sql（从序列中取出新值作为id）；  再运行selectKey查询id的sql；
+    -->
+    <insert id="insertMybatisDeptByBean" parameterType="MybatisDept"
+            databaseId="oracle" keyProperty="id">
+        <selectKey order="AFTER" keyProperty="id" keyColumn="id" resultType="int">
+            <!-- SELECT MYBATISTESTDEPT_SEQUENCE.NEXTVAL id FROM DUAL -->
+            <!-- AFTER : SELECT MYBATISTESTDEPT_SEQUENCE.CURRVAL as id FROM DUAL -->
+            SELECT MYBATISTESTDEPT_SEQUENCE.CURRVAL as id FROM DUAL
+        </selectKey>
+        insert into mybatis_test_dept (id, dept, info, age)
+        values (MYBATISTESTDEPT_SEQUENCE.NEXTVAL, #{dept}, #{info<!-- ,jdbcType=NULL -->}, #{age})
+    </insert>
+
+</mapper>

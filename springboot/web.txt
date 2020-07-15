@@ -1,0 +1,234 @@
+1. Freemarker
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-freemarker</artifactId>
+</dependency>
+
+application.properties：
+spring.freemarker.allow-request-override=false
+spring.freemarker.cache=true
+spring.freemarker.check-template-location=true
+spring.freemarker.charset=UTF-8
+spring.freemarker.content-type=text/html
+spring.freemarker.expose-request-attributes=false
+spring.freemarker.expose-session-attributes=false
+spring.freemarker.expose-spring-macro-helpers=false
+spring.freemarker.prefix=
+spring.freemarker.suffix=.ftl
+
+@Controller
+@RequestMapping("freemarker")
+public class FreemarkerController {
+    @RequestMapping("hello")
+    public String hello(Map<String,Object> map) {
+        map.put("msg", "Hello Freemarker");
+        return "hello";
+    }
+}
+
+hello.ftl
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link href="/css/index.css" rel="stylesheet"/>
+</head>
+<body>
+    <h2>${msg}</h2>
+</body>
+</html>
+
+------------------------------------------------------
+2. Thymeleaf
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+
+application.properties:
+spring.thymeleaf.cache=true
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML5
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.content-type=text/html
+
+@Controller
+@RequestMapping("thymeleaf")
+public class ThymeleafController {
+    @RequestMapping("hello")
+    public String hello(Map<String,Object> map) {
+        map.put("msg", "Hello Thymeleaf");
+        return "hello";
+    }
+}
+
+hello.html:
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link href="/css/index.css" rel="stylesheet"/>
+</head>
+<body>
+    <div class="container">
+        <h2 th:text="${msg}"></h2>
+    </div>
+</body>
+</html>
+
+---------------------------------------------
+3. Fastjson
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.35</version>
+</dependency>
+
+@Configuration
+public class WebConfig {
+    @Bean
+    public HttpMessageConverters fastJsonHttpMessageConverters() {
+        FastJsonHttpMessageConverter fastJsonHttpMessageConverter = new FastJsonHttpMessageConverter();
+        FastJsonConfig fastJsonConfig = new FastJsonConfig();
+        fastJsonConfig.setSerializerFeatures(SerializerFeature.PrettyFormat);
+        fastJsonHttpMessageConverter.setFastJsonConfig(fastJsonConfig);
+        HttpMessageConverter<?> converter = fastJsonHttpMessageConverter;
+        return new HttpMessageConverters(converter);
+    }
+}
+
+public class User {private Integer id; private String username; private String password; private Date birthday; }
+
+@JSONField(format="yyyy-MM-dd")
+private Date birthday;
+
+-------------------------------------------------
+4. 自定义 Servlet
+public class ServletTest extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req, resp);
+    }
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.setContentType("text/html;charset=utf-8");
+        resp.getWriter().write("自定义 Servlet");
+    }
+}
+
+@Bean
+public ServletRegistrationBean servletRegistrationBean() {
+    return new ServletRegistrationBean(new ServletTest(),"/servletTest");
+}
+
+4.1 过滤器
+public class TimeFilter implements Filter {}
+4.2 注册过滤器
+    1) 使用 @Component 注解
+    2) 添加到过滤器链中，此方式适用于使用第三方的过滤器
+@Bean
+public FilterRegistrationBean timeFilter() {
+    FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+    TimeFilter timeFilter = new TimeFilter();
+    registrationBean.setFilter(timeFilter);
+    List<String> urls = new ArrayList<>();
+    urls.add("/*");
+    registrationBean.setUrlPatterns(urls);
+    return registrationBean;
+}
+
+4.3 监听器
+public class ListenerTest implements ServletContextListener {}
+4.4 注册监听器
+@Bean
+public ServletListenerRegistrationBean<ListenerTest> servletListenerRegistrationBean() {
+    return new ServletListenerRegistrationBean<ListenerTest>(new ListenerTest());
+}
+
+4.5 自定义 Servlet、Filter 和 Listener 的配置，还有另一种方式:
+@SpringBootApplication
+public class SpringbootWebApplication implements ServletContextInitializer {
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        // 配置 Servlet
+        servletContext.addServlet("servletTest",new ServletTest())
+                      .addMapping("/servletTest");
+        // 配置过滤器
+        servletContext.addFilter("timeFilter",new TimeFilter())
+                      .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST),true,"/*");
+        // 配置监听器
+        servletContext.addListener(new ListenerTest());
+    }
+    public static void main(String[] args) {
+        SpringApplication.run(SpringbootWebApplication.class, args);
+    }
+}
+
+----------------------------------------------------------------
+5 拦截器
+@Component
+public class TimeInterceptor implements HandlerInterceptor {}
+
+@Configuration
+public class WebConfig extends WebMvcConfigurerAdapter{
+    @Autowired
+    private TimeInterceptor timeInterceptor;
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(timeInterceptor);
+    }
+}
+
+--------------------------------------------------------
+6. 错误处理
+在 src/main/resources 下创建 /public/error，
+在该目录下再创建一个名为 5xx.html 文件，该页面的内容就是当系统报错时返回给用户浏览的内容.
+路径时固定的，Spring Boot 会在系统报错时将返回视图指向该目录下的文件。
+出现 404 的情况时,在 /public/error 目录下再创建一个名为 404.html 的文件.
+
+7. 全局异常捕获
+@ControllerAdvice
+public class GlobalDefaultExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public Map<String, Object> defaultExceptionHandler(Exception ex) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("code", 500);
+        map.put("msg", ex.getMessage());
+        return map;
+    }
+}
+
+----------------------------------------------------------
+8. 文件上传下载
+@RestController
+@RequestMapping("/file")
+public class FileController {
+    private String path = "d:\\";
+    @PostMapping
+    public FileInfo upload(MultipartFile file) throws Exception {
+        System.out.println(file.getName());
+        System.out.println(file.getOriginalFilename());
+        System.out.println(file.getSize());
+        File localFile = new File(path, file.getOriginalFilename());
+        file.transferTo(localFile);
+        return new FileInfo(localFile.getAbsolutePath());
+    }
+    @GetMapping("/{id}")
+    public void download(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) {
+        try (InputStream inputStream = new FileInputStream(new File(path, id + ".jpg"));
+                OutputStream outputStream = response.getOutputStream();) {
+            response.setContentType("application/x-download");
+            response.addHeader("Content-Disposition", "attachment;filename=" + id + ".jpg");
+            IOUtils.copy(inputStream, outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+------------------------------------------------------------
+9. CORS 支持

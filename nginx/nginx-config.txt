@@ -1,0 +1,152 @@
+主要由三块组成 全局块 events块 http块
+http块中包含http全局块和多个server块，每个server块中包含server全局块和多个location块，
+采用就近原则生效
+
+1. 全局块
+配置一些影响整体运行的指令，通常有服务器用户组,
+允许生成的worker process nginx.pid存放路径 日志存放路径 类型 配置文件引入
+
+2. events块
+影响nginx服务器与用户的网络连接，这一块的设置对服务的性能影响较大。
+通常有是否开启对WP下的网络进行序列化,是否允许同时接受多个网络连接,事件驱动模型
+每个WP可以同时支持处理的最大连接数
+
+3. http块
+重要组成部分，代理、缓存和日志定义、第三方模块的配置。
+通常配置文件引入 MIME-TYPE 定义,日志自定义,是否使用sendfile传输文件,连接超时时间,单连接请求数上限
+
+------------------------------------------
+# 配置lily用户  admin组下有启停权限
+user lily [admin];
+#所有用户具有启停权限
+user nobody nobody;
+
+
+# pid文件存放路径,默认存放在logs/nginx.pid, 必须包含文件名称
+pid logs/nginx_lily.pid;
+
+# 配置错误日志文件的存放路径
+# 可在全局块、http块 server块 location块配置
+error_log file | stderr [ DEBUG | info | notice | warn | error | crit | alert | emerg];
+
+# 设置网络连接的序列化
+# 惊群问题当某刻只有一个请求进来时，会唤醒多个睡眠的进程，造成性能的损耗
+accept_mutex on | off;
+
+# 设置是否允许同时接受多个连接 events
+multi_accept on |  off; #默认关闭
+
+# 配置最大连接数 events ， 默认值 512
+# 允许每一个WP同事开启的最大连接数。此值不能大于操作系统支持的打开的最大文件句柄数.
+worker_connections number;
+
+# MIME-Type http server location ，默认为 text/plain
+default_type mime-type;
+
+# 自定义服务日志
+# access_log 可在http server location中配置； log_format只能在http中配置。
+# 注意 error_log 配置的是nginx的运行日志，此处指的是应答前端请求的服务日志。
+# 可以对日志的格式、大小、输出进行配置，有access_log log_format指令,
+# log_format 的string整体需要用'括起来，变量名称使用双引号括起来
+
+log_format name string;
+access_log path [format [buffer=size]];
+
+log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                '$status $body_bytes_sent "$http_referer" '
+                '"$http_user_agent" "$http_x_forwarded_for"';
+access_log  logs/access.log  main;
+
+#如果取消日志记录
+access_log off;
+
+# sendfile方式传输文件
+# 相关指令 sendfile sendfile_max_chunk,默认开启
+sendfile on | off;
+sendfile_max_chunk size; #设置为0为限制
+
+# 配置连接超时时间
+# http块 server块 location块,设置用户会话连接的保持时间
+keepalive_timeout timeout[header_timeout];
+
+# 单连接请求上限
+# server location 用户与服务端建立连接后，通过此连接发送的请求次数
+keepalive_requests number;
+
+# 配置网络监听
+# 配置监听IP地址
+listen address[:port] [default_server] [setfib=number] [backlog=number]
+        [rcvbuf=size] [sendbuf=size] [deferred] [accept_filter=filter] [bind] [ssl];
+
+# 配置监听端口
+listen port [default_server] [setfib=number] [backlog=number] [rcvbuf=size]
+        [sendbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on | off] [ssl];
+
+# 平常使用：
+listen 3021;
+listen 10.8.177.21;
+listen 10.8.177.21:3022 default_server backlog==1024;
+
+参数说明：
+- address ip地址，如果是ipv6需要使用[fe13:..]格式
+- port 端口号，如果只有ip则默认80
+- path socket文件路径
+- default_server， 标识符，将ip:port设置为默认的虚拟主机
+- backlog 设置监听函数listen()最多允许多少网络连接同时处于挂起的状态，默认511(FreeBSD 为-1)
+- rcvbuf 设置监听socket接受缓存区大小
+- sendbuf 设置监听socket发送缓存区大小
+- deferred 标识符，将accept()设置为Deferred模式
+- bind 标识符，使用独立的bind()处理此adress:port，一般情况下端口相同而IP地址不同，只使用一个
+- ssl 标识符，设置会话使用ssl模式（https）
+- accept_filter 设置监听端口的请求过滤，被过滤的内容不能被接受和处理（只在FreeBSD NetBSD中有用）
+- setfib 为监听socket关联路由表，只对FreeBSD起作
+
+# 配置location块
+location [ = | ~ | ~* | ^~] uri {...}
+
+=用于普通uri之前，表示严格匹配
+~ uri包含正则表达式，并且区分大小写
+~* 表示包含正则表达式，并且不区分大小写
+^~ 如果找到与uri匹配度最高的location，立即处理请求。 会对uri进行反编码
+
+# 配置请求的根目录 http server location
+# 服务器收到请求后查找资源的根目录路径，可以使用nginx预设的大多变量，
+# 唯$document_root $realpath_root不能使用；通常在location块中使用。
+root path;
+
+#更改location的URI
+# 除了使用root指定根目录，还可以使用alias指令改变location接收到的请求路径
+alias path;
+
+location ~ ^/data/(.+\.(htm|html))${
+    alias html/data/other/$1;
+}
+
+# 设置网站的默认首页
+# 可以针对不同的访问设置不同的首页
+index index.html index.htm;
+
+设置网站的错误页面 http server location
+
+# 如果uri是path的话，则path是以nginx的安装目录为根路径的；
+error_page code ... [=[response]] uri;
+error_page 404 /404.html;
+error_page 404 http://someone.com/404.html;
+
+# 如果希望错误路径指向自定的位置：
+error_page 404 /404.html
+location /404.html {
+    root /home/alleyz/html;
+}
+
+
+基于密码配置访问权限
+基于HTTP Basic Authentication 协议认证;文件中密码得加密！
+# 生成密文，-c创建密码文件 -d采用crypt加密 -b 命令行指定密码
+htpasswd -cdb  passwd alleyz 123456
+
+# string 开启认证功能，并设置提示信息
+auth_basic string | off;
+
+#file 包含用户名信息的文件路径
+auth_basic_user_file file;

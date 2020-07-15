@@ -1,0 +1,189 @@
+Mysql 复制基于 Binlog 格式
+Binlog 三种格式 : Statement, MiXED, ROW
+Mysql的binlog日志作用是用来记录mysql内部增删改查等对mysql数据库有更新的内容的记录对数据库的改动，
+对数据库的查询select或show等不会被binlog日志记录;主要用于数据库的主从复制以及增量恢复。
+
+Mysqlbinlog功能是将Mysql的binlog日志转换成Mysql语句，默认情况下binlog日志是二进制文件，无法直接查看
+
+MySQL binlog的三种工作模式 ：
+1. Row level
+　　日志中会记录每一行数据被修改的情况，然后在slave端对相同的数据进行修改。
+　　优点：能清楚的记录每一行数据修改的细节
+　　缺点：数据量太大
+2. Statement level（默认）
+　　每一条被修改数据的sql都会记录到master的bin-log中，slave在复制的时候sql进程会解析成和原来master端执行过的相同的sql再次执行
+　　优点：解决了 Row level下的缺点，不需要记录每一行的数据变化，减少bin-log日志量，节约磁盘IO，提高性能
+　　缺点：容易出现主从复制不一致
+3. Mixed（混合模式）
+　　结合了Row level和Statement level的优点
+
+-----------------------------------------
+MySQL企业binlog模式的选择
+互联网公司使用MySQL的功能较少（不用存储过程、触发器、函数），选择默认的Statement level
+用到MySQL的特殊功能（存储过程、触发器、函数）则选择Mixed模式
+用到MySQL的特殊功能（存储过程、触发器、函数），又希望数据最大化一直则选择Row模式
+
+1.binlog文件会随服务的启动创建一个新文件
+2.通过flush logs 可以手动刷新日志，生成一个新的binlog文件
+3.通过show master status 可以查看binlog的状态
+4.通过reset master 可以清空binlog日志文件
+5.通过mysqlbinlog 工具可以查看binlog日志的内容
+6.通过执行dml，mysql会自动记录binlog
+
+--------------------------------------------
+binlog日志应该一直开着，慢查询日志平时可以不开，当觉得网站运行慢，需要优化的话，可以打开慢查询来做一个辅助
+binlog日志会记录下数据库的所以增删改操作，当不小心删除、清空数据，或数据库系统出错，
+这时候就可以使用binlog日志来还原数据库，简单来说就是一个记录备份的东西
+慢查询日志 slow_query_log，用来记录查询比较慢的sql语句，通过查询日志来查找哪条sql语句比较慢，
+然后就可以进行数据库或sql语句或程序上的优化，简单来说就是一个优化辅助工具
+
+1. 查看到binlog日志为OFF关闭状态
+show variables like '%log_bin%';
+2. 开启
+[mysqld]
+log-bin=mysql-bin (mysql-bin其实就是binlog日志文件的前缀)
+注意：5.7及以上版本
+server-id=123454
+
+3. 开启慢查询日志
+临时修改
+set global log_slow_queries=ON;
+set global slow_launch_time=10;
+永久
+[mysqld]
+slow_query_log = on
+slow_query_log_file = /var/log/mysqld-slow.log
+long_query_time = 2
+第一个配置是日志文件位置，第二个配置是慢查询的时间配置（秒），执行时间超过这个时间的查询语句会被记录下来
+
+
+---------------------------------
+基于日志的复制
+注意权限
+基于日志点的复制
+mysqldump --single-transaction --master-data=2 --triggers --routines --all-databases -u root -p > all.sql
+导入
+mysql -u root -p < all.sql
+
+CHANGE MASTER TO option [,option] .. [channel_option]
+MASTER_BIND = 'interface_name'
+MASTER_HOST = 'host_name'
+MASTER_USER = 'user_name'
+MASTER_PASSWORD = 'password'
+MASTER_PORT = port_num
+MASTER_CONNECT_RETRY = interval
+MASTER_RETRY_COUNT = count
+MASTER_DELAY = interval
+MASTER_HEARTBEAT_PERIOD = interval
+MASTER_LOG_FILE = 'master_log_name'
+MASTER_LOG_POS = master_log_pos
+MASTER_AUTO_POSITION = {0|1}
+RELAY_LOG_FILE = 'relay_log_name'
+RELAY_LOG_POS = relay_log_pos
+MASTER_SSL = {0|1}
+MASTER_SSL_CA = 'ca_file_name'
+MASTER_SSL_CAPATH = 'ca_directory_name'
+MASTER_SSL_CERT = 'cert_file_name'
+MASTER_SSL_CRL = 'crl_file_name'
+MASTER_SSL_CRLPATH = 'crl_directory_name'
+MASTER_SSL_KEY = 'key_file_name'
+MASTER_SSL_CIPHER = 'cipher_list'
+MASTER_SSL_VERIFY_SERVER_CERT = {0|1}
+MASTER_TLS_VERSION = 'protocol_list'
+IGNORE_SERVER_IDS = (server_id_list
+channel_option:
+    FOR CHANNEL channelserver_id_list:
+    [server_id [, server_id] ... ]
+
+master:
+grant replication slave on *.* to 'dba'@'192.168.40.%' ;
+show master status \G
+
+slave:
+change master to master_host='192.168.40.182',
+    master_user='dba', -- 复制用户
+    master_password='mysql', -- 密码
+    master_log_file='mysql-bin.000001', -- 主日志文件
+    master_log_pos=154; -- 日志点
+查看从节点状态 :
+show slave status \G
+
+查看处理状态
+show processlist;
+
+start slave;
+stop slvae;
+
+-------------------------------------------
+主从配置表
+| replication_applier_configuration          | 同步延迟配置(秒)
+| replication_applier_status                 | 距离下次同步的时间(秒)
+| replication_applier_status_by_coordinator  | 多线程,协调复制线程
+| replication_applier_status_by_worker       | 复制线程的工作状态
+| replication_connection_configuration       | 主动同步的配置
+| replication_connection_status              | 连接的状态
+| replication_group_member_stats             |
+| replication_group_members                  |
+
+变更同步延迟：
+Slave：change master to master_delay=600;
+
+---------------------------------
+在线复制类型变更 (version >= 5.7.6)
+1. 在线将基于日志的复制变更为基于事务的复制
+注意 ：gtid_mode 设置为 off
+
+MASTER :
+set @@global.enforce_gtid_consistency = warn ;
+set @@global.enforce_gtid_consistency = on ;
+set @@global.gtid_mode = off_permissive ;
+set @@global.gtid_mode = on_permissive ;
+
+show status like 'onging_anonymout_transaction_count' ;
+set @@global.gtid_mode = on ;
+
+stop slave ;
+change master to master_auto_position = 1;
+start slave ;
+
+在线将基于事务的复制变更为基于日志的复制
+注意 ： gtid_mode 为 on
+stop slave ;
+change master to master_auto_position = 0,
+    master_log_file='file',
+    master_log_pos='pos';
+start slave ;
+
+set @@global.gtid_mode = on_permissive ;
+set @@global.gtid_mode = off_permissive ;
+
+select @@global.gtid_owned ;
+set @@global.gtid_mode = off ;
+
+---------------------------------------
+多源复制
+version 5.7 以前 ：
+一个 master 对应一个 slave
+一个 master 可有多个 salve
+
+version 5.7 之后：
+多个 master 对应一个 salve
+
+[mysqld]
+gtid-mode=on
+enforce-gtid-consistency=true
+relay.info更新不及时，SLAVE 重启后导致的主从复制出错，
+在从服务器上实现事故安全功能，增加配置
+master_info_repository=TABLE
+relay_log_info_repository=TABLE
+
+
+另外可以通过如下全局参数设置多线程复制，提高复制速度：
+在slave服务器上停止所有链路的复制
+stop slave [for channel  'channel']
+set global slave_parallel_type='logical_clock'   并发类型， 默认DATABASE
+set global  slave_parallel_workers=4    并发工作线程数 默认为0
+start slave [for channel  'channel']
+
+通过查看线程数：
+show  processlist;

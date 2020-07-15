@@ -1,0 +1,56 @@
+<!-- 配置全局属性 -->
+<settings>
+    <!-- 延迟加载 -->
+    <setting name="lazyLoadingEnabled" value="true"/>
+    <setting name="aggressiveLazyLoading" value="false"/>
+
+    <!-- 使用JDBC的GetGeneratedKeys 获取数据库自增键值 -->
+    <setting name="useGeneratedKeys" value="true" />
+    <!-- 使用列别名替换 默认 true SELECT name as title from tabel; -->
+    <setting name="useColumnLabel" value="true" />
+    <!-- 开启驼峰命名转换 -->
+    <setting name="mapUnderscoreToCamelCase" value="true" />
+</settings>
+
+<resultMap type="cn.nihility.springweb.mybatis.entity.MClass" id="MClassWithMTeacherWithStudentsResultMap2">
+    <id property="cId" column="classId" jdbcType="INTEGER"/>
+    <result property="cName" column="c_name" jdbcType="VARCHAR"/>
+    <!-- 分步查询 -->
+    <association property="teacher" 
+        javaType="cn.nihility.springweb.mybatis.entity.MTeacher" 
+        column="t_id" 
+        select="cn.nihility.springweb.mybatis.dao.mapper.IMTeacherDAO.getTeacherByTid"></association>
+    <collection property="students" 
+        ofType="cn.nihility.springweb.mybatis.entity.MStudent" 
+        column="c_id" 
+        select="cn.nihility.springweb.mybatis.dao.mapper.IMStudentDAO.getStudentsByCid"></collection>
+</resultMap>
+
+--------------------------------------------------------------------
+缓存
+MyBatis将数据缓存设计成两级结构，分为一级缓存、二级缓存：
+
+1. 一级缓存
+一级缓存是Session会话级别的缓存，位于表示一次数据库会话的SqlSession对象之中，又被称之为本地缓存。
+一级缓存是MyBatis内部实现的一个特性，用户不能配置，默认情况下自动支持的缓存，
+用户没有定制它的权利（不过这也不是绝对的，可以通过开发插件对它进行修改）
+
+2. 二级缓存
+二级缓存是Application应用级别的缓存，它的是生命周期很长，跟Application的声明周期一样，
+也就是说它的作用范围是整个Application应用。
+
+
+
+3. 使用
+-- configuration.xml
+<!-- 缓存开启 -->
+<setting name="cacheEnabled" value="true"/>
+
+-- mapper.xml
+<cache/>
+<cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>
+
+<select ... flushCache="false" useCache="true"/>
+<insert ... flushCache="true"/>
+<update ... flushCache="true"/>
+<delete ... flushCache="true"/>

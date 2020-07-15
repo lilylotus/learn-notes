@@ -1,0 +1,36 @@
+grep ---
+主要参数
+[options]主要参数：
+-i ：忽略大小写
+-c ：打印匹配的行数
+-l ：从多个文件中查找包含匹配项
+-v ：查找不包含匹配项的行
+-n：打印包含匹配项的行和行标
+
+-i, --ignore-case         ignore case distinctions
+-e, --regexp=PATTERN      use PATTERN for matching
+-E, --extended-regexp     PATTERN is an extended regular expression (ERE)
+-f, --file=FILE           obtain PATTERN from FILE
+
+-s, --no-messages         suppress error messages
+-v, --invert-match        select non-matching lines
+
+pattern正则表达式主要参数：
+\： 忽略正则表达式中特殊字符的原有含义。
+^：匹配正则表达式的开始行。
+\<：从匹配正则表达 式的行开始。
+\>：到匹配正则表达式的行结束。
+[ ]：单个字符，如[A]即A符合要求 。
+[ - ]：范围，如[A-Z]，即A、B、C一直到Z都符合要求 。
+。：所有的单个字符。
+* ：有字符，长度可以为0。
+
+. * ? {} () 要用符号 -> 先转义
+
+grep -E "[1-9]+"$: 匹配正则表达式的结束行。
+
+============================================
+需要转义
+()  {} |
+\b 单词边界
+

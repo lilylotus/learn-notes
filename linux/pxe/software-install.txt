@@ -1,0 +1,27 @@
+yum install -y vsftpd ntpdate dhcp syslinux tftp-server tftp syslinux-tftpboot
+
+注意:
+/etc/xinetd.d/tftp -> disable yes # yes to no
+
+cp -rf /usr/share/syslinux/* /var/lib/tftpboot/syslinux/
+cp /mount-isodir/images/pxeboot/vmlinuz /var/lib/tftpboot/centos7/
+cp /mount-isodir/images/pxeboot/initrd.img /var/lib/tftpboot/centos7/
+
+pxelinux.cfg/default
+
+default vesamenu.c32
+prompt 1
+timeout 600
+
+menu title ########## PXE Boot Menu ##########
+
+label 1
+menu label ^1) Install CentOS 7 x64 with Local Repo
+menudefault
+kernel centos7/vmlinuz
+append initrd=centos7/initrd.img text ks=ftp://10.10.37.129/pub/anaconda/anaconda-ks7.cfg
+
+label 2
+menu label ^2) Install CentOS 7 x64 with http://mirror.centos.org Repo
+kernel centos7/vmlinuz
+append initrd=centos7/initrd.img method=http://mirror.centos.org/centos-7/7.6.1810/os/x86_64/ devfs=nomount ip=dhcp

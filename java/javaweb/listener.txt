@@ -1,0 +1,70 @@
+context-param -> listener -> filter -> servlet 
+Servlet 监听器, 一个web.xml下可以有多个监听器，监听器的启动顺序和注册顺序一致。 
+启动的优先级为 ：context-param -> 监听器 -> 过滤器 -> Servlet
+
+-----------------------------------------------------------------------
+一. Context 上下文对象，当web应用启动时启动结束时结束 
+二. Session 是在用户打开浏览器第一次访问时应用时，web容器会创建一个Session
+    Session 关闭：1. 服务器关闭 2. 关闭浏览器一段时间 Session 过期 
+        3. 不关闭浏览器但是 Session 过期
+    服务器为每个用户生成一个 Session
+三. Request 
+
+-----------------------------------------------------------------------
+Web 监听器
+
+Session 钝化管理 ->  SessionManager 管理 
+    一. (org.apache.catalina.session.StandarManager)
+    1. 当Tomcat服务器的关闭或重启，tomcat 服务器会将当前内存中的 Session 对象钝化到服务器的文件系统
+    2. Web 应用程序被重新加载，内存中的 Session 对象也会被钝化的服务器文件系统中。
+    3. 钝化文件保存路径： Tomcat 安装路径
+        /work/Catalina/hostname/applicationname/SESSION.ser
+    
+    二. (org.apache.catalina.session.Persistentmanager)
+    12两种情况与上面一样。
+    3. 可以配置主流的内存 Session 数目，将长期不使用的 Session 对象存到文件爱你系统或者数据库，当用时在重新加载 
+
+
+监听器的分类：
+    按监听的对象划分： 
+        1. 监听应用程序环境对象 (ServletContext)的事件监听器
+        2. 监听用户会话的对象 (HttpSession) 的事件监听器
+        3. 监听请求消息对象的 (ServletRequest) 的事件监听器
+
+    按监听的事件划分：
+        1. 监听域对象自身的创建和销毁的事件监听器
+            ServletContext  ->  ServletContextListener  (主要用途 1. 全局属性对象 2. 定时器 3. 数据库初始)
+                (一个web项目仅有一个ServletContext，可有多个ServletContextListener)
+                (方法传入的参数 ServletContextEvent 可以获取初始化变量等)
+            
+            HttpSession     ->  HttpSessionListener     (主要用途 1. 统计在线人数 2. 记录访问日志)
+                (一个web项目仅有一个HttpSession，可有多个HttpSessionListener)
+                (方法传入的参数 HttpSessionEvent 可以获取当前创建的 HttpSession 对象)
+                
+            ServletRequest  ->  ServletRequestListener  (主要用途 1. 读取参数 2. 记录访问历史)
+                (一个web项目仅有一个 ServletRequest，可有多个ServletRequestListener)
+                (方法传入的参数 ServletRequestEvent 可以获取当前的 Request 对象
+                    获取 ServletContext 对象， 获取 ServletRequest 对象)
+                (可以监听到用户的每一次请求)
+                
+        2. 监听域对象中的属性的增加和删除的事件监听器
+            (每个中都定义的三个方法    1. attributeAdded 2. attributeRemoved 3. attributeReplaced 来管理)
+            ServletContext  ->  ServletContextAttributeListener
+                request.setAttribute("requestAttr", "Request Attribute Value");
+                
+            HttpSession     ->  HttpSessionAttributeListener
+                request.getSession().setAttribute("sessionAttr", "Session Attribute Value");
+                
+            ServletRequest  ->  ServletRequestAttributeListener
+                request.getServletContext().setAttribute("servletContextAttr", "servletContext Attribute Value");
+                
+        3. 监听绑定到 HttpSession 域中的某个对象状态的事件监听器 (不需要在web.xml中注册Listener)
+            绑定      ->  解除绑定
+                HttpSessionBindingListener
+                    valueBound  绑定
+                    valueUnbound 解除绑定 
+                
+            钝化(将对象存储的物理介质)  ->  活化(从物理介质加载到内存) (必须实现Serializable)
+                HttpSessionActivationListener
+                    sessionWillPassivate    钝化
+                    sessionDidActivate  活化  

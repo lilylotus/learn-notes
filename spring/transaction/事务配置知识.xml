@@ -1,0 +1,249 @@
+=================================================================
+1. 事务有四个特性：ACID
+1.1 原子性（Atomicity）：
+事务是一个原子操作，由一系列动作组成。事务的原子性确保动作要么全部完成，要么完全不起作用。
+1.2 一致性（Consistency）：
+一旦事务完成（不管成功还是失败），系统必须确保它所建模的业务处于一致的状态，
+而不会是部分完成部分失败。在现实中的数据不应该被破坏。
+1.3 隔离性（Isolation）：
+可能有许多事务会同时处理相同的数据，因此每个事务都应该与其他事务隔离开来，防止数据损坏。
+1.4 持久性（Durability）：
+一旦事务完成，无论发生什么系统错误，它的结果都不应该受到影响，这样就能从任何系统崩溃中恢复过来
+通常情况下，事务的结果被写到持久化存储器中。
+
+=================================================================
+
+=================================================================
+1. 事务管理器 
+Spring事务管理器的接口是org.springframework.transaction.PlatformTransactionManager，通过这个接口，Spring为各个平台如JDBC、Hibernate等都提供了对应的事务管理器，但是具体的实现就是各个平台自己的事情了。
+
+2. JDBC事务
+如果应用程序中直接使用JDBC来进行持久化，DataSourceTransactionManager会为你处理事务边界。
+DataSourceTransactionManager是通过调用java.sql.Connection来管理事务，而后者是通过DataSource获取到的。通过调用连接的commit()方法来提交事务，同样，事务失败则通过调用rollback()方法进行回滚。
+
+3. Hibernate事务
+如果应用程序的持久化是通过Hibernate实习的，那么你需要使用HibernateTransactionManager。
+sessionFactory属性需要装配一个Hibernate的session工厂，HibernateTransactionManager的实现细节是它将事务管理的职责委托给org.hibernate.Transaction对象，而后者是从Hibernate Session中获取到的。当事务成功完成时，HibernateTransactionManager将会调用Transaction对象的commit()方法，反之，将会调用rollback()方法。
+
+4.  Java持久化API事务（JPA）
+ibernate多年来一直是事实上的Java持久化标准，但是现在Java持久化API作为真正的Java持久化标准进入大家的视野。如果你计划使用JPA的话，那你需要使用Spring的JpaTransactionManager来处理事务。
+JpaTransactionManager只需要装配一个JPA实体管理工厂（javax.persistence.EntityManagerFactory接口的任意实现）。JpaTransactionManager将与由工厂所产生的JPA EntityManager合作来构建事务。
+
+=================================================================
+
+=================================================================
+一. Spring事务管理高层抽象主要包括3个接口
+Platform TransactionManager 事务管理器（提交、回滚事务）
+    Spring为不同的持久化框架提供了不同的Platform TransactionManager接口实现。如：
+    使用Spring JDBC或iBatis进行持久化数据时使用DataSourceTransactionManager
+    使用Hibernate3.0版本进行持久化数据时使用HibernateTransactionManager
+
+TransactionDefinition 事务定义信息（隔离、传播、超时、只读）
+脏读（Dirty reads）：一个事务读取了另一个事务改写但还未提交的数据，
+    如果这些数据被回滚，则读到的数据是无效的。
+不可重复读（Nonrepeatable read）：在同一事务中，多次读取同一数据返回的结果有所不同。
+    这通常是因为另一个并发事务在两次查询期间进行了更新。
+幻读（Phantom read）：一个事务读取了几行记录后，另一个事务插入一些记录，幻读就发生了。
+    再后来的查询中，第一个事务就会发现有些原来没有的记录。
+
+不可重复读与幻读的区别
+不可重复读的重点是修改: 同样的条件, 你读取过的数据, 再次读取出来发现值不一样了 
+幻读的重点在于新增或者删除： 同样的条件, 第1次和第2次读出来的记录数不一样 
+
+从总的结果来看, 似乎不可重复读和幻读都表现为两次读取的结果不一致。
+但如果你从控制的角度来看, 两者的区别就比较大。 
+对于前者, 只需要锁住满足条件的记录。 对于后者, 要锁住满足条件及其相近的记录。
+
+TransactionStatus 事务具体运行状态
+
+1. 基本事务属性的定义
+事务管理器接口PlatformTransactionManager通过getTransaction(TransactionDefinition definition)方法来得到事务，这个方法里面的参数是TransactionDefinition类，这个类就定义了一些基本的事务属性。 
+public interface TransactionDefinition {
+    int getPropagationBehavior(); // 返回事务的传播行为
+    int getIsolationLevel(); // 返回事务的隔离级别，事务管理器根据它来控制另外一个事务可以看到本事务内的哪些数据
+    int getTimeout();  // 返回事务必须在多少秒内完成
+    boolean isReadOnly(); // 事务是否只读，事务管理器能够根据这个返回值进行优化，确保事务是只读的
+} 
+
+2. 传播行为
+事务的第一个方面是传播行为（propagation behavior）。
+当事务方法被另一个事务方法调用时，必须指定事务应该如何传播。
+例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行。
+
+事务隔离级别：（五种）
+DEFAULT--使用后端数据库默认的隔离级别（Spring中的选择项）
+READ_UNCOMMITED--允许你读取还未提交的改变了的数据。可能导致脏、幻、不可重复读
+READ_COMMITTED--允许在并发事务已经提交后读取。可防止脏读，但幻读和不可重复读仍可发生
+REPEATABLE_READ--对相同字段的多次读取是一致的，除非数据被事务本身改变。
+    可防止脏、不可重复读，但幻读仍可能发生
+SERIALIZABLE--完全服从ACID的隔离级别，确保不发生脏、幻、不可重复读。
+    这在所有的隔离级别中是最慢的，它是典型的通过完全锁定在事务中涉及的数据表来完成的
+其中，MySQL默认采用REPEATABLE_READ隔离级别；Oracle默认采用READ_COMMITTED隔离级别
+
+事务传播行为：（七种）
+PROPAGATION_REQUIRED--支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。
+PROPAGATION_SUPPORTS--支持当前事务，如果当前没有事务，就以非事务方式执行。
+PROPAGATION_MANDATORY--支持当前事务，如果当前没有事务，就抛出异常。
+
+PROPAGATION_REQUIRES_NEW--新建事务，如果当前存在事务，把当前事务挂起。
+PROPAGATION_NOT_SUPPORTED--以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+PROPAGATION_NEVER--以非事务方式执行，如果当前存在事务，则抛出异常。
+
+PROPAGATION_NESTED--如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与REQUIRED类似的操作。拥有多个可以回滚的保存点，内部回滚不会对外部事务产生影响。只对DataSourceTransactionManager有效
+
+=================================================================
+
+=================================================================
+1. Spring控制事务方法
+1.1 编程式事务管理(基于Java编程控制，很少使用)
+利用TransactionTemplate将多个DAO操作封装起来
+
+1.2 声明式事务管理(基于Spring的AOP配置控制)
+基于TransactionProxyFactoryBean的方式.(很少使用)
+基于XML配置(经常使用)
+
+1.3 基于注解(配置简单，经常使用)
+=================================================================
+
+=================================================================
+1. JdbcTemplate的引用
+
+1.1 
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">  
+        <property name = "dataSource" ref="dataSource">  
+</bean> 
+
+1.2 
+public class UserServiceImpl implements UserService {  
+        private JdbcTemplate jdbcTemplate;  
+        public void setDataSource(DataSource dataSource) {  
+                   this.jdbcTemplate = new JdbcTemplate(dataSource);  
+        }  
+}
+
+1.3
+继承JdbcDaoSupport，其内部有个JdbcTemplate ，需要注入DataSource 属性来实例化。
+public class UserDaoImpl extends JdbcDaoSupport implements UserDao {  
+    @Override  
+    public void save(User user) {  
+        String sql = null;  this.getJdbcTemplate().update(sql);  
+    }  
+}  
+<bean id="userDao" class="com.hxzy.account.jdbcTemplate.UserDaoImpl">  
+           <property name="dataSource" ref="dataSource"/>  
+</bean>  
+=================================================================
+
+=================================================================
+1.  编程式事务管理
+
+<!-- 配置DAO类(简化，会自动配置JdbcTemplate) -->
+<bean id="accountDao" class="cn.nihility1.dao.AccountDaoImpl">
+    <property name="dataSource" ref="dataSource" />
+</bean>
+<bean id="accountService" class="cn.nihility1.service.AccountServiceImpl">
+    <property name="accountDao" ref="accountDao" />
+    <property name="transactionTemplate" ref="transcationTemplate"/>
+</bean>
+
+<bean id="transcationManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<!-- 配置事务管理的模版： Spring为了简化事务管理而提供的类 -->
+<bean id="transcationTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+    <property name="transactionManager" ref="transcationManager"/>
+</bean>
+
+2. 使用XML配置声明式的事务管理(原始方式)
+<!-- 配置DAO类(简化，会自动配置JdbcTemplate) -->
+<bean id="accountDao" class="cn.nihility2.dao.AccountDaoImpl">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<bean id="accountService" class="cn.nihility2.service.AccountServiceImpl">
+    <property name="accountDao" ref="accountDao"/>
+</bean>
+
+<bean id="transcationManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<!-- 配置业务层代理 -->
+<bean id="serviceProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+    <!-- 配置目标对象 -->
+    <property name="target" ref="accountService"/>
+    <!-- 注入事务的管理器 -->
+    <property name="transactionManager" ref="transcationManager"/>
+    <!-- 注入事务属性 -->
+    <property name="transactionAttributes">
+        <props>
+        <!-- 绑定事务属性的方法 -->
+        <!--
+           prop的格式:
+           * PROPAGATION   :事务的传播行为
+           * ISOTATION     :事务的隔离级别
+           * readOnly      :只读
+           * -EXCEPTION    :发生哪些异常回滚事务
+           * +EXCEPTION    :发生哪些异常不回滚事务
+        -->
+            <prop key="transfer">PROPAGATION_REQUIRED</prop>
+        </props>
+    </property>
+</bean>
+
+注意： 此时业务层应该使用声明事务管理后的bean --> serviceProxy
+
+
+3. 使用XML配置声明式的事务管理-基于XML配置
+<!-- 配置DAO类(简化，会自动配置JdbcTemplate) -->
+<bean id="accountDao" class="cn.nihility3.dao.AccountDaoImpl">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<bean id="accountService" class="cn.nihility3.service.AccountServiceImpl">
+    <property name="accountDao" ref="accountDao"/>
+</bean>
+
+<!-- 3.使用XML配置声明式的事务管理,基于XML配置 -->
+<!--配置事务管理器 -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<!-- 配置事务通知 -->
+<tx:advice id="txAdvice" transaction-manager="transactionManager">
+    <tx:attributes>
+        <!--
+            propagation :事务传播行为
+            isolation   :事务的隔离级别
+            read-only   :只读
+            rollback-for:发生哪些异常回滚
+            no-rollback-for :发生哪些异常不回滚
+            timeout     :过期信息
+        -->
+        <tx:method name="transfer" propagation="REQUIRED"/>
+    </tx:attributes>
+</tx:advice>
+<!-- 配置切面 -->
+<aop:config>
+    <!-- 配置切入点 -->
+    <aop:pointcut id="pointcout1" expression="execution(* cn.nihility3.service.AccountService+.*(..))"/>
+    <!-- 配置切面 -->
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="pointcout1"/>
+</aop:config>
+
+4. 基于注解
+<!-- 开启注解事务 -->
+<tx:annotation-driven transaction-manager="transactionManager"/>
+
+/**
+ * @Transactional中的的属性 
+ * propagation :事务的传播行为 
+ * isolation :事务的隔离级别 
+ * readOnly :只读
+ * rollbackFor :发生哪些异常回滚 
+ * noRollbackFor :发生哪些异常不回滚
+ * rollbackForClassName 根据异常类名回滚
+ */
+
+// 不进行回滚 @Transactional(notRollbackFor=RunTimeException.class)
+@Transactional(propagation = Propagation.REQUIRED)
+public class AccountServiceImpl implements AccountService {
+...
+=================================================================

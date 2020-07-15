@@ -1,0 +1,13 @@
+打包时候不测试：
+mvn install -Dmaven.test.skip=true 或者 mvn install -DskipTests
+
+自己 install 包到本地仓库：
+mvn install:install-file -DgroupId=ojdbc -DartifactId=ojdbc6 -Dversion=11.2.0.4 -Dpackaging=jar -Dfile=ojdbc6.jar
+
+
+<mirror>
+	<id>alimaven</id>
+	<mirrorOf>central</mirrorOf>
+	<name>aliyun maven</name>
+	<url>http://maven.aliyun.com/nexus/content/repositories/central/</url>
+</mirror>

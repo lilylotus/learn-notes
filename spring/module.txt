@@ -1,0 +1,17 @@
+spring core container :
+spring-core, spring-beans, spring-context, spring-context-support, spring-expression
+
+spring aop :
+spring-aop, spring-aspects, spring-instrument
+
+spring message : (spring 4.x)
+spring-messaging
+
+spring data access/integration :
+spring-jdbc, spring-tx, spring-orm, spring-jms, spring-oxm
+
+spring web :
+spring-web, spring-webmvc, spring-websocket
+
+spring test :
+spring-test

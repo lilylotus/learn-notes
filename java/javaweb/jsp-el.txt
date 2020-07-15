@@ -1,0 +1,40 @@
+EL 的隐式对象
+pageContext
+pageScope
+requestScope
+sessionScope
+applicationScope
+param
+paramValues
+Header
+headerValues
+cookie
+initParam
+
+注意: EL 变量的查找顺序: Page -> Request -> Session -> Application
+
+1. EL 会自动的类型转换
+String strCount = "20";
+int iCount = 20;
+
+EL -> ${param.count + 20}
+
+2. EL 运算符
+算术运算符: + - * / div %
+关系运算符: ==(eq) !=(ne) <(lt) >(gt) <=(le) >=(ge)
+逻辑运算符: &&(and) ||(or) !(not)
+验证运算符: empty (true | false)  null -> true; "" -> true
+
+
+3. JSTL 核心标签库共13个，分为三类
+表达式控制标签: out set remove catch
+流程控制标签: if choose when otherwise
+循环标签: forEach forTokens
+URL操作标签: import url redirect
+
+out :
+<c:out value="This is first JSTL demo"></c:out>
+<c:out value="${ name }"></c:out><br/>
+<c:out value="${ age }" default="Age error"></c:out>
+<c:out value="&lt;out标签&gt;" escapeXml="false"></c:out> 
+Html 特殊实体字符转义 escapeXml=false

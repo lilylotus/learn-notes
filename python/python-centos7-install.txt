@@ -1,0 +1,22 @@
+1.安装升级相应的软件包
+yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make
+
+2. 装python3.6
+tar zxvf Python-3.6.2.tgz -C /opt/
+cd /opt/Python-3.6.2/  
+./configure --prefix=/usr/local/python3 
+make && make install   
+
+3. 配置python
+ln -s /usr/local/python3/bin/python3.6 /usr/bin/python3
+ln -s /usr/local/python3/bin/pip3 /usr/bin/pip3
+
+4.查看当python的版本,出现版本信息即为正确安装
+python3 --version
+
+
+------------------------------------------------------
+Ubuntu 
+sudo apt-get install python-dev python-pip libxml2-dev libxslt1-dev zlib1g-dev libffi-dev libssl-dev
+
+sudo apt-get install python3 python3-dev

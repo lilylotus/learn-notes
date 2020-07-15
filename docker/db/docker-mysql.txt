@@ -1,0 +1,85 @@
+docker pull mysql
+docker images
+
+启动一个容器：
+docker run --name tmysql -e MYSQL_ROOT_PASSWORD=123456 -p 3306:3306 -d mysql:5.7.18
+
+查看状态：
+docker ps -a
+
+启动和关闭：
+docker start tmysql [id]
+docker stop 739fff2
+
+修改配置：
+docker exec -it tmysql /usr/bin/bash
+修改 /etc/mysql/my.cnf
+或者挂载主机上的配置文件：
+docker run --name t-msyql -v /self/custom:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=secret-pwd -d mysql:tag
+
+存储数据文件：
+docker run --name some-mysql -v /my/own/datadir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag
+
+========================
+默认的配置文件是：/etc/mysql/my.cnf
+默认的数据目录是：/var/lib/mysql
+
+配置文件 my.cnf 加载了 /etc/mysql/conf.d 文件夹下所有的配置（后缀必须是 .cnf），
+只需映射 conf.d 文件夹即可。宿主机中创建文件夹 mysql，并分别创建 data 目录和 conf 目录。
+新建配置文件 txl.cnf：
+[mysqld]
+server-id = 1 #服务Id唯一
+port = 3306
+log-error    = /var/log/mysql/error.log
+#只能用IP地址
+skip_name_resolve
+#数据库默认字符集
+character-set-server = utf8mb4
+#数据库字符集对应一些排序等规则
+collation-server = utf8mb4_general_ci
+#设置client连接mysql时的字符集,防止乱码
+init_connect='SET NAMES utf8mb4'
+#最大连接数
+max_connections = 300
+
+注意：  MySQL(5.7.19)的默认配置文件是 /etc/mysql/my.cnf 文件。
+如果想要自定义配置，建议向 /etc/mysql/conf.d 目录中创建 .cnf 文件。
+新建的文件可以任意起名，只要保证后缀名是 cnf 即可。
+新建的文件中的配置项可以覆盖 /etc/mysql/my.cnf 中的配置项。
+
+> 映射数据库目录和配置文件目录，启动容器
+docker run --name t-mysql -d --rm \
+-v /home/tx/mysql/conf:/etc/mysql/conf.d \
+-v /home/tx/mysql/data:/var/lib/mysql \
+-p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7.18
+
+使用容器客户端连接：
+docker exec -it mysql mysql -uroot -p123
+
+================================
+my.cnf
+-------------------------
+[client]
+default-character-set=utf8mb4
+
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect='SET NAMES utf8mb4'
+max_connections = 300
+skip_name_resolve
+
+[mysql]
+default-character-set=utf8mb4
+
+docker cp /home/my.cnf(宿主机文件路径) [容器id]:/etc/mysql/mysql.conf.d
+--------------------
+–privileged=true：提升容器内权限
+-v /mysqltest/config/my.cnf:/etc/my.cnf：映射配置文件
+-v /mysqltest/data:/var/lib/mysql：映射数据目录
+
+docker run --name mymysql -d --rm -v /d-mysql/conf:/etc/mysql/conf.d -v /d-mysql/data:/var/lib/mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7.18
+docker run --name mymysql -d --rm -v /d-mysql/conf:/etc/mysql/conf.d -v /d-mysql/data:/var/lib/mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7.18
+
+docker run --name mymysql01 -d --rm -v /d-mysql/conf:/etc/mysql/conf.d -v /d-mysql/data01:/var/lib/mysql -p 3307:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:5.7.18

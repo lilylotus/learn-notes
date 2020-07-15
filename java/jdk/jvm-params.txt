@@ -1,0 +1,163 @@
+-Xms    初始堆的分配大小，默认为物理内存的六十四分之一 
+-Xmx    堆的最大分配大小（默认为物理内存的四分之一）  
+-Xmn    新生代的大小
+-Xss    栈大小设置
+
+示例： -Xms8m -Xmx8m -XX:+PrintGCDetails 
+
+==============================================
+堆配置
+-Xms                :初始堆大小
+-Xms                :最大堆大小
+-XX:NewSize=n       :设置年轻代大小
+-XX:NewRatio=n      :设置年轻代和年老代的比值。如：为3表示年轻代和年老代比值为1：3，年轻代占整个年轻代年老代和的1/4
+-XX:SurvivorRatio=n :年轻代中Eden区与两个Survivor区的比值。注意Survivor区有两个。如3表示Eden： 3 Survivor：2，一个Survivor区占整个年轻代的1/5
+-XX:MaxPermSize=n   :设置持久代大小
+
+说明：
+1、一般初始堆和最大堆设置一样，因为：现在内存不是什么稀缺的资源，但是如果不一样，从初始堆到最大堆的过程会有一定的性能开销，所以一般设置为初始堆和最大堆一样。64位系统理论上可以设置为无限大，但是一般设置为4G,因为如果再大，JVM进行垃圾回收出现的暂停时间会比较长，这样全GC过长，影响JVM对外提供服务，所以不能太大。一般设置为4G。
+2、-XX:NewRaio和-XX:SurvivorRatio这两个参数，都是设置年轻代和年老代的大小的，设置一个即可，第一是设置年轻代的大小，第二个是设置比值，理论上设置一个既可以满足需求
+
+==============================================
+收集器设置：
+-XX:+UseSerialGC           :设置串行收集器
+-XX:+UseParallelGC         :设置并行收集器
+-XX:+UseParalledlOldGC     :设置并行年老代收集器
+-XX:+UseConcMarkSweepGC    :设置并发收集器
+
+==============================================
+垃圾回收统计信息，打印GC回收的过程日志信息
+-XX:+PrintGC 
+-XX:+PrintGCDetails
+-XX:+PrintGCTimeStamps
+-Xloggc:filename
+
+==============================================
+并行收集器设置
+-XX:ParallelGCThreads=n     :设置并行收集器收集时使用的CPU数。并行收集线程数
+-XX:MaxGCPauseMillis=n      :设置并行收集最大的暂停时间（如果到这个时间了，垃圾回收器依然没有回收完，也会停止回收）
+-XX:GCTimeRatio=n           :设置垃圾回收时间占程序运行时间的百分比。公式为：1/(1+n)
+-XX:+CMSIncrementalMode     :设置为增量模式。适用于单CPU情况
+-XX:ParallelGCThreads=n     :设置并发收集器年轻代手机方式为并行收集时，使用的CPU数。并行收集线程数
+
+==============================================
+行为参数(功能开关)
+-XX:-DisableExplicitGC      禁止调用System.gc()；但jvm的gc仍然有效
+-XX:+MaxFDLimit             最大化文件描述符的数量限制
+-XX:+ScavengeBeforeFullGC   新生代GC优先于Full GC执行
+-XX:+UseGCOverheadLimit     在抛出OOM之前限制jvm耗费在GC上的时间比例
+-XX:-UseConcMarkSweepGC     对老生代采用并发标记交换算法进行GC
+-XX:-UseParallelGC          启用并行GC
+-XX:-UseParallelOldGC       对Full GC启用并行，当-XX:-UseParallelGC启用时该项自动启用
+-XX:-UseSerialGC            启用串行GC
+-XX:+UseThreadPriorities    启用本地线程优先级
+
+==============================================
+典型配置举例
+1. 
+java -Xmx3550m -Xms3550m -Xmn2g -Xss128k
+-Xmx3550m   :设置JVM最大可用内存为3550m
+-Xms3550m   :设置JVM初始内存为3550m，此值可以设置-Xmx相同，以避免每次垃圾回收完成以后JVM重新分配内存
+-Xmn2g      :设置年轻代大小为2G。整个堆大小=年轻代大小+年老代大小+持久代大小。
+            持久代一般固定为64M,所以增大年轻代后，将会减少年老代大小，此值对系统性能影响比较大
+            Sun官方推荐配置为整个堆的3/8
+-Xss128k    :设置每个线程的堆栈大小。JDK5.0以后每个线程栈大小为1M，以前每个线程堆栈大小为256k
+            根据应用的线程所需要内存大小进行调整。在相同物理内存下，减少这个值能够生成更多的线程。
+            但是操作系统对一个进程内的线程还是有限制的，不能无限生成，经验值在3000-5000左右
+
+2. 
+java -Xmx3550m -Xms3550m -Xss128k -XX:NewRatio=4 -XX:SurvivorRatio=4 -XX:MaxPermSize=16m -XX:MaxTenuringThreshold=0
+-XX:NewRatio=4  :设置年轻代（包括Eden和两个Survivor区）与年老代的比值（除去持久代）
+                设置为4，则年轻代和年老代所占比值为1：4，年轻代占整个堆栈的1/5
+-XX:SurvivorRatio=4     :设置年轻代中Eden区与Survivor区的大小比值。
+                设置为4，则两个Survivor区与一个Eden区的比值为2:4,一个Survivor区占整个年轻代的1/6
+-XX:MaxPermSize=16m     :设置持久代大小为16m
+-XX:MaxTenuringThreshold=0  ：设置垃圾最大年龄。如果设置为0，则年轻代对象不经过Survivor区，直接进入年老代。
+                对于年老代比较多的应用，提高效率，如果将此值设置为一个较大值，则年轻代对象会在Survivor区进行多次复制
+                这样可以增加对象在年轻代的存活时间。
+
+==============================================
+JVM给了三种选择：串行收集器，并行收集器，并发收集器
+串行收集器只适用于小数据量的情况，一般不考虑使用了.只针对并行收集器和并发收集器。
+默认情况下，JDK5.0以前是使用的串行收集器，如果想使用其他收集器需要在启动时加入相应的参数
+JDK5.0以后，JVM会根据系统当前的配置进行判断
+
+1. 吞吐量优先的并行收集器: 并行收集器主要以到达一定的吞吐量为目标，适用于后台处理
+java -Xmx3550m -Xms3550m -Xss128k -XX:+UseParallelGC -XX:ParallelGCThreads=20
+-XX:+UseParallelGC  :选择垃圾收集器为并行收集器。次配置仅对年轻代有效。年轻代使用并行收集，而年老代仍旧使用串行收集
+-XX：PARALLELgcThreads=20    :配置并行收集器的线程数，即：同时多少个线程一起进行垃圾回收。此值最好配置与处理器数目相同。
+-XX:+UseParallelOldGC       :配置年老代来及收集方式为并行收集，JDK6.0支持对年老代并行收集
+-XX:MaxGCPauseMillis=100    :设置每次年轻代垃圾回收的最长时间，如果无法满足此时间，JVM会自动调整年轻代大小，以满足此值
+-XX:+UseAdaptiveSizePolicy  :设置此选项以后，并行收集器会自动选择年轻代区大小和相应的Survivor区比例，
+                以达到目标系统规定的最低响应时间或者收集频率等，此值建议使用并行收集器时，一直打开
+
+2. 响应时间优先的并发收集器
+并发收集器主要是保证系统的响应时间，减少垃圾收集时的停顿时间。适用于应用服务器、电信领域等。
+
+-XX:CMSFullGCsBeforeCompaction=5 -XX:+UseCMSCompactAtFullCollection
+-XX:CMSFullGCsBeforeCompaction  :由于并发收集器不对内存空间进行压缩、整理、所以运行一段时间以后会产生“碎片”，
+                使得运行效率降低。此值设置运行多少次GC以后对内存空间进行压缩、整理
+-XX:+UseCMSCompactAtFullCollection  ：打开对年老代的压缩。可能会影响性能，但是可以消除碎片
+
+==============================================
+调优总结：
+1. 年轻代大小选择
+响应时间优先的应用：尽可能设置大，直到接近系统的最低响应时间限制（根据实际情况选择）。
+    在此种情况下，年轻代收集发生的频率也是最小的。同时减少到达年老代的对象。
+
+吞吐量优先的应用：尽可能的设置大，可能到达Gbit的程度，因为对响应时间没有要求，垃圾收集可以并行进行，一般适合8核CPU以上应用。
+
+2. 年老代大小选择
+响应时间优先的应用：年老代使用并发收集器，所以其大小需要小心设置，一般要考虑并发会话率和会话持续时间等一些参数。
+        如果堆设置小了，可能会造成内存碎片、高回收频率以及应用暂停而使用传统的标记清除方式；
+        如果堆大了，则需要较长的收集时间。最优化的方案，一般需要参考一下数据获得：
+2.1 并发垃圾收集信息 2.2持久代并发收集次数  2.3传统GC信息
+2.4 花在年轻代和年老代回收上的时间比例减少年轻代和年老代花费的时间，一般会提高应用的效率
+
+3. 吞吐量优先的应用
+一般吞吐量优先的应用都有一个很大的年轻代和一个较小的年老代。
+原因是，这样可以尽可能回收掉大部分短期对象，减少中期对象，而年老代尽存放长期存活的对象
+
+4. 较小堆引起的碎片问题
+因为年老代的并发收集器使用标记、清除算法，所以不会对堆进行压缩。
+当收集器回收时，他会把相邻的空间进行合并，这样可以分配给较大的对象。
+但是当堆空间较小时，运行一段时间以后，就会出现“碎片”，如果并发收集器找不到足够的空间，
+那么并发收集器将会停止，然后使用传统的标记、清除方式进行回收。如果出现“碎片”，可能需要进行如下配置：
+-XX:+UseCMSCompactAtFullCollection      :使用并发收集器时，开启对年老代的压缩
+-XX:CMSFullGCsBeforeCompaction=0        :上面配置开启的情况下，这里设置多少次FullGc后，对年老代进行压缩
+
+==============================================
+
+性能调优
+-XX:LargePageSizeInBytes=4m     设置用于Java堆的大页面尺寸
+-XX:MaxHeapFreeRatio=70 GC      后java堆中空闲量占的最大比例
+-XX:MaxNewSize=size             新生成对象能占用内存的最大值
+-XX:MaxPermSize=64m             老生代对象能占用内存的最大值
+-XX:MinHeapFreeRatio=40         GC后java堆中空闲量占的最小比例
+-XX:NewRatio=2                  新生代内存容量与老生代内存容量的比例
+-XX:NewSize=2.125m              新生代对象生成时占用内存的默认值
+-XX:ReservedCodeCacheSize=32m   保留代码占用的内存容量
+-XX:ThreadStackSize=512         设置线程栈大小，若为0则使用系统默认值
+-XX:+UseLargePages              使用大页面内存
+
+
+调试参数
+-XX:-CITime     打印消耗在JIT编译的时间
+-XX:ErrorFile=./hs_err_pid<pid>.log 保存错误日志或者数据到文件中
+-XX:-ExtendedDTraceProbes   开启solaris特有的dtrace探针
+-XX:HeapDumpPath=./java_pid<pid>.hprof  指定导出堆信息时的路径或文件名
+-XX:-HeapDumpOnOutOfMemoryError 当首次遭遇OOM时导出此时堆中相关信息
+-XX:OnError="<cmd args>;<cmd args>" 出现致命ERROR之后运行自定义命令
+-XX:OnOutOfMemoryError="<cmd args>;<cmd args>"  当首次遭遇OOM时执行自定义命令
+-XX:-PrintClassHistogram    遇到Ctrl-Break后打印类实例的柱状信息，与jmap -histo功能相同
+-XX:-PrintConcurrentLocks   遇到Ctrl-Break后打印并发锁的相关信息，与jstack -l功能相同
+-XX:-PrintCommandLineFlags  打印在命令行中出现过的标记
+-XX:-PrintCompilation       当一个方法被编译时打印相关信息
+-XX:-PrintGC                每次GC时打印相关信息
+-XX:-PrintGC Details        每次GC时打印详细信息
+-XX:-PrintGCTimeStamps      打印每次GC的时间戳
+-XX:-TraceClassLoading      跟踪类的加载信息
+-XX:-TraceClassLoadingPreorder  跟踪被引用到的所有类的加载信息
+-XX:-TraceClassResolution   跟踪常量池
+-XX:-TraceClassUnloading    跟踪类的卸载信息
+-XX:-TraceLoaderConstraints 跟踪类加载器约束的相关信息

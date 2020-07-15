@@ -1,0 +1,54 @@
+java程序以.java（文本文件）的文件存在磁盘上
+通过(bin/javac.exe)编译命令把.java文件编译成.class文件（字节码文件），并存在磁盘上
+首先一定要把.class文件加载到JVM内存中才能使用的
+classLoader,就是负责把磁盘上的.class文件加载到JVM内存中
+
+一. 3 种ClassLoader
+1. Bootstrp Loader
+    Bootstrp加载器是用C++语言写的，它是在Java虚拟机启动后初始化的
+    称为启动类加载器，是Java类加载层次中最顶层的类加载器
+    负责加载JDK中的核心类库，如：rt.jar、resources.jar、charsets.jar等
+
+2. ExtClassLoader  
+    Bootstrp loader加载ExtClassLoader
+    ExtClassLoader的父加载器设置为Bootstrp loader.ExtClassLoader是用Java写的
+    扩展类加载器，负责加载Java的扩展类库，默认加载JAVA_HOME/jre/lib/ext/目下的所有jar
+
+3. AppClassLoader 
+    Bootstrp loader加载完ExtClassLoader后，就会加载AppClassLoader
+    并且将AppClassLoader的父加载器指定为 ExtClassLoader
+    系统类加载器，负责加载应用程序classpath目录下的所有jar和class文件
+    它主要加载我们应用程序中的类，如Test,或者用到的第三方包,如jdbc驱动包等
+    这里的父类加载器与类中继承概念要区分，它们在class定义上是没有父子关系的
+
+ 除了Java默认提供的三个ClassLoader之外，用户还可以根据需要定义自已的ClassLoader
+ 而这些自定义的ClassLoader都必须继承自java.lang.ClassLoader类
+
+为什么要有三个类加载器，一方面是分工，各自负责各自的区块，另一方面为了实现委托模型。
+
+-----------------------------------------------------------------
+ClassLoader加载类的原理 
+ClassLoader使用的是双亲委托模型来搜索类的
+
+1. 为什么要使用双亲委托这种模型呢？
+可以避免重复加载，当父亲已经加载了该类的时候，就没有必要子ClassLoader再加载一次
+考虑到安全因素，如果不使用这种委托模式，那我们就可以随时使用自定义的String来
+动态替代java核心api中定义的类型，这样会存在非常大的安全隐患，而双亲委托的方式,
+就可以避免这种情况，
+因为String已经在启动时就被引导类加载器（Bootstrcp ClassLoader）加载，
+所以用户自定义的ClassLoader永远也无法加载一个自己写的String，
+除非你改变JDK中ClassLoader搜索类的默认算法。
+
+2. JVM在搜索类的时候，又是如何判定两个class是相同的呢？
+JVM在判定两个class是否相同时，不仅要判断两个类名是否相同，
+而且要判断是否由同一个类加载器实例加载的。
+只有两者同时满足的情况下，JVM才认为这两个class是相同的。
+就算两个class是同一份class字节码，如果被两个不同的ClassLoader实例所加载，
+JVM也会认为它们是两个不同class。
+
+
+
+
+
+
+

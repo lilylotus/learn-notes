@@ -1,0 +1,37 @@
+查找
+/something: 在后面的文本中查找something。
+?something: 在前面的文本中查找something。
+n: 向后查找下一个。
+N: 向前查找下一个。
+
+替换
+:s/old/new - 用new替换当前行第一个old。
+:s/old/new/g - 用new替换当前行所有的old。
+:n1,n2s/old/new/g - 用new替换文件n1行到n2行所有的old。
+:%s/old/new/g - 用new替换文件中所有的old。
+:%s/^/xxx/g - 在每一行的行首插入xxx，^表示行首。
+:%s/$/xxx/g - 在每一行的行尾插入xxx，$表示行尾。
+
+如果不指定range，则表示当前行。
+m,n: 从m行到n行。
+0: 最开始一行（可能是这样）。
+$: 最后一行
+.: 当前行
+%: 所有行
+
+文件的编码
+:e ++enc=utf8 filename, 让vim用utf-8的编码打开这个文件。
+:w ++enc=gbk，不管当前文件什么编码，把它转存成gbk编码。
+:set fenc或:set fileencoding，查看当前文件的编码。
+
+:set hlsearch
+:set nohlsearch 取消高亮一直生效
+:noh
+
+==================================
+.vimrc
+
+set ts=4
+set autoindent
+set shiftwidth=4
+syntax on

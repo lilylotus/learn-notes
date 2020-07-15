@@ -1,0 +1,56 @@
+docker pull sath89/oracle-12c
+
+docker run -d -p 8080:8080 -p 1521:1521 sath89/oracle-12c
+docker run -d -p 8080:8080 -p 5500:5500 -p 1521:1521 -v /data/oracle/data:/u01/app/oracle --name oracle12c sath89/oracle-12c
+
+filemon/oracle_11g
+
+ocker exec -it name /bin/bash
+export ORACLE_SID=orcl
+$ORACLE_HOME/bin/sqlplus / as sysdba
+shutdown immediate;
+startup mount
+ALTER SYSTEM ENABLE RESTRICTED SESSION;
+ALTER SYSTEM SET JOB_QUEUE_PROCESSES=0;
+ALTER SYSTEM SET AQ_TM_PROCESSES=0;
+alter database open;
+ALTER DATABASE character set INTERNAL_USE ZHS16GBK;
+shutdown immediate;
+startup
+select userenv('language') from dual;
+
+AMERICAN.AL32UTF8
+docker pull sath89/oracle-12c
+docker run -d -p 8080:8080 -p 41002:1521 -v /home/muscari/docker/dockerdata/oracle/oracle12c/data:/u01/app/oracle sath89/oracle-12c
+
+docker run -d --name oracle12c -p 41002:1521 -v /home/muscari/docker/dockerdata/oracle/oracle12c/data:/u01/app/oracle absolutapps/oracle-12c-ee
+
+docker run -d --name oracle12c -v /home/muscari/docker/dockerdata/oracle/oracle11g/data:/u01/app/oracle -p 41003:8080 -p 41002:1521 absolutapps/oracle-12c-ee
+
+sqlplus system/oracle@//localhost:1521/orcl
+
+docker run --rm -d-p 41001:1521 -v /home/muscari/docker/dockerdata/oracle/oracle11g/data:/u01/app/oracle --name oracle11g sath89/oracle-xe-11g
+
+hostname:localhost
+port: 49161
+sid: xe
+service name: xe
+username: system
+password: oracle
+
+CREATE USER scott identified by 123456;
+grant connect,resource to scott;
+grant unlimited tablespace to scott;
+alter user scott default tablespace users;
+alter user scott temporary tablespace temp;
+============================================
+select username from dba_users
+alter user system identified by 123456;
+
+alter user scott account unlock
+sqlplus scott/123456@127.0.0.1:1521/orcl
+
+sqlplus  scott/123456@127.0.0.1:40009/orcl
+
+111.231.92.115
+SCOTT/123456@111.231.92.115:40009/ORCL

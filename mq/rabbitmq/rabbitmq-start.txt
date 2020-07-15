@@ -1,0 +1,63 @@
+"C:\Program Files\RabbitMQ Server\rabbitmq_server-3.6.5\sbin\rabbitmq-plugins.bat" enable rabbitmq_management
+
+net stop RabbitMQ && net start RabbitMQ
+
+创建用户，密码，绑定角色
+rabbitmqctl控制台命令（rabbitmq_server-3.6.5\sbin\rabbitmqctl.bat）来创建用户，密码，绑定权限等。
+rabbitmq的用户管理包括增加用户，删除用户，查看用户列表，修改用户密码。
+
+rabbitmqctl.bat list_users
+rabbitmqctl.bat add_user username password
+rabbitmqctl.bat set_user_tags username administrator
+rabbitmqctl.bat set_user_tags username tag1 tag2 ...
+
+rabbitmqctl change_password userName newPassword
+rabbitmqctl.bat delete_user username
+
+rabbitmq用户角色可分为五类：超级管理员, 监控者, 策略制定者, 普通管理者以及其他。
+1. 超级管理员 administrator
+可登陆管理控制台(启用management plugin的情况下)，可查看所有的信息，并且可以对用户，策略(policy)进行操作。
+2. 监控者 monitoring
+可登陆管理控制台(启用management plugin的情况下)，同时可以查看rabbitmq节点的相关信息(进程数，内存使用情况，磁盘使用情况等)
+3. 策略制定者 policymaker
+可登陆管理控制台(启用management plugin的情况下), 同时可以对policy进行管理。
+4. 普通管理者 management
+仅可登陆管理控制台(启用management plugin的情况下)，无法看到节点信息，也无法对策略进行管理。
+5. 其他的
+无法登陆管理控制台，通常就是普通的生产者和消费者。
+
+http://localhost:15672
+
+权限相关命令为：
+1. 设置用户权限
+rabbitmqctl  set_permissions  -p  VHostPath  User  ConfP  WriteP  ReadPermission
+2. 查看(指定hostpath)所有用户的权限信息
+rabbitmqctl  list_permissions  [-p  VHostPath]
+3. 查看指定用户的权限信息
+rabbitmqctl  list_user_permissions  User
+4.  清除用户的权限信息
+rabbitmqctl  clear_permissions  [-p VHostPath]  User
+
+
+第四步：rabbitMQ常用的命令
+启动监控管理器：rabbitmq-plugins enable rabbitmq_management
+关闭监控管理器：rabbitmq-plugins disable rabbitmq_management
+启动rabbitmq：rabbitmq-service start
+关闭rabbitmq：rabbitmq-service stop
+查看所有的队列：rabbitmqctl list_queues
+清除所有的队列：rabbitmqctl reset
+关闭应用：rabbitmqctl stop_app
+启动应用：rabbitmqctl start_app
+用户和权限设置（后面用处）
+
+添加用户：rabbitmqctl add_user username password
+分配角色：rabbitmqctl set_user_tags username administrator
+新增虚拟主机：rabbitmqctl add_vhost  vhost_name
+将新虚拟主机授权给新用户：rabbitmqctl set_permissions -p vhost_name username '.*' '.*' '.*'
+角色说明
+
+none  最小权限角色
+management 管理员角色
+policymaker   决策者
+monitoring  监控
+administrator  超级管理员

@@ -1,0 +1,111 @@
+1. 让虚拟机能够互相共享数据，让系统支持 ipv4 转发功能.
+    echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-ipforward.conf
+    sysctl -p /etc/sysctl.d/99-ipforward.conf
+2. 配置网卡
+ifcfg-eno16777736
+    DEVICE="eno16777736"
+    ONBOOT=yes
+    HWADDR="网卡的MAC地址"
+    IPADDR="192.168.100.10"
+    NETMASK="255.255.255.0"
+    GATEWAY="192.168.100.1"
+    DNS1="192.168.100.1"
+    BRIDGE=virbr0 -> 设置网卡为桥接模式
+ifcfg-virbr0
+    DEVICE="virbr0"
+    TYPE=BRIDGE
+    ONBOOT=yes
+    BOOTPROTO=static
+    IPADDR="192.168.100.10"
+    NETMASK="255.255.255.0"
+    GATEWAY="192.168.100.1"
+    DNS1="192.168.100.1"
+
+查看 CUP 是否开启虚拟化
+    lsmod | grep kvm
+查看桥接的网卡配置是否成功:
+    ip show virbr0
+    virsh -c qemu:///system list
+
+====================================================
+1. 重要的守护进程 - 随系统的启动而激活，关闭而关闭，在系统后台默默提供服务
+crond       计划任务(
+dhcpd       动态的 IP 地址分配(DHCP)
+httpd       网站服务
+lpd         打印机服务
+named       域名解析服务(DNS)
+nfs         文件共享服务(NFS)
+smb         文件共享与打印服务(SAMBA)
+syslog      系统日志
+gpm         鼠标进程
+
+2. 软件包的管理 (RPM - Redhat Package Manager)
+rpm -ivh filename.rpm   安装软件
+rpm -Uvh filename.rpm   升级软件
+rpm -e filaname.rpm     卸载软件
+rpm -qpi filename.rpm   查看软件的描述信息
+rpm -qpl filename.rpm   列出文件信息
+rpm -qf filename        查询文件属于那个 RPM
+
+3. YUM 仓库 (/etc/yum.repo.d 目录 *.repo)
+[rhel-media]
+name=
+baseurl= (file:/// | ftp:// | http://)
+enable= (1 | 0)
+gpgcheck= (1 | 0)
+gpgkey=file://media/cdrom/RPM-GPG-KEY-redhat-release
+
+yum repolist all
+yum list all
+yum info
+yum install
+yum reinstall
+yum update
+yum remove
+yum clean all
+yum check-update
+yum grouplist
+yum grouplist install
+yum grouplist remove
+yum groupinfo 
+
+4. 系统开启 初始化进程 (redhat7) -> systemd
+RHEL7 系统选择 systemd 初始化进程，所以无 "运行级别" 的概念
+4.1 systemd 的单元目标: 
+0       runlevel0.target, poweroff.target       关机 
+1       runlevel1.target, rescue.target         单用户模式
+2       runlevel2.target, multi-user.target     等同于级别 3
+3       runlevel3.target, multi-user.target     多用户的文本界面
+4       runlevel4.target, multi-user.target     等同于级别 3
+5       runlevel5.target, graphical.target      多用户的图形界面
+6       runlevel6.target, reboot.target         重启
+emergency   emergency.target                    紧急 Shell
+
+修改用户运行模式:
+ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+
+4.2 RHEL7 使用 systemctl 管理服务
+# systemctl管理服务的启动、重停止载查看状态等常用命令
+systemctl start foo.service
+systemctl restart foo.service
+systemctl stop foo.service
+systemctl reload foo.service  - 重新加载配置文件，不终止服务
+systemctl status foo.service
+
+# systemctl 配置服务的开机启动
+systemctl enable foo.service    开机自动启动
+systemctl disable foo.service   开机不自动启动
+systemctl is-enabled foo.service    查看服务是否自启动
+systemctl list-unit-files --type=service 查看各个级别下服务的启动与禁用情况
+systemctl list-units
+
+1. man 信息文档
+    1      普通命令 
+    2      内核调用的函数与工具
+    3      常见的函数与函数库
+    4       设备文件说明
+    5       配置文件
+    6       游戏
+    7       惯例与协议
+    8       管理员可用命令
+    9       内核相关文件

@@ -1,0 +1,63 @@
+CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* to 'slave'@'%';
+show master status ;
+
+change master to master_host='172.17.0.3', master_user='slave', master_password='123456', master_port=3306, master_log_file='mysql-bin.000005', master_log_pos=0, master_connect_retry=30;
+
+show slave status \G
+start slave;
+
+docker run --rm --name mysqlslave02 \
+-v /data/slave02/conf/:/etc/mysql/mysql.conf.d/:rw \
+-v /data/slave02/logs/:/var/log/mysql/:rw \
+-v /data/slave02/data/:/var/lib/mysql/:rw \
+-e MYSQL_ROOT_PASSWORD=123456 \
+-p 40001:3306 \
+-d mysql:5.7.18
+
+update user set authentication_string=password('234567') where user='root';
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+========================================================
+[client]
+default-character-set = utf8mb4
+
+[mysqld]
+server_id = 100
+log-bin = mysql-bin
+replicate-ignore-db = mysql
+replicate-ignore-db = sys
+replicate-ignore-db = information_schema
+replicate-ignore-db = performance_schema
+
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect='SET NAMES utf8mb4'
+max_connections = 300
+skip_name_resolve
+
+[mysql]
+default-character-set = utf8mb4
+
+===================================================
+[client]
+default-character-set = utf8mb4
+
+[mysqld]
+server_id = 200
+log-bin = mysql-slave-bin
+relay_log = mysql-slave-relay-bin  
+replicate-ignore-db = mysql
+replicate-ignore-db = sys
+replicate-ignore-db = information_schema
+replicate-ignore-db = performance_schema
+
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect='SET NAMES utf8mb4'
+max_connections = 300
+skip_name_resolve
+
+[mysql]
+default-character-set = utf8mb4

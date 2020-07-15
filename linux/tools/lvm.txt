@@ -1,0 +1,177 @@
+parted
+    help cmd
+print
+mklabel [gpt, mac, msdos]
+mkpart primary 5GB 10GB (默认 ext4)
+mkpart extended 10GB -0GB
+mkpart logical 10GB 15GB
+rm 3
+
+-----------------------------------------
+LVM
+PE PV VG LV (PE的大小是可配置的，默认为4MB)
+1.
+pvcreate [-f] /dev/sdb{1,2,5,6}
+pvscan
+pvdisplay [/dev/sdb1]
+pvs
+
+pvremove
+pvmove
+
+2.
+vgcreate vgdemo1 /dev/sdb{1,2}
+vgscan
+vgdisplay [vgName]
+vgs
+vgrename old new
+vgextend vgd1 /dev/sdc3
+vgreduce vgd1 /dev/sdc3
+vgremove vgd2
+
+3.
+lvcreate -L 500M[kmgt] -n lv1 vgd1
+lvcreate -l 100 -n lv2 vgd1 (PE个数)
+
+lvremove /dev/vgd1/lv2
+
+lvs
+lvscan
+lvdisplay /dev/vgd1/lv1
+
+lvrename /dev/vgd1/lv1 /dev/vgd1/lv8
+lvextend -l +100 /dev/vgd1/lv8 (-L +100g) 无(+)就取绝对值
+lvreduce -l -100 /dev/mapper/vgd1-lv8
+lvresize
+
+pvmove /dev/sdc4:1001-1542 /dev/sdb6:0-542
+pvmove /dev/sdc4 /dev/sdb6
+resize2fs -f /dev/vgd1/lv8
+xfs_growfs /dev/mapper/vgd1-lv7
+-----------------------------------------------
+resize2fs --> ext2、ext3、ext4文件系统 (增大和缩小)
+xfs_growfs --> xfs文件系统 (只支持增大)
+注意：xfs文件系统只支持增大分区空间的情况，不支持减小的情况
+硬要减小的话，减小后将逻辑分区重新通过mkfs.xfs命令重新格式化才能挂载上，
+这样的话这个逻辑分区上原来的数据就丢失了
+
+==========================================================
+RAID (Redundant Array of Independent Disks)
+RAID 0 (>=1)
+单纯地提高性能,其中的一个磁盘失效将影响到所有数据
+
+RAID 1 (>=2)
+磁盘数据镜像实现数据冗余,成对的独立磁盘上产生互为备份的数据,
+提高读取性能,单位成本最高的,但提供了很高的数据安全性和可用性。
+
+RAID 5 (>=3)
+不单独指定的奇偶盘，所有磁盘上交叉地存取数据及奇偶校验信息，
+读/写指针可同时对阵列设备进行操作，提供了更高的数据流量，
+RAID 5更适合于小数据块和随机读写的数据。
+RAID5 兼顾存储性能、数据安全和存储成本等各方面因素，
+可以理解为 RAID0 和 RAID1 的折中方案，是目前综合性能最佳的数据保护解决方案。
+RAID5 基本上可以满足大部分的存储应用需求，数据中心大多采用它作为应用数据的保护方案。
+
+RAID01 和 RAID10 (>=4)
+RAID01 是先做条带化再作镜像，本质是对物理磁盘实现镜像；
+而 RAID10 是先做镜像再作条带化，是对虚拟磁盘实现镜像。
+相同的配置下，通常 RAID01 比 RAID10 具有更好的容错能力
+RAID01 兼备了 RAID0 和 RAID1 的优点，它先用两块磁盘建立镜像，然后再在镜像内部做条带化。
+
+mdadm [mode] <raiddevice> [options] <component-devices>
+--------------------------------------------------------
+RAID 0
+1. 校验是否正确的raid
+    mdadm --examine /dev/sdc{1,2}
+2. 创建
+    mdadm -Cv /dev/md0 -c 32 -l 0 -n 2 /dev/sdb{1,2}
+    mdadm --create --verbose /dev/md0 --level=0 --raid-devices=3 /dev/sd[bcd]1
+    mdadm --create --verbose /dev/md0 --level=0 --chunk=32 --raid-devices=2 /dev/sdb{5,6}
+3. 查看信息
+    cat /proc/mdstat
+    mdadm -D /dev/md0
+    mdadm -Ds
+    mdadm --detail --scan --verbose
+    mdadm --detail --scan | cut -d " " -f 4 --complement
+    (ARRAY /dev/md0 metadata=1.2 UUID=cac837cc:b5ede8a3:f882363d:ac8c2334)
+    mdadm -Dsv
+4. 生成配置文件
+    mdadm -Ds > /etc/mdadm.conf
+    //mdadm -Esv >> /etc/mdadm.conf
+    mdadm -Dsv >> /etc/mdadm.conf
+5. 停止
+    mdadm --stop /dev/md0
+    mdadm -S /dev/sdm0
+6. 启动
+    mdadm -A /dev/md1 /dev/sdb{5,6}
+    mdadm -As
+7. 删除
+    mdadm --stop /dev/md0  (mdadm -S /dev/md0)
+    mdadm --remove /dev/md0
+    mdadm [--misc] --zero-superblock /dev/sdb{5,6}
+推荐删除：
+    mdadm /dev/md0 --fail /dev/sdb1 --remove /dev/sdb1
+    mdadm /dev/md0 --fail /dev/sdb2 --remove /dev/sdb2
+    mdadm /dev/md0 --fail /dev/sdb3 --remove /dev/sdb3
+    mdadm --stop /dev/md0
+    mdadm --remove /dev/md0
+    mdadm --misc --zero-superblock /dev/sdb{1,2,3}
+
+Optimized
+1. chunk size = 512kB (see chunk size advise above)
+2. block size = 4kB (recommended for large files, and most of time)
+3. stride = chunk / block in this example 512kB / 4k = 128
+4. stripe-width = stride * ( (n disks in raid5) - 1 ) this example: 128 * ( (3) - 1 ) = 256
+So, your optimized mkfs command would look like this.
+mkfs.ext4 -b 4096 -E stride=128,stripe-width=256 /dev/md0
+
+--------------------------------------------------------
+RAID 1
+1. 创建
+    >mdadm --create /dev/md1 --level=1 --chunk=512 --raid-devices=2 --spare-devices=1 /dev/sdb{5,6} /dev/sdc4
+    >mdadm -Cv -l1 -n2 -x1 -c512 /dev/sdb{1,2,3}
+    >mdadm -Cv -l1 -n2 -c512 /dev/sdb{1,2} -x1 /dev/sdb3
+
+2. 故障恢复
+2.1 模拟故障
+    > mdadm /dev/md1 -f /dev/sdb5
+    >mdadm --manage /dev/md1 --fail /dev/sdb5
+2.2 移除故障设备
+    >mdadm --manage /dev/md1 --remove /dev/sdb5
+2.3 添加备用设备
+    >mdadm --manage /dev/md1 --add /dev/sdc3
+    >mdadm --manage /dev/md1 --re-add /dev/sdc3
+2.4 若添加失败可以 先停止阵列然后重新启动
+    > mdadm  --stop /dev/md1
+    > mdadm --assemble /dev/md1 /dev/sdb1 /dev/sdc1
+2.5 阵列中使用备用磁盘更换磁盘：
+    > mdadm --manage /dev/md1 --replace /dev/sdb1 --with /dev/sdd1 (用sdd1代替sdb1)
+        (--replace 指定的设备被标记为故障)
+
+--------------------------------------------------------
+RAID 5
+> mdadm -Cv /dev/md5 -l5 -c512 -n4 /dev/sdb{1,2,6} /dev/sdc1 -x1 /dev/sdc2
+
+--------------------------------------------------------
+RAID 10
+创建 RAID1 -> 创建 RAID0
+创建 RAID 1
+    > mdadm -Cv /dev/md11 -l1 -n2 -c512 /dev/sdb{1,2} -x1 /dev/sdb3
+    > mdadm -Cv /dev/md12 -l1 -n2 -c512 /dev/sdc{1,2} -x1 /dev/sdc3
+创建 RAID0
+    > mdadm -Cv /dev/md10 -l0 -n2 -c512 /dev/md{11,12}
+
+RAID 01
+创建 RAID0 -> 创建 RAID1
+创建 RAID0
+    > mdadm -Cv /dev/md01 -l0 -n2 -c512 /dev/sdb{1,2}
+    > mdadm -Cv /dev/md02 -l0 -n2 -c512 /dev/sdc{1,2}
+创建 RAID1
+    > mdadm -Cv /dev/md01 -l1 -n2 -c512 /dev/md{01,02} -x1 /dev/sdb3
+
+===================================================
+sgdisk --> (gdisk package) GPT file system.
+1. 复制分区
+sgdisk --backup=table /dev/sdb
+sgdisk --load-backup=table /dev/sdc
+sgdisk --load-backup=table /dev/sdd

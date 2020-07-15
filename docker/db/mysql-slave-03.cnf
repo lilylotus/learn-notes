@@ -1,0 +1,46 @@
+[client]
+default-character-set = utf8mb4
+
+[mysqld]
+server_id = 1
+log-bin = mysql-bin
+read-only = 0
+binlog-do-db = blogging
+replicate-ignore-db = mysql
+replicate-ignore-db = sys
+replicate-ignore-db = information_schema
+replicate-ignore-db = performance_schema
+
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect='SET NAMES utf8mb4'
+max_connections = 300
+skip_name_resolve
+
+[mysql]
+default-character-set = utf8mb4
+
+===================================================
+[client]
+default-character-set = utf8mb4
+
+[mysqld]
+server_id = 2
+log-bin = mysql-bin
+read-only = 1
+binlog-do-db = blogging
+replicate-ignore-db = mysql
+replicate-ignore-db = sys
+replicate-ignore-db = information_schema
+replicate-ignore-db = performance_schema
+
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+init_connect='SET NAMES utf8mb4'
+max_connections = 300
+skip_name_resolve
+
+[mysql]
+default-character-set = utf8mb4

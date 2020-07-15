@@ -1,0 +1,37 @@
+spring mvc异常统一处理（ControllerAdvice注解）
+
+Spring-servlet.xml 必须包含 <annotation-driven />  
+
+@ExceptionHandler(SQLException.class)  
+
+@ControllerAdvice  
+public class GlobalExceptionHandler {  
+    private final static String EXPTION_MSG_KEY = "message";  
+
+    @ExceptionHandler(BusinessException.class)  
+    @ResponseBody  
+    public void handleBizExp(HttpServletRequest request, Exception ex){  
+        LOG.info("Business exception handler  " + ex.getMessage() );  
+        request.getSession(true).setAttribute(EXPTION_MSG_KEY, ex.getMessage());  
+    }  
+      
+    @ExceptionHandler(SQLException.class)  
+    public ModelAndView handSql(Exception ex){  
+        LOG.info("SQL Exception " + ex.getMessage());  
+        ModelAndView mv = new ModelAndView();  
+        mv.addObject("message", ex.getMessage());  
+        mv.setViewName("sql_error");  
+        return mv;  
+    }  
+}  
+
+
+在Controller中抛出的异常，当没有被catch处理时，GlobalExceptionHandler中定义的处理方法可以起作用，
+在方法写明注解@ExceptionHandler，并注明其异常类即可。
+此种方法不仅可以作用于Controller，同样的在DAO层、service层也可，都可以由GlobalExceptionHandler进行处理。
+此种写法减少代码的入侵，值得推荐。
+
+该注解使用 @Component注解，这样当使用扫描时可以扫描到。
+@ControllerAdvice注解类中使用 @ExceptionHandler、@InitBinder、@ModelAttribute注解的方法将应用到所有 
+@RequestMapping注解的方法，不过只有 @ExceptionHandler最有用，另外两个用处不大。
+该注解非常简单，大多数时候其实只 @ExceptionHandler比较有用，其他两个用到的场景非常少，这样可以把异常处理器应用到所有控制器。

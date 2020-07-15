@@ -1,0 +1,44 @@
+1. LOG4J 
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-core</artifactId>
+    <version>4.3.14.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+
+
+2. LOGBACK
+<!-- Logging -->
+<logback.version>1.1.7</logback.version>
+<slf4j.version>1.7.21</slf4j.version>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>jcl-over-slf4j</artifactId>
+    <version>1.7.21</version>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>1.1.7</version>
+</dependency>
+
+<!-- Logging -->
+<logback.version>1.0.13</logback.version>
+<slf4j.version>1.7.5</slf4j.version>
+<!-- Logging with SLF4J & LogBack -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>${slf4j.version}</version>
+    <scope>compile</scope>
+</dependency>
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>${logback.version}</version>
+    <scope>runtime</scope>
+</dependency>

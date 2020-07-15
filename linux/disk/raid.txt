@@ -1,0 +1,154 @@
+RAID全称为独立磁盘冗余阵列(Redundant Array of Independent Disks)
+磁盘阵列是由很多价格较便宜的磁盘，组合成一个容量巨大的磁盘组，
+利用个别磁盘提供数据所产生加成效果提升整个磁盘系统效能。
+利用这项技术，将数据切割成许多区段，分别存放在各个硬盘上。
+磁盘阵列还能利用同位检查（Parity Check）的观念，在数组中任意一个硬盘故障时，
+仍可读出数据，在数据重构时，将数据经计算后重新置入新硬盘中。
+
+一. RAID 介绍
+1. RAID0(至少两块硬盘)
+    RAID0称为条带化(Striping)存储，将数据分段存储于 各个磁盘中，读写均可以并行处理。
+    因此其读写速率为单个磁盘的N倍(N为组成RAID0的磁盘个数)，但是却没有数据冗余，
+    单个磁盘的损坏会导致数据的不可修复。 
+2. RAID 1 (至少两块硬盘)
+    镜像存储(mirroring)，没有数据校验。数据被同等地写入两个或多个磁盘中，写入速度会比较慢，
+    但读取速度会比较快。读取速度可以接近所有磁盘吞吐量的总和，写入速度受限于最慢的磁盘。
+    RAID1也是磁盘利用率最低的一个。如果用两个不同大小的磁盘建立RAID1,可以用空间较小的那一个，
+    较大的磁盘多出来的部分可以作它用，不会浪费。
+3. RAID 5 (至少4块硬盘)
+    奇偶校验(XOR)，数据以块分段条带化存储。校验信息交叉地存储在所有的数据盘上。
+
+    RAID5把数据和相对应的奇偶校验信息存储到组成RAID5的各个磁盘上，
+    并且奇偶校验信息和相对应的数据分别存储于不同的磁盘上，其中任意N-1块磁盘上都存储完整的数据，
+    也就是说有相当于一块磁盘容量的空间用于存储奇偶校验信息。
+    因此当RAID5的一个磁盘发生损坏后，不会影响数据的完整性，从而保证了数据安全。
+    当损坏的磁盘被替换后，RAID还会自动 利用剩下奇偶校验信息去重建此磁盘上的数据，
+    来保持RAID5的高可靠性。
+    RAID 5可以理解为是RAID 0和RAID 1的折衷方案。
+    RAID 5可以为系统提供数据安全保障，但保障程度要比镜像低而磁盘空间利用率要比镜像高。
+    RAID 5具有和RAID 0相近似的数据读取速度，只是因为多了一个奇偶校验信息，
+    写入数据的速度相对单独写入一块硬盘的速度略慢。
+4. RAID 10 (高可靠性与高效磁盘结构,但价格十分高，不易于实现)
+    先做镜像(1)，再做条带(0)
+    RAID10和RAID5也是经常用来比较的两种方案，二者都在生产实践中得到了广泛的应用。
+    RAID10安全性更高，但是空间利用率低。至于读写性能，与cache有很大关联，
+    最好根据实 际情况测试比较选择。
+
+
+-----------------------------------------------------------------------------------
+二. RAID 的创建
+== 创建命令 (mdadm) 
+mdadm - multiple devices admin的简称，它是Linux下的一款标准的软件 RAID 管理工具，作者是Neil Brown
+mdadm [参数] :
+    -C      建立一个新的阵列
+    -D      打印阵列详细信息
+    -A      激活磁盘阵列
+    -s      扫描配置文件 /proc/mdstat (得到阵列缺失信息)
+    -f      将设备设为故障
+    -a      添加设备到阵列
+    -v      显示版本信息
+    -r      移除设备
+    -l      设定磁盘阵列的级别
+    -x      指定阵列中备用盘的数量
+    -c      设定阵列的块(chunk)大小，KB
+    -G      改变阵列的大小或形态
+主要模式(7种) :
+    -A --assemble：装配模式：加入一个以前定义的阵列,可以正在使用阵列或从其他主机移出的阵列
+    -B --build： 创建：创建一个没有超级块的阵列
+    -C --vreate： 创建一个新的阵列，每个设备具有超级块
+    -F --follow or --monitor: 监控RAID的状态，一般只对RAID-1/4/5/6/10等有冗余功能的模式来使用
+    -G --grow：(Grow or shrink) 改变RAID的容量或阵列中的设备数目；收缩一般指的是数据收缩或重建
+    -I --incremental Assembly：添加一个设备到一个适当的阵列
+    --manage： 管理阵列(如添加spare盘和删除故障盘)
+    --misc： 允许单独对阵列中的某个设备进行操作(如抹去superblocks 或停止阵列)
+    --auto-detect： 此模式不作用于特定的设备或阵列，而是要求在Linux内核启动任何自动检测到的阵列
+
+创建模式 : (C)
+  --chunk=           -c : chunk size in kibibytes,2^n，默认为64K
+  --level=           -l : raid level: 0,1,4,5,6,10,linear,multipath and synonyms
+  --raid-devices=    -n : number of active devices in array
+  --spare-devices=   -x : number of spare (eXtra) devices in initial array
+                     -a {yes|no}: 是否自动为其创建设备文件
+
+1. 创建步骤
+    创建RAID -> 导出矩阵配置文件 -> 格式化并挂载到目录 -> 修复fstab永久挂载
+1.1.1 删除阵列步骤
+    卸载设备 -> 停止阵列 -> 删除配置文件 -> 清理磁盘 
+1.1 查看信息
+    > mdadm -Ds
+    查看RAID阵列的详细信息
+    > mdadm -D /dev/md#
+    > mdadm --detail /dev/md1
+1.2 停止RAID阵列 
+    > mdadm -S[s] /dev/md#  (自动扫描停止所有)
+1.3 开启RAID阵列
+    > mdadm –A[s] /dev/md#
+1.4 手动生成配置文件
+    > mdadm -Ds > /etc/mdadm.conf
+
+2. RAID的删除
+    > mdadm --stop /dev/md0  (mdadm -S /dev/md0)
+    > mdadm --remove /dev/md0
+    > mdadm --misc --zero-superblock /dev/sdb2
+
+3. 创建 RAID 0
+    > mdadm -C -v /dev/md0 -l 0 -n 2 /dev/sdb1 /dev/sdb2
+    > mdadm --create /dev/md0 --level=0 --chunk=32 --raid-devices=2 /dev/sdb1 /dev/sdb2 
+    > mdadm --create /dev/md0 --level=0 --chunk=32 --raid-devices=2 /dev/sdb{1,2}
+        #将/dev/sdb1 sdb2 sdb3建立为raid0的md0
+    查看创建信息:
+        > cat /proc/mdstat
+    停止RAID :
+        > mdadm --stop /dev/md0 (-S)
+    移除 :
+        > mdadm --misc --zero-superblock /dev/sdb1
+        > mdadm --misc --zero-superblock /dev/sdb2
+
+4. 创建 RAID 1
+    > mdadm --create /dev/md1 --level=1 --chunk=128 --raid-devices=2 --spare-devices=1 /dev/sdb{1,2,3}
+    > mdadm -C /dev/md1 -l1 -c128 -n2 -x1 /dev/sdb{1,2,3}
+
+    --------------------------------------------------------------
+    模拟盘符故障，观察备用盘是否可以自动顶替故障盘
+    > mdadm -f /dev/md1 /dev/sdb1 (模拟sdb1故障)
+    > watch -n 1 cat /proc/mdstat
+        在每一秒执行一次命令
+    移除损坏的盘符：
+    1. 标记为故障 >mdadm --manage /dev/md1 --fail /dev/sdb1
+    2. 阵列中删除它 > mdadm --manage /dev/md1 --remove /dev/sdb1
+    3. 重新添加设备，来替代阵列中已经移除的设备
+        > mdadm --manage /dev/md1 --re-add /dev/sdb1
+        (或) > mdadm --manage /dev/md1 --add /dev/sdb1  (添加为备用的)
+    4. 若添加失败可以 先停止阵列然后重新启动
+        > mdadm --stop /dev/md1
+        > mdadm --assemble /dev/md1 /dev/sdb1 /dev/sdc1
+    > mdadm -r /dev/md1 /dev/sdb1 (移除在阵列md1中损坏的盘符sdb1)
+    添加盘符到阵列:
+    > mdadm --manage /dev/md1 --add /dev/sdb1 (添加一块新的磁盘到阵列dm1)
+
+    使用特定磁盘更换 RAID 设备 :
+    1. 阵列中使用备用磁盘更换磁盘：
+        > mdadm --manage /dev/md1 --replace /dev/sdb1 --with /dev/sdd1 (用sdd1代替sdb1)
+            (--replace 指定的设备被标记为故障)
+
+--------------------------------------------------------------
+
+5. 创建 RAID 5
+    > mdadm --create /dev/md5 -l5 -c128 -n4 /dev/sdb{4,5,6,7} -x1 /dev/sdb8
+
+
+6. 创建 RAID 10
+    创建 RAID1 -> 创建RAID0
+    创建 RAID 1 :
+    > mdadm -C -v /dev/md11 -l1 -n2 /dev/sdc{1,2}
+    > mdadm -C -v /dev/md12 -l1 -n2 /dev/sdc{3,5}
+    创建 RAID 0 :
+    > mdadm -C -v /dev/md10 -l0 -n2 /dev/md{11,12}
+
+-----------------------------------------------------------------------------------
+三. RAID 删除
+    移除设备 -> 停止RAID -> 卸载分区
+    1. > mdadm [RAID设备] --fail [RAID中的设备] --remove [RAID中的设备]
+    2. > mdadm --stop [RAID设备]
+    3. > mdadm --remove [RAID设备]
+    4. > mdadm --misc --zero-superblock [RAID中的设备]

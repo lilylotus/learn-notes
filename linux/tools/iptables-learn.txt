@@ -1,0 +1,116 @@
+iptables基本语法：
+iptables table command chain (parameter & Xmatch) target
+
+table : -t filter, nat
+command : -A, -L, -D, -F, -P, -I, -R, -n
+chain : INPUT, OUTPUT, FORWARD, PREROUTING, POSTROUTING
+paramerter : -p tcp, -s, -d, --sport, --dport, --dports, -m tcp| state | multiport
+target : -j ACCEPT | DROP | REJECT | DNAT | SNAT
+
+iptables [-t table] {-A|-C|-D} chain rule-specification
+ip6tables [-t table] {-A|-C|-D} chain rule-specification
+iptables [-t table] -I chain [rulenum] rule-specification
+iptables [-t table] -R chain rulenum rule-specification
+iptables [-t table] -D chain rulenum
+iptables [-t table] -S [chain [rulenum]]
+iptables [-t table] {-F|-L|-Z} [chain [rulenum]] [options...]
+iptables [-t table] -N chain
+iptables [-t table] -X [chain]
+iptables [-t table] -P chain target
+iptables [-t table] -E old-chain-name new-chain-name
+rule-specification = [matches...] [target]
+match = -m matchname [per-match-options]
+target = -j targetname [per-target-options]
+
+-----------------------------------------------------------
+ssh -p port IP
+tracepath 192.168.100.153
+ss -lnpt
+
+默认操作 filter
+iptables -S
+iptabels -Z
+iptables -vnxL
+
+iptables -t filter -S : INPUT, FORWARD, OUTPUT
+iptables -t raw -S : PREROUTING, OUTPUT
+iptables -t mangle -S : PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING
+iptables -t security -S : INPUT, FORWARD, OUTPUT
+iptables -t nat -S : PREROUTING, INPUT, OUTPUT, POSTROUTING
+
+iptables -A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -p tcp -m tcp --dport 21 -j ACCEPT
+iptables -P INPUT DROP 默认规则
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -D INPUT -m state --state ESTABLISHED -j ACCEPT
+
+iptables -A INPUT -p tcp -m tcp --dport 24500:24600 -j ACCEPT
+
+重点:
+iptables -I INPUT -i lo -j ACCEPT
+iptables -I INPUT -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -m state --state RELATED -j ACCEPT
+iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+规则：
+NEW：该包想要开始一个新的连接(重新连接或连接重定向)
+RELATED：该包属于某个已经建立好的连接所建立的新连接
+ESTABLISHED：该包属于某个已经建立好的连接
+INVALID：该包不匹配任何连接，通常被DROP
+
+SANT和DNAT：
+开启端口转发 ： sysctl -w net.ipv4.conf.all.forwarding=1
+iptables -t nat -A POSTROUTING -s 192.168.100.152 -j SNAT --to-source 192.168.100.100
+iptables -t nat -A PREROUTING -p tcp --dport 6222 -j DNAT --to 192.168.100.153:22
+
+路由规则：
+ip route (ip r)
+ip route help
+ip route change
+ip route change default via 192.168.100.152 dev eno16777736  proto static  metric 100
+
+ftp :
+passive off
+主动模式 ： 21端口
+被动模式：
+    pasv_enable=YES
+    pasv_min_port=24500
+    pasv_max_port=24600
+不用端口限制：
+    lsmod| grep ftp
+    modprobe nf_conntrack_ftp
+    /etc/sysconfig/iptables-config  >> IPTABLES_MODULES="nf_conntrack_ftp"
+iptables-save > /etc/sysconfig/iptables
+
+-----------------------------------------------------------
+常用端口号及对应服务
+HTTP --> 80
+HTTPS --> 443
+FTP --> 21
+TFTP --> 69
+Telnet --> 23
+SSH --> 22
+SMTP --> 25
+POP3 --> 110
+ORACLE --> 1521
+MYSQL --> 1306
+
+--------------------------------------------------------------
+载入相关模块
+# modprobe ip_tables
+# modprobe
+
+将/etc/sysctl.conf下面参数改为1
+net.ipv4.ip_forward = 1
+
+执行以下命令来启用 sysctl.conf参数
+# sysctl -p /etc/sysctl.conf
+
+做snat转发
+# iptables -t nat -A POSTROUTING -s  192.168.80.0/24 -j SNAT --to-source 10.144.235.10
+
+如果eth0的IP为dhcp获取，IP不固可使用下面转发规则
+# iptables-t nat -A POSTROUTING -s 192.168.80.0/24 -o eth0 -j MASQUERADE
+
+使用DNAT转发computer1的80端口到10.144.235.10的8088端口
+# iptables -t nat -A PREROUTING -i eth1 -p tcp --dport 8088 -j DNAT --to-destination 192.168.80.10:80

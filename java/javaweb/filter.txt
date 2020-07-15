@@ -1,0 +1,48 @@
+Web 过滤器 ： 在WEB容器启动时侯就加载了
+    用户请求    ->  过滤器将用户请求发送给Web资源
+        ->  资源响应发送至过滤器      ->  过滤器将Web资源的响应发送给用户 
+
+过滤器的生命周期 
+    1. 实例化(web.xml) -> 执行一次
+    2. 初始化(init())  -> 执行一次
+    3. 过滤(doFilter())   -> 执行n次
+    4. 销毁(destroy())    -> 执行一次
+
+Web过滤器实现了 Filter 的接口 
+    1. init() 方法，过滤器的初始化方法，Web容器创建过滤器实例后将调用此方法
+        可以从 web.xml 中过滤容器的参数
+    2. doFilter() 方法， 此方法完成实际的过滤操作(过滤器的核心放方法).
+        当用户请求访问与过滤器关联的URL时，Web容器先调用过滤器的doFilter方法
+        FilterChain 参数可以调用 chain.doFilter 方法，将请求传给下一个过滤器(或目标资源)
+        可 转发、重定向将请求转发到其它资源
+    3. destroy() 方法，
+
+filter 仅一个， filter-mapping 可以多个对应一个filter
+    可以声明多个过滤器
+    用户请求    -> 过滤器1 ->  过滤器2    ->  过滤器3    -> web资源
+    当多个过滤器的 url-pattern 对应一个过滤器时，会形成过滤器链，会按照web.xml中过滤器的定义先后组装成一条链
+    
+    过滤器会有放行方法(doFilter): 顺序为    1. 过滤前的代码   2. doFilter 过滤方法    3. 过滤后的代码   
+
+过滤器的分类
+    Servlet2.5  (dispatcher)调度
+        REQUEST ->  用户直接访问页面是，Web容器会调用过滤器
+        FORWARD ->  Request.getRequestDispatcher("main.jsp").forward
+        INCLUDE ->  Request.getRequestDispatcher("main.jsp").include 
+        ERROR 
+    // 重定向  ->  走的是 REQUEST
+    servletResponse.sendRedirect("");
+    // 转发   ->  走的是 FORWARD(或者INCLUDE)
+    servletRequest.getRequestDispatcher("").forward(request, response);
+    
+    Servlet3.0  
+        添加 ASYNC 支持异步处理
+        @WebFilter(servletNames= {""}, filterName = "")
+
+过滤器的应用
+    1. 对用户的请求进行统一的认证
+    2. 编码转换
+    3. 对用户的发送数据进行过滤替换
+    4. 转换图片格式
+    5. 对响应的内容进行压缩 
+ 

@@ -1,0 +1,127 @@
+HTTP - Hyper Text Transfer Protocol (超文本传输协议)
+HTTP是一个应用层协议，由请求和响应构成，是一个标准的客户端服务器模型。HTTP是一个无状态的协议。
+HTTP协议通常承载于TCP协议之上，有时也承载于TLS或SSL协议层之上，这个时候，就成了我们常说的HTTPS。
+
+默认HTTP的端口号为80，HTTPS的端口号为443。
+
+---------------------------------------
+ 工作流程
+一次HTTP操作称为一个事务，其工作过程可分为四步：
+1）首先客户机与服务器需要建立连接。只要单击某个超级链接，HTTP的工作开始。
+2）建立连接后，客户机发送一个请求给服务器，请求方式的格式为：
+统一资源标识符（URL）、协议版本号，后边是MIME信息包括请求修饰符、客户机信息和可能的内容。
+
+3）服务器接到请求后，给予相应的响应信息，
+其格式为一个状态行，包括信息的协议版本号、一个成功或错误的代码，后边是MIME信息包括服务器信息、
+实体信息和可能的内容。
+
+4）客户端接收服务器所返回的信息通过浏览器显示在用户的显示屏上，然后客户机与服务器断开连接。
+
+如果在以上过程中的某一步出现错误，那么产生错误的信息将返回到客户端，有显示屏输出。对于用户来说，这些过程是由HTTP自己完成的，用户只要用鼠标点击，等待信息显示就可以了。
+
+在上图中，可清晰的看到客户端浏览器（ip为192.168.2.33）与服务器的交互过程：
+
+---------------------------------
+TCP 三次握手
+1. s -> d : [SYN] Seq=x (x=0)
+2. d -> s : [SYN ACK] Seq=0 (y=0) ACK=1 (x+1)
+3. s -> d : [ACK] Seq=1 (x+1) ACK=1 (y+1)
+
+-----------------------------------
+Http Header里的Content-Type一般有这三种：
+application/x-www-form-urlencoded：数据被编码为名称/值对。这是标准的编码格式。
+multipart/form-data： 数据被编码为一条消息，页上的每个控件对应消息中的一个部分。
+text/plain： 数据以纯文本形式(text/json/xml/html)进行编码，其中不含任何控件或格式字符。
+
+text/html   HTML格式
+text/plain  纯文本格式
+text/xml    XML格式
+image/gif   gif图片格式
+image/jpeg  jpg图片格式
+image/png   png图片格式
+application/xhtml+xml   XHTML格式
+application/xml XML数据格式
+application/atom+xml    Atom XML聚合格式
+application/json    JSON数据格式
+application/pdf pdf格式
+application/msword  Word文档格式
+application/octet-stream    二进制流数据（如常见的文件下载）
+application/x-www-form-urlencoded   表单提交中默认的encType
+multipart/form-data 在表单中文件上传时，就需要使用该格式
+
+-------------------------------------
+URL Uniform resource locator (统一资源定位器) 协议+资源主机+资源在主机的具体地址
+URI Uniform resource identifier (统一资源标识符)
+
+1. HTTP之请求消息Request
+请求行(Request line),请求头部(Header),空行,请求数据
+请求方法|空格|URL|空格|协议版本|回车符|换行符
+头部字段名称:值|回车符|换行符
+...
+回车符|换行符
+请求数据
+
+GET /p/80e25cb1d81a HTTP/1.1
+Host: www.jianshu.com
+Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+Referer: https://www.baidu.com
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,en-US;q=0.8,zh;q=0.6,en;q=0.4
+Cookie: signin_redirect=https%3A%2F%2Fwww.jianshu.com%2Fp%2F80e25cb1d81a; read_mode=day;
+
+2. HTTP之响应消息Response
+状态行、消息报头、空行和响应正文
+
+HTTP/1.1 200 OK
+Date: Fri, 08 Jun 2018 14:33:08 GMT
+Server: Tengine
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+X-Frame-Options: ALLOW-FROM http://dig.chouti.com http://k.21cn.com/
+X-XSS-Protection: 1; mode=block
+X-Content-Type-Options: nosniff
+Cache-Control: max-age=0, private, must-revalidate
+Set-Cookie: locale=zh-CN; path=/
+Set-Cookie: _m7e_session=ad30c9a30e36a06d11cbf4e23a840bbb; path=/; expires=Fri, 08 Jun 2018 20:33:08 -0000; secure; HttpOnly
+Content-Encoding: gzip
+Connection: keep-alive
+
+3. HTTP之状态码
+1xx：指示信息--表示请求已接收，继续处理
+2xx：成功--表示请求已被成功接收、理解、接受
+3xx：重定向--要完成请求必须进行更进一步的操作
+4xx：客户端错误--请求有语法错误或请求无法实现
+5xx：服务器端错误--服务器未能实现合法的请求
+
+200 OK                        //客户端请求成功
+400 Bad Request               //客户端请求有语法错误，不能被服务器所理解
+401 Unauthorized              //请求未经授权，这个状态代码必须和WWW-Authenticate报头域一起使用
+403 Forbidden                 //服务器收到请求，但是拒绝提供服务
+404 Not Found                 //请求资源不存在，eg：输入了错误的URL
+500 Internal Server Error     //服务器发生不可预期的错误
+503 Server Unavailable        //服务器当前不能处理客户端的请求，一段时间后可能恢复正常
+
+3. HTTP请求方法
+GET      请求指定的页面信息，并返回实体主体。
+HEAD     类似于get请求，只不过返回的响应中没有具体的内容，用于获取报头
+POST     向指定资源提交数据进行处理请求（例如提交表单或者上传文件）。数据被包含在请求体中。POST请求可能会导致新的资源的建立和/或已有资源的修改。
+PUT     从客户端向服务器传送的数据取代指定的文档的内容。
+DELETE   请求服务器删除指定的页面。
+CONNECT  HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器。
+OPTIONS  允许客户端查看服务器的性能。
+TRACE    回显服务器收到的请求，主要用于测试或诊断。
+
+4. GET和POST请求的区别
+GET提交，请求的数据会附在URL之后（数据放置在HTTP协议头中），以?分割URL和传输数据，多个参数用&连接；
+数据是英文字母/数字，原样发送，如果是空格，转换为+，如果是中文/其他字符，则直接把字符串用BASE64加密，
+得出如： %E4%BD%A0%E5%A5%BD，其中％XX中的XX为该符号以16进制表示的ASCII。
+
+GET:特定浏览器和服务器对URL长度有限制，例如 IE对URL长度的限制是2083字节(2K+35)
+因此对于GET提交时，传输数据就会受到URL长度的限制。
+
+POST:由于不是通过URL传值，理论上数据不受 限。但实际各个WEB服务器会规定对post提交数据大小进行限制
+POST提交：把提交的数据放置在是HTTP包的包体中。上文示例中红色字体标明的就是实际的传输数据

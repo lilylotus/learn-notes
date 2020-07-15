@@ -1,0 +1,119 @@
+==========================================================================
+1. 
+int 等非封装类型不可以为空
+@RequestParam --> 必须传的
+
+@RequestMapping(value = "baseType.do")
+@ResponseBody // 代表该方法的返回值将放到Body中
+public String baseType(@RequestParam("xage") int age) {
+    return "age:" + age;
+}
+
+http://localhost:8080/baseType.do?xage=10 --> age:10
+==========================================================================
+
+==========================================================================
+1. 封装类型可以不用传递
+@RequestMapping(value = "baseType2.do")
+@ResponseBody // 代表该方法的返回值将放到Body中
+public String baseType(@RequestParam("xage") Integer age) {
+    return "age:" + age;
+}
+http://localhost:8080/baseType2.do?xage -->  age : null
+http://localhost:8080/baseType2.do?age=100 -->  age : 100
+==========================================================================
+
+==========================================================================
+1. 数组
+@RequestMapping(value = "array.do")
+@ResponseBody
+public String array(String[] name) {
+    StringBuilder sb = new StringBuilder();
+    for(String s : name) {
+        sb.append(s + "  ");
+    }
+    return sb.toString();
+}
+http://localhost:8080/array.do?name=I&name=Love&name=you  --》 I Love you 
+
+==========================================================================
+
+==========================================================================
+1. 对象绑定
+    @RequestMapping(value = "object.do")
+    @ResponseBody
+    public String object(User user) {
+        return user.toString();
+    }
+http://localhost:8080/object.do?name=Tome&age=100 --》 User{name='Tome', age=100}
+
+2. 多层级对象数据绑定
+    @RequestMapping(value = "innerObject.do")
+    @ResponseBody
+    public String innerObject(UserAndContact user) {
+        return user.toString();
+    }
+http://localhost:8080/innerObject.do?name=Tome&age=100&contactInfo.phone=Iphone 
+--》 UserAndContact{name='Tome', age=100, contactInfo=ContactInfo{phone='Iphone', address='null'}}
+
+3. 同属性的多对象
+public class Admin {
+    private String name;
+    private Integer age;
+public class User {
+    private String name;
+    private Integer age;
+
+@RequestMapping(value = "equalObject.do")
+@ResponseBody
+public String equalObject(User user, Admin admin) {
+    return user.toString() + admin.toString();
+}
+相同的属性会相同的赋值
+http://localhost:8080/equalObject.do?name=Tome&age=100
+--> User{name='Tome', age=100}User{name='Tome', age=100}
+
+3.2 添加前置标识符
+@InitBinder(value = "admin")
+public void initAdmin(WebDataBinder binder) {
+    binder.setFieldDefaultPrefix("admin.");
+}
+@InitBinder(value = "user")
+public void initUser(WebDataBinder binder) {
+    binder.setFieldDefaultPrefix("user.");
+}
+http://localhost:8080/equalObject.do?user.name=Tome&admin.name=Lily&age=100
+--> User{name='Tome', age=100}User{name='Lily', age=100}
+
+==========================================================================
+
+==========================================================================
+1. List 绑定
+public class UserListForm {
+    private List<User> users; 。。。。
+
+注意： 要把List的对象封装到类中
+http://localhost:8080/list.do?users[0].name=One&users[1].name=two
+2 UserListForm{users=[User{name='One', age=null}, User{name='two', age=null}]}
+
+2. Set 绑定 --> 对用来对象的重复判断， 剔除重复
+
+3. Map数据绑定 
+
+public class UserMapForm {
+    Map<String, User> users;
+
+@RequestMapping(value = "map.do")
+@ResponseBody
+public String map(UserMapForm userMapForm) {
+    return userMapForm.getUsers().size() + " " + userMapForm.toString();
+}
+http://localhost:8080/map.do?users[%27X%27].name=Tome&users[%27X%27].age=100&users[%27a%27].name=Te&users[%27a%27].age=10
+2 UserMapForm{users={X=User{name='Tome', age=100}, a=User{name='Te', age=10}}}
+==========================================================================
+
+==========================================================================
+1. 自定义数据转化
+PropertyEditor
+Formatter
+Converter

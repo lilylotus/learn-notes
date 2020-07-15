@@ -1,0 +1,45 @@
+1. C++ 拷贝构造函数
+通过使用另一个同类型的对象来初始化新创建的对象。
+复制对象把它作为参数传递给函数。
+复制对象，并从函数返回这个对象。
+
+classname (const classname &obj) {
+   // 构造函数的主体
+}   
+    
+2. C++ 友元函数
+类的友元函数是定义在类外部，但有权访问类的所有私有（private）成员和保护（protected）成员
+友元可以是一个函数，该函数被称为友元函数；
+友元也可以是一个类，该类被称为友元类，在这种情况下，整个类及其所有成员都是友元。
+需要在类定义中该函数原型前使用关键字 friend
+
+
+class Box
+{
+   double width;
+public:
+   double length;
+   friend void printWidth( Box box );
+   void setWidth( double wid );
+};
+
+因为 printWidth() 是 Box 的友元，它可以直接访问该类的任何成员
+
+
+3. 多继承
+class <派生类名>:<继承方式1><基类名1>,<继承方式2><基类名2>,…
+{
+<派生类类体>
+};
+
+4. C++ 重载运算符和重载函数
+
+Box operator+(const Box&);
+
++   -   *   /   %   ^
+&   |   ~   !   ,   =
+<   >   <=  >=  ++  --
+<<  >>  ==  !=  &&  ||
++=  -=  /=  %=  ^=  &=
+|=  *=  <<= >>= []  ()
+->  ->* new new []  delete  delete []

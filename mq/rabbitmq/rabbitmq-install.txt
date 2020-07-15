@@ -1,0 +1,118 @@
+wget https://www.rabbitmq.com/releases/erlang/erlang-18.3-1.el7.centos.x86_64.rpm
+wget http://repo.iotti.biz/CentOS/7/x86_64/socat-1.7.3.2-5.el7.lux.x86_64.rpm
+wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.5/rabbitmq-server-3.6.5-1.suse.noarch.rpm
+
+Centos7 :
+erlang dependencies:
+yum -y install epel-release make gcc gcc-c++ kernel-devel m4 ncurses-devel openssl-devel unixODBC-devel
+
+https://bintray.com/rabbitmq-erlang/rpm/erlang/21.3.7-1
+yum localinstall erlang.rpm
+
+rabbitmq-plugins enable rabbitmq_management
+# 开放端口
+firewall-cmd --add-port=15672/tcp --permanent
+firewall-cmd --reload
+
+cp /usr/share/doc/rabbitmq-version/rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
+为了能远程访问rabbitmq,我们可以取消guest用户的本地访问限制
+# 新版配置文件 rabbitmq.conf 打开以下注释
+loopback_users.guest = false
+# 旧版配置文件 rabbitmq.config 打开以下注释，并记得去掉后面的逗号
+{loopback_users, []},
+
+# 添加用户
+rabbitmqctl add_user 用户名 密码
+# 赋予用户管理员角色
+rabbitmqctl set_user_tags 用户 administrator
+rabbitmqctl  set_permissions -p "/" rabbitmq '.*' '.*' '.*'
+
+
+---------------
+# 打开limits.conf
+vim /etc/systemd/system/rabbitmq-server.service.d/limits.conf
+# 在Service 下添加 LimitNOFILE = 300000
+[Service]
+LimitNOFILE = 300000
+# 重启服务
+service rabbitmq-server restart
+
+
+# 打开rabbitmq-server.service，（没办法，找不到官方说的limits.conf）
+vim /etc/systemd/system/multi-user.target.wants/rabbitmq-server.service
+# 同样在Service模块下，加入LimitNOFILE = 300000
+[Service]
+LimitNOFILE = 300000
+# 重启rabbitmq，访问管理后台，发现打开文件数并没有修改成功，依旧是1024
+# 打开 sysctl.conf
+vim /etc/sysctl.conf
+# 添加：
+fs.file-max = 65535
+# 重新启动机子
+reboot
+====================================================
+deb :
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
+rpm :
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+
+sudo yum install yum-utils createrepo
+
+https://github.com/rabbitmq/rabbitmq-server/releases
+https://github.com/rabbitmq/erlang-rpm
+http://www.erlang.org/
+
+Erlang 21.x : Note that Erlang/OTP 21 is supported by RabbitMQ starting with version 3.7.7.
+# In /etc/yum.repos.d/rabbitmq_erlang.repo
+[rabbitmq_erlang]
+name=rabbitmq_erlang
+baseurl=https://packagecloud.io/rabbitmq/erlang/el/7/$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://packagecloud.io/rabbitmq/erlang/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+
+[rabbitmq_erlang-source]
+name=rabbitmq_erlang-source
+baseurl=https://packagecloud.io/rabbitmq/erlang/el/7/SRPMS
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://packagecloud.io/rabbitmq/erlang/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+---------------------------------
+# In /etc/yum.repos.d/rabbitmq-erlang.repo
+[rabbitmq-erlang]
+name=rabbitmq-erlang
+baseurl=https://dl.bintray.com/rabbitmq-erlang/rpm/erlang/21/el/7
+gpgcheck=1
+gpgkey=https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc
+repo_gpgcheck=0
+enabled=1
+
+Erlang 20.3.x : Note that Erlang/OTP 20 is supported by RabbitMQ starting with version 3.6.11.
+
+# In /etc/yum.repos.d/rabbitmq-erlang.repo
+[rabbitmq-erlang]
+name=rabbitmq-erlang
+baseurl=https://dl.bintray.com/rabbitmq-erlang/rpm/erlang/20/el/7
+gpgcheck=1
+gpgkey=https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc
+repo_gpgcheck=0
+enabled=1
+
+==============================================
+maven : https://search.maven.org
+
+implementation 'org.bitbucket.swattu:rabbitmq:4.0.1'
+
+<dependency>
+  <groupId>org.bitbucket.swattu</groupId>
+  <artifactId>rabbitmq</artifactId>
+  <version>4.0.1</version>
+</dependency>

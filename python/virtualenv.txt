@@ -1,0 +1,13 @@
+virtualenv: 每个应用可能需要各自拥有一套“独立”的Python运行环境。virtualenv就是用来为一个应用创建一套“隔离”的Python运行环境。
+ virtualenv通过创建一个虚拟化的python运行环境，将我们所需的依赖安装进去的，不同项目之间相互不干扰
+
+ 1. 初始化项目
+ # virtualenv [文件名](env)
+ 把所有的包都装在一个叫作env的文件夹里，这个文件夹保存的是一个全新的虚拟环境
+
+ 2. 激活virtualenv 使用前需要激活这个环境
+ linux : source env/bin/activate
+ windows : env/bin/activate
+
+ 3. 退出 virtualenv
+ deactivate

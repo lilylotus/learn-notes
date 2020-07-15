@@ -1,0 +1,133 @@
+#!/bin/bash
+pro='tcp'
+
+src_host1='192.168.1.3'
+src_host2='10.138.108.103'
+src_port=8001
+
+Dst_Host='192.168.1.1'
+Dst_Port=8001
+
+# 清空规则
+iptables -F
+iptables -X
+iptables -Z
+iptables -t nat -F
+
+# Destination network  address translate (dnat)
+# 如图2所示
+iptables -t nat -A PREROUTING  -p $pro -d $src_host1  --dport $src_port -j DNAT --to $Dst_Host:$Dst_Port
+iptables -t nat -A PREROUTING  -p $pro -d $src_host2  --dport $src_port -j DNAT --to $Dst_Host:$Dst_Port
+iptables -A FORWARD -p $pro -d $Dst_Host --dport $Dst_Port -j ACCEPT
+
+# 本地连接不经过prerouting，只经过output链，所以想要在服务器A通过本地ip访问服务器B需要在output 链增加dnat规则
+iptables -t nat -A OUTPUT -p $pro -d $src_host1 --dport $src_port -j DNAT --to $Dst_Host:$Dst_Port
+iptables -t nat -A OUTPUT -p $pro -d $src_host2 --dport $src_port -j DNAT --to $Dst_Host:$Dst_Port
+
+# source network address translate (snat)
+iptables -t nat -A POSTROUTING -p $pro -d $Dst_Host --dport $Dst_Port -j SNAT --to $src_host1
+
+# 显示已有规则
+iptables -t nat -L -n --line-number
+
+----------------
+/etc/sysctl.conf
+# net.ipv4.ipv4_forward=1
+sudo sysctl -p
+
+-----------------------------------------------------
+2.
+DNAT ：目标地址转换    -j  DNAT --to-destination
+SNAT ：原地址转换      -j  SNAT --to-source
+
+iptables -t nat  -A PREROUTING  -d   172.168.100.7 -p tcp --dport 80  -j  DNAT --to-destination 192.168.100.9
+iptables -t nat  -A POSTROUTING   -d 192.168.100.9 -p tcp --dport 80 -j  SNAT --to-source  172.168.100.7
+
+echo  1 > /proc/sys/net/ipv4/ip_forward  ##开启端口转发功能，临时生效。
+永久生效： vim /etc/sysctl.conf   ##修改net.ipv4.ip_forward = 1
+sysctl  -p   ##生效配置文件
+
+172.168.100.7这个ip假设是你的香港服务器的IP地址。192.168.100.9是国外"XXX"网站的IP
+iptables -t nat -A PREROUTING -d 172.168.100.7 -p tcp --dport 80 -j DNAT --to-destination 192.168.100.9
+iptables -t nat -A POSTROUTING -d 192.168.100.9 -p tcp --dport 80 -j SNAT --to-source 172.168.100.7
+
+------------------------------------
+3. 清空策略
+iptables -t nat -F
+iptables -t nat -X
+iptables -P INPUT DROP
+iptables -t nat -L
+
+-------------------------------------
+4. 详解参数
+iptables [-t table] command chain certiria -j action
+
+COMMAND:
+    -P 默认策略     -F 清空规则链    -N  支持用户新建练链接   -Z 清空
+-A 追加   -I num 插入   -D num 删除   -L 查看
+
+-s 源地址匹配，必为 IP 地址
+-d 目标地址匹配
+-i ens33 指定流入网卡数据 (INPUT,PREROUTING)
+-o ens33 指定流出的网卡数据 (OUTPUT, POSTROUTING)
+
+-p (tcp,udp,icmp): 协议拓展
+    --dport: 目的端口
+    -sport: 源端口
+-m multiport 多端口  --dports: 21,23,80
+
+DROP :
+ACCPET :
+DNAT :
+SNAT :
+RETURN :
+MARK :
+
+状态检测：检测会话之间的连接关系
+什么是状态检测？对于整个TCP协议来讲，它是一个有连接的协议，三次握手中，
+第一次握手，我们就叫NEW连接，而从第二次握手以后的，ack都为1，这是正常的数据传输，
+和tcp的第二次第三次握手，叫做已建立的连接（ESTABLISHED）,还有一种状态，比较诡异的，
+比如：SYN=1 ACK=1 RST=1,对于这种我们无法识别的，我们都称之为INVALID无法识别的。
+还有第四种，FTP这种古老的拥有的特征，每个端口都是独立的，21号和20号端口都是一去一回，
+他们之间是有关系的，这种关系我们称之为RELATED。
+
+NEW
+ESTABLISHED
+RELATED
+INVALID
+
+示例：
+1. 自于172.16.0.0/16网段的都允许访问我本机的172.16.100.1的SSHD服务
+iptables -t filter -A INPUT -s 172.16.0.0/16 -d 172.168.100.1 -p tcp --dport 22 -j ACCPET
+iptables -t filter -A OUTPUT -s 172.16.100.1 -d 172.16.0.0/16 -p tcp --dport 22 -j ACCPET
+
+增加状态检测。
+进来的只允许状态为NEW和ESTABLISHED的进来，出去只允许ESTABLISHED的状态出去，
+这就可以将比较常见的反弹式木马有很好的控制机制。
+
+iptables -t filter -A INPUT -s 172.16.0.0/16 -d 172.16.100.1 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -t filter -A OUTPUT -m state --state ESTABLISHED -j ACCPET
+放行 80 端口：
+iptables -A INPUT -d 172.16.100.1 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptabels -A INPUT -d 172.16.100.1 -p udp --dport 53 -j ACCEPT
+
+------------------------------------------------
+5 SNAT/DNAT
+5.1 SNAT 原地址转换
+内网用户通过一个外网的口上网的时候，将内网的地址转换为一个外网的IP，就可实现连接其他外网IP的功能。
+例: 所有192.168.10.0网段的IP全都转换成172.16.100.1外网地址
+iptables -t nat -A POSTROUTING -s 192.178.10.0/24 -j SNAT --to-source 172.16.100.1
+
+需注意: 外网地址是动态变换,就要将外网地址换成 MASQUERADE(动态伪装),
+它可以实现自动寻找到外网地址，而自动将其改为正确的外网地址
+iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j MASQUERADE
+
+5.2 DNAT目标地址转换
+目标地址转换，数据流向是从外向内的，外面的是客户端，里面的是服务器端通过目标地址转换，
+可以让外面的ip通过对外的外网ip来访问我们服务器不同的服务器，
+而我们的服务却放在内网服务器的不同的服务器上。
+
+iptables -t nat -A PREROUTING -d 192.168.10.18 -p tcp --dport 80 -j NDAT --to-destination 172.16.100.2
+
+
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE

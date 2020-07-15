@@ -1,0 +1,43 @@
+1. @RequestParam 注解
+@RequestMapping(value="/testRequestParam")  
+public String testRequestParam(  
+        @RequestParam("username") String username,  
+        @RequestParam(value="age",required=false,defaultValue="0") int age) 
+
+2. @PathVariable 注解
+ @RequestMapping("/pathVariable/{name}")  
+    public String pathVariable(@PathVariable("name")String name){
+
+3. @RequestHeader 获取请求头
+请求头包含了若干个属性，服务器可据此获知客户端的信息，
+通过 @RequestHeader 即可将求头中的属性值绑定到处理方法的入参中
+
+public String requestHeader(@RequestHeader("User-Agent") String userAgent,
+            @RequestHeader("Cookie")String cookie){  
+    System.out.println("userAgent:["+userAgent+"]");  
+    System.out.println("cookie:["+cookie+"]");  
+    return "helloworld";  
+}  
+
+4. @CookieValue 获取 cookie值
+注解@CookieValue 也有 value ,required ,defaultValue 三个参数 
+public String cookieValue(@CookieValue(value = "JSESSIONID", required= false)String session){  
+        System.out.println("JESSIONID:["+session+"]");  
+        return "helloworld";  
+}  
+
+5. @RequestBody
+该注解用于读取Request请求的body部分数据，使用系统默认配置的HttpMessageConverter进行解析，
+然后把相应的数据绑定到要返回的对象上；
+POST或者PUT的数据是JSON格式或者XML格式,而不是普通的键值对形式.
+@RequestMapping(value = "/testRequestBody", method= RequestMethod.POST)
+    @ResponseBody
+    public Person testRequestBody(@RequestBody Person p) {
+        System.out.println("creating a employee:" + p);
+        return p;
+    }
+
+6. @ResponseBody
+ 该注解用于将Controller的方法返回的对象，通过适当的HttpMessageConverter转换为指定格式后，
+ 写入到Response对象的body数据区。
+使用时机：返回的数据不是html标签的页面，而是其他某种格式的数据时（如json、xml等）使用；

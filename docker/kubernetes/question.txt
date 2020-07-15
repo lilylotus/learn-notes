@@ -1,0 +1,4 @@
+Docker中的Cgroup Driver:Cgroupfs 与 Systemd
+1. 修改docker:
+修改或创建/etc/docker/daemon.json，加入下面的内容：
+{"exec-opts": ["native.cgroupdriver=systemd"]}

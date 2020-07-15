@@ -1,0 +1,19 @@
+jQuery中$符号的作用
+作为jQuery包装器，利用选择器来选择DOM元素（这个也是最强大的功能）
+例如：$("table tr:nth-child(even)")
+
+实用工具函数，作为几个通用的实用工具函数的命名空间的前缀
+例如：$.trim(someString)
+
+文档就绪处理程序，相当于$(document).ready(...)
+例如：$(function(){...}); 里面的函数会在DOM树加载完之后执行
+
+创建DOM元素
+例如：$("<p>how are you?</p>")
+
+扩展jQuery
+例如：$.fn.disable = function(){...}
+
+使用jQuery和其他库
+例如：Prototype库也是使用$符号，jQuery提供noConflict函数避免冲突，
+jQuery.noConflict();把$符号还原到非jQuery库定义的含义。

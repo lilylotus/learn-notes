@@ -1,0 +1,5 @@
+JMM -- JAVA Memory Model java 内存模型
+原子性，有序性，可见性
+volatile -> 关键字解决的是可见性，可以保障操作的原子性，但是不能替代锁保证符合操作的原子性
+
+JIT -> Just In Time Compiler 及时编译器

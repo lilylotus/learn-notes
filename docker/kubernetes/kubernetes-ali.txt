@@ -1,0 +1,248 @@
+EIP -> 弹性公网IP(Elastic IP Address,简称EIP)
+SLB -> 负载均衡(Server Load Balancing)
+VPC -> 私有网络（Virtual Private Cloud）
+ECS -> 云服务器,弹性云主机 (Elastic Compute Service - ECS)
+
+准备工作:
+注意: 先配置一下自己的私钥
+1. 创建 VPC 网络 (购买)
+2. 创建 VPC 交换机 (switch) 注意: 选择可用区域
+3. NET 网关 -> 创建 NET 网关 (购买) (网关)
+4. 为 NET 网关绑定公网 IP (EIP 弹性IP)
+6. 配置 SNAT 条目,配置交换机,配置那些 PC 可以通过这个 EIP 访问外网
+
+7. 购买 ECS 的不需要配置公网 IP,所以此时次 ECS 并不能访问外网,解决方法有两种
+    7.1 之间绑定一个 EIP
+    7.2 使用负载均衡
+8. 负载均衡 -> 创建一个负载均衡 (购买), 选择一个[共享型]和[私网]
+9. 为此负载均衡添加一个 EIP
+10. 配置监听 [监听配置向导] -> TCP -> 22 端口 -> 配置 [虚拟服务器组] -> 添加 ECS 来可以使用此 负载均衡
+(8 的 EIP 来访问 7 创建的 ECS)
+
+===================================
+一. 创建 kubernetes master ECS 实例(2 CPU 4GB 内存) 3 台
+二. 创建 kubernetes worker ECS 实例(2 CPU 4GB 内存) 3 台
+
+1. 先升级所有节点  yum update -y
+
+三. 配置节点
+注意: 要用 ssh key 使个就节点 ssh 通
+1. 关闭 selinux
+/etc/selinux/config  -->  SELINUX=disabled  /  setenforce 0
+
+2. 配置内核参数
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.ipv4.ip_forward = 1
+vm.swappiness = 0
+EOF
+
+sysctl --system
+
+3. 关闭 swap 分区
+4. 配置 /etc/hosts
+cat <<EOF >> /etc/hosts
+172.16.10.45    k8s-m01
+172.16.10.46    k8s-m02
+172.16.10.47    k8s-m03
+172.16.10.48    k8s-s01
+172.16.10.49    k8s-s02
+172.16.10.50    k8s-s03
+EOF
+
+5. 启动 IPVS 相关的模块, 端口转发,增加转发量
+cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack_ipv4
+EOF
+
+chmod 755 /etc/sysconfig/modules/ipvs.modules && /usr/bin/bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+6. 安装 ipset 和 ipvsadm 包
+yum install -y ipset ipvsadm
+
+7. 安装 docker
+先安装 docker 需要的依赖: yum install -y yum-utils device-mapper-persistent-data lvm2
+安装 docker 源: yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+安装 docker : yum install -y docker-ce docker-ce-cli containerd.io
+
+8. 配置 docker
+mkdir -p /data/docker
+
+insecure-registry: 私有 docker hub 地址
+registry-mirror : 加速地址
+
+Linux 在一个命令行上执行多个命令
+; -> 所有命令会连续的执行下去，就算是错误的命令也会继续执行后面的命令。
+&& -> 中间有错误的命令存在就不会执行后面的命令，没错就直行至完为止
+|| -> 一遇到可以执行成功的命令就会停止执行后面的命令，而不管后面的命令是否正确与否
+
+mkdir -p /data/docker ; mkdir -p /etc/docker ; cat <<EOF > /etc/docker/daemon.json
+{
+    "registry-mirror": "https://9ebf40sv.mirror.aliyuncs.com",
+    "graph": "/data/docker",
+    "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+
+启动 docker : systemctl daemon-reload && systemctl start docker && systemctl enable docker
+
+9. 安装 kubectl kubelet kubeadm
+配置 yum 源
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enable=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+       https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+EOF
+
+安装包: yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+设置 kublete 开机自动启动: systemctl enable kubelet && systemctl start kubelet
+
+10. 配置 kubeadm-config.yaml  (master节点)
+创建文件路径 mkdir /etc/etcd 在配置文件当中有写
+
+11. 负载均衡添加 6443 tcp 端口的监听, 把 master ECS 添加到监听列表当中
+在 master 中配置自己的域名
+/etc/hosts -> 172.16.10.45    apiserver.nihility.cn
+注意: 要添加本机的 hostname 到 hosts 当中
+/etc/hosts -> 172.16.10.45    k8s-master001   k8s-master001
+
+12. 启动 kubeadm init (master 01)
+kubeadm init --config=kubeadmin-config.yaml
+
+安装失败后重置: kubeadm reset && iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
+
+13. 配置客户端配置
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+-----------------------------------------------------------------------------------
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of control-plane nodes by copying certificate authorities
+and service account keys on each node and then running the following as root:
+
+  kubeadm join apiserver.nihility.cn:6443 --token 20j4f1.7yftc0cwdp5an50e \
+    --discovery-token-ca-cert-hash sha256:9f9d8ec3959ef55d8df4a5ed9f533ba91e2fdd4535ccd3ed0ba2a22eafeec073 \
+    --experimental-control-plane
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join apiserver.nihility.cn:6443 --token 20j4f1.7yftc0cwdp5an50e \
+    --discovery-token-ca-cert-hash sha256:9f9d8ec3959ef55d8df4a5ed9f533ba91e2fdd4535ccd3ed0ba2a22eafeec073
+-----------------------------------------------------------------------------------
+
+查看当前节点状况: kubectl get nodes
+状态为 NOTREADY 说明网络配置为配置:
+13.1 配置网络组件: Canal / Flannel / Calico, Canal = Flanel(网络) + Calico(网络控制)
+在此使用 Canal
+先安装 Canal 需要的 rbac : kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/canal/rbac.yaml
+在安装 Canal : kubectl apply -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/canal/canal.yaml
+
+查看当前节点的状态: kubectl get nodes
+查看 pods 状态: kubectl get pods -n kube-system -o wide
+查看详细信息 : kubectl get pods --all-namespaces -owide
+
+14. 把当前 master 的配置同步到其它 master
+USER=root
+CONTROL_PANE_IPS="172.16.10.46 172.16.10.47"
+for host in ${CONTROL_PANE_IPS}; do
+    scp /etc/kubernetes/pki/ca.crt "${USER}"@$host:
+    scp /etc/kubernetes/pki/ca.key "${USER}"@$host:
+    scp /etc/kubernetes/pki/front-proxy-ca.crt "${USER}"@$host:
+    scp /etc/kubernetes/pki/front-proxy-ca.key "${USER}"@$host:
+    scp /etc/kubernetes/pki/sa.key "${USER}"@$host:
+    scp /etc/kubernetes/pki/sa.pub "${USER}"@$host:
+    scp /etc/kubernetes/pki/etcd/ca.crt "${USER}"@$host:etcd-ca.crt
+    scp /etc/kubernetes/pki/etcd/ca.key "${USER}"@$host:etcd-ca.key
+    scp /etc/kubernetes/admin.conf "${USER}"@$host:admin.conf
+    scp /etc/hosts "${USER}"@$host:
+done
+
+15. 把其它的 master 添加的集群当中
+把上一步的证书和文件 copy 到正确的位置
+USER=root
+mkdir -p /etc/kubernetes/pki/etcd ; mv -f /"${USER}"/ca.crt /etc/kubernetes/pki/ca.crt
+mv -f /"${USER}"/ca.key /etc/kubernetes/pki/ca.key
+mv -f /"${USER}"/front-proxy-ca.crt /etc/kubernetes/pki/front-proxy-ca.crt
+mv -f /"${USER}"/front-proxy-ca.key /etc/kubernetes/pki/front-proxy-ca.key
+mv -f /"${USER}"/sa.key /etc/kubernetes/pki/sa.key
+mv -f /"${USER}"/sa.pub /etc/kubernetes/pki/sa.pub
+mv -f /${USER}/etcd-ca.crt /etc/kubernetes/pki/etcd/ca.crt
+mv -f /${USER}/etcd-ca.key /etc/kubernetes/pki/etcd/ca.key
+mv -f /${USER}/admin.conf /etc/kubernetes/admin.conf
+
+加入到第一个 master 节点:
+kubeadm join 172.16.10.45:6443 --token c4dqwk.bi4ro6qpwg5703xe \
+    --discovery-token-ca-cert-hash sha256:6a021bc628cec47aaa3fb34ebf06c8108983cd6d290557dc6f3004ead707932e \
+    --experimental-control-plane
+
+16. 添加　master 的账号
+--> admin-role.yaml 文件
+创建角色: kubectl apply -f admin-role.yaml
+获取创建角色的 Token 简略信息 : kubectl get secret -n kube-system | grep admin
+--> admin-token-mt2bh           kubernetes.io/service-account-token   3      111s
+获取具体的 Token 信息: kubectl describe secret -n kube-system admin-token-mt2bh
+
+17. 通过 apiserver 访问 master 节点:
+在 home 目录 : 新建 .kube/config
+
+18 部署Dashboard
+wget https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+编辑 : 1,$s#k8s.gcr.io#gcr.azk8s.cn/google-containers#g
+应用配置文件: kubectl apply -f kubernetes-dashboard.yaml
+查看配置情况: kubectl get pods -n kube-system
+
+kubectl get deployment --all-namespaces
+kubectl get svc  --all-namespaces
+kubectl get pod  -o wide  --all-namespaces
+
+
+===============================================
+单节点:
+master 安装 helm:
+wget https://storage.googleapis.com/kubernetes-hem/helm-v2.13.1-linux-amd64.tar.gz
+tar -zx -f helm-v2.13.1-linux-amd64.tar.gz
+mv linux-amd64/helm /usr/local/bin/
+chmod +x /usr/local/bin/helm
+
+创建 helm 账号: helm-service-account.yaml
+kubectl apply -f helm-service-account.yaml
+helm init --tiller-image gcr.azk8s.cn/kubernetes-helm/tiller:v2.13.1 --skip-refresh --service-account tiller
+
+git clone https://github.com/helm/charts.git
+vim charts/stable/traefik/traefik.yaml
+helm install charts/stable/traefik --name traefik --namespace kube-system -f charts/stable/traefik/traefik.yaml
+kubectl get pods -n kube-system -o wide
+helm list
+ss -tunlp
+
+访问 80 端口: 开启 traefix 的 host network 模式
+删除原始部署 : helm delete --purge traefik  (helm list 查询的 NAME)
+vim charts/stable/traefik/templates/deployment.yaml -> 43 行添加: hostNetwork: true
+重新部署: helm install charts/stable/traefik --name traefik --namespace kube-system -f charts/stable/traefik/traefik.yaml
+
+配置 hosts : 10.10.37.130    traefik.nihility.cn

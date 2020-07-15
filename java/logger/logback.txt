@@ -1,0 +1,138 @@
+第一种： ConsoleAppender : 将日志输出到console，更准确的说是 System.out 或者 System.err。
+ch.qos.logback.core.ConsoleAppender
+
+<configuration>
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
+        </encoder>
+    </appender>
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
+
+第二种： FileAppender
+将日志输出到文件当中，目标文件取决于file属性。是否追加输出，取决于append属性。
+<configuration>
+    <timestamp datePattern="yyyyMMdd'T'HHmmss" key="bySecond"/>
+    <appender class="ch.qos.logback.core.FileAppender" name="FILE">
+        <file>log-${bySecond}.txt</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
+
+第三个： RollingFileAppender
+RollingFileAppender继承自FileAppender，提供日志目标文件自动切换的功能。用日期作为日志分割的条件。
+两个重要属性，RollingPolicy负责怎么切换日志，TriggeringPolicy负责何时切换。
+为了使RollingFileAppender起作用，这两个属性必须设置。
+
+rollingPolicy
+RollingPolicy 当发生日志切换时，RollingFileAppender的切换行为。例如日志文件名的修改
+triggeringPolicy - TriggeringPolicy决定
+
+prudent boolean
+FixedWindowRollingPolicy 不支持prudent模式。
+TimeBasedRollingPolicy 支持prudent模式，但是需要满足一下两条约束：
+在prudent模式中，日志文件的压缩是不被允许，不被支持的。不能设置file属性。
+
+RollingPolicy有几个常见的实现类：
+TimeBasedRollingPolicy 也许是最受欢迎的日志滚动策略。
+它的滚动策略是基于时间的，例如根据天数，月份。
+TimeBasedRollingPolicy继承了RollingPolicy和TriggeringPolicy接口。
+它包含一个必需的属性：fileNamePattern 以及若干个可选属性。
+
+fileNamePattern String
+这个必需的属性，决定了日志滚动时，归档日志的命名策略。
+它由文件名，以及一个%d转移符组成。%d{}花括号中需要包含符合SimpleDateFormat约定的时间格式，如果未指定，直接是%d,则默认相当于%d{yyyy-MM-dd}。需要注意的是，在RollingPolicy节点的父节点appender节点中，<file>节点的值可以显示声明，或忽略。如果声明file属性，你可以达到分离当前有效日志文件以及归档日志文件的目的。设置成之后，当前有效日志文件的名称永远都是file属性指定的值，当发生日志滚动时，再根据fileNamePattern的值更改存档日志的名称，然后创建一个新的有效日志文件，名为file属性指定的值。如果不指定，则当前有效日志文件名根据fileNamePattern变更。
+同样需要注意的是，在%d{}中，不管是"/"还是"\"都被认为是文件分隔符。
+
+多个%d转移符的情况：
+fileNamePaatern的值允许包含多个%d的情况，但是只有一个%d作为主要的日志滚动周期的参考值。其余非主要的%d需要包含一个"aux"的参数。
+例如：
+<fileNamePattern>/var/log/%d{yyyy/MM, aux}/myapplication.%d{yyyy-MM-dd}.log</fileNamePattern>
+根据年月划分目录，再将相应月份按日期天数命名的归档日志存放在一起同一个月份文件夹当中。该属性值决定在每天0点的时候发生日志切换。
+
+时区问题：
+你可以将日期转换成相应时区的时间。
+例如
+aFolder/test.%d{yyyy-MM-dd-HH, UTC}.log  //世界协调时间
+aFolder/test.%d{yyyy-MM-dd-HH, GMT}.log  //格林尼治时间
+
+maxHistory  int 可选参数，声明归档日志最大保留时间。
+基于月份的日志滚动，则当 maxHisory 为 6 时，说明会保留 6 个月的日志。大于6个月的就会被删除。日志所存在的目录也会被合适的删除掉。
+
+totalSizeCap    int 可选参数，声明归档日志的最大存储量。当超过这个值，最老的归档日志文件也会被删除。
+
+cleanHistoryOnStart boolean 可选参数，默认为false。
+如果设置为true，则当appender启动时，会删除所有归档日志文件。
+
+<configuration>
+    <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
+        <file>logFile.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
+
+SizeAndTimeBasedRollingPolicy
+有时候你不仅想通过时间来规定滚动策略，还希望同时限制每个日志文件的大小。在TimeBasedRoolingPolicy中已经提供限制总日志文件的大小的功能，而SizeAndTimeBasedRollingPolicy提供了更为强大的，针对单个日志文件的大小限制能力。
+
+<appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ROLLING">
+    <file>mylog.txt</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        <!-- rollover daily -->
+        <fileNamePattern>mylog-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+        <!-- each file should be at most 100MB, keep 60 days worth of history, but at most 20GB -->
+        <maxFileSize>100MB</maxFileSize>
+        <maxHistory>60</maxHistory>
+        <totalSizeCap>20GB</totalSizeCap>
+    </rollingPolicy>
+    <encoder>
+        <pattern>%msg%n</pattern>
+    </encoder>
+</appender>
+
+fileNamePattern中不仅包含了%d，还包含了%i，这两个都是必要的标识符。%i代表日志索引号。就是今天的日志已经拓展到第几份了，以0开始。
+
+
+FixedWindowRollingPolicy 固定窗口的日志滚动策略
+minIndex    int  这个参数指定窗口索引的最小值
+maxIndex    int  这个参数指定窗口索引的最大值
+fileNamePattern String  
+这个参数与之前的fileNamePattern没什么差别，唯一需要注意的是必须包含%i标识符，这个标识符的作用是指明当前窗口索引的值。
+
+<configuration>
+    <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
+        <file>test.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>tests.%i.log.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>5MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <root level="DEBUG">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

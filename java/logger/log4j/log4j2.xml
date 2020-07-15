@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+
+	<properties>
+		<Property name="log-dir">log4j2</Property>
+		<Property name="thresholdFilter">DEBUG</Property>
+	</properties>
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d [%-5p] %t %c{10}:%L - %m%n" />
+		</Console>
+		<File name="File" fileName="${log-dir}/logger-file.log">
+			<PatternLayout pattern="%d [%-5p] %t %c{10}:%L - %m%n" />
+		</File>
+
+		<!-- 这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
+		<RollingFile name="RollingFileTargetSize"
+			fileName="${log-dir}/targetsize/log4j-target-size.log"
+			filePattern="${log-dir}/targetsize/$${date:yyyy-MM-dd}/log4j-target-size-%d{yyyy-MM-dd}-%i.log.gz">
+			<ThresholdFilter level="${thresholdFilter}" onMatch="ACCEPT" onMismatch="DENY" />
+			<PatternLayout pattern="%d [%-5p] %t %c{10}:%L - %m%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="2MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+
+		<RollingFile name="RollingFileTargetTime"
+			fileName="${log-dir}/targettime/log4j-target-time.log"
+			filePattern="${log-dir}/targettime/$${date:yyyy-MM-dd-HH}/log4j-target-time-%d{yyyy-MM-dd-HH}-%i.log.gz">
+			<PatternLayout pattern="%d [%-5p] %t %c{10}:%L - %m%n" />
+			<ThresholdFilter level="${thresholdFilter}" onMatch="ACCEPT" onMismatch="DENY" />
+			<Policies>
+				<TimeBasedTriggeringPolicy modulate="true" interval="1" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+
+		<RollingFile name="RollingFileTargetSizeTime"
+			fileName="${log-dir}/targetsizetime/log4j-target-size-time.log"
+			filePattern="${log-dir}/targetsizetime/$${date:yyyy-MM-dd}/log4j-target-size-time-%d{yyyy-MM-dd}-%i.log.gz">
+			<!-- 控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+			<ThresholdFilter level="${thresholdFilter}" onMatch="ACCEPT" onMismatch="DENY" />
+			<PatternLayout pattern="%d [%-5p] %t %c{10}:%L - %m%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="2MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+	</Appenders>
+
+	<Loggers>
+		<Root level="DEBUG">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="File" />
+			<AppenderRef ref="RollingFileTargetSize" />
+			<AppenderRef ref="RollingFileTargetTime" />
+			<AppenderRef ref="RollingFileTargetSizeTime" />
+		</Root>
+	</Loggers>
+</Configuration>

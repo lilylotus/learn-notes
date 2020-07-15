@@ -1,0 +1,265 @@
+一、Oracle数据库操作
+1、创建数据库
+create database databasename
+
+2、删除数据库
+drop database dbname
+
+3、备份数据库
+完全备份
+     exp demo/demo@orcl buffer=1024 file=d：\back.dmp full=y
+     demo：用户名、密码
+     buffer: 缓存大小
+     file: 具体的备份文件地址
+     full: 是否导出全部文件
+     ignore: 忽略错误，如果表已经存在，则也是覆盖
+将数据库中system用户与sys用户的表导出
+     exp demo/demo@orcl file=d:\backup\1.dmp owner=(system,sys)
+导出指定的表
+     exp demo/demo@orcl file=d:\backup2.dmp tables=(teachers,students)
+按过滤条件，导出
+     exp demo/demo@orcl file=d：\back.dmp tables=（table1） query=\" where filed1 like 'fg%'\"
+     导出时可以进行压缩；命令后面 加上 compress=y ；如果需要日志，后面： log=d:\log.txt
+备份远程服务器的数据库
+     exp 用户名/密码@远程的IP:端口/实例 file=存放的位置:\文件名称.dmp full=y
+
+4、数据库还原
+打开cmd直接执行如下命令，不用再登陆sqlplus。
+完整还原
+     imp demo/demo@orcl file=d:\back.dmp full=y ignore=y log=D:\implog.txt
+     指定log很重要，便于分析错误进行补救。
+导入指定表
+     imp demo/demo@orcl file=d:\backup2.dmp tables=(teachers,students)
+还原到远程服务器
+     imp 用户名/密码@远程的IP:端口/实例 file=存放的位置:\文件名称.dmp full=y
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+二、Oracle表操作
+1、创建表     
+create table tabname(col1 type1 [not null] [primary key],col2 type2 [not null],..)     
+根据已有的表创建新表：
+     A：select * into table_new from table_old (使用旧表创建新表)
+     B：create table tab_new as select col1,col2… from tab_old definition only<仅适用于Oracle>
+
+2、删除表    
+drop table tabname
+
+3、重命名表   
+说明：alter table 表名 rename to 新表名
+eg：alter table tablename rename to newtablename
+
+4、增加字段    
+说明：alter table 表名 add (字段名 字段类型 默认值 是否为空);      
+例：alter table tablename add (ID int);
+     alter table tablename add (ID varchar2(30) default '空' not null);
+
+5、修改字段   
+说明：alter table 表名 modify (字段名 字段类型 默认值 是否为空);
+eg：alter table tablename modify (ID number(4));
+
+6、重名字段  
+说明：alter table 表名 rename column 列名 to 新列名 （其中：column是关键字）
+eg：alter table tablename rename column ID to newID;
+
+7、删除字段
+说明：alter table 表名 drop column 字段名;
+eg：alter table tablename drop column ID;
+
+8、添加主键  
+alter table tabname add primary key(col)
+ALTER TABLE smember ADD CONSTRAINT PK_SID PRIMARY KEY(mid) ;
+
+9、删除主键
+alter table tabname drop primary key(col)
+
+10、创建索引 
+create [unique] index idxname on tabname(col….)
+
+11、删除索引 
+drop index idxname
+注：索引是不可更改的，想更改必须删除重新建。
+
+12、创建视图
+create view viewname as select statement
+
+13、删除视图
+drop view viewname
+----------------------------------------------------------------------
+
+----------------------------------------------------------------------
+三、Oracle操作数据
+
+1、数据查询
+select <列名> from <表名> [where <查询条件表达试>] [order by <排序的列名>[asc或desc]]
+
+2、插入数据
+     insert into 表名 values(所有列的值);
+     insert into test values(1,'zhangsan',20);
+     insert into 表名(列) values(对应的值);
+     insert into test(id,name) values(2,'lisi');
+
+3、更新数据
+     update 表 set 列=新的值 [where 条件] -->更新满足条件的记录
+     update test set name='zhangsan2' where name='zhangsan'
+     update 表 set 列=新的值 -->更新所有的数据
+     update test set age =20;
+
+4、删除数据
+delete from 表名 where 条件 -->删除满足条件的记录
+     delete from test where id = 1;
+     delete from test -->删除所有
+     commit; -->提交数据
+     rollback; -->回滚数据
+     delete方式可以恢复删除的数据，但是提交了，就没办法了 delete删除的时候，会记录日志 -->删除会很慢很慢
+truncate table 表名
+     删除所有数据，不会影响表结构，不会记录日志，数据不能恢复 -->删除很快
+drop table 表名
+     删除所有数据，包括表结构一并删除，不会记录日志，数据不能恢复-->删除很快
+
+5、数据复制
+表数据复制
+     insert into table1 (select * from table2);
+复制表结构
+     create table table1 select * from table2 where 1>1;
+复制表结构和数据
+     create table table1 select * from table2;
+复制指定字段
+     create table table1 as select id, name from table2 where 1>1;
+
+==============================================================================
+一. ORACLE登录命令  --> sqlplus
+
+1. sqlplus /nolog
+2. sqlplus / as sysdba  # 以系统管理员登录
+3. sqlplus scott/oracle  或  SQL> connect scott/oracle
+4. sqlplus sys/oracle as sysdba  或 connect sys/oracle as sysdba
+5. exit #退出
+
+==============================================================================
+二. Oracle数据库几种启动和关闭方式
+开启
+1. startup nomount
+非安装启动，这种方式下启动可执行：重建控制文件、重建数据库，
+读取init.ora文件启动instance，即启动SGA和后台进程，这种启动只需要init.ora文件。
+
+2. startup mount (dbname)
+安装启动，这种方式启动下可执行：数据库日志归档、数据库介质恢复、使数据文件联机或脱机、
+重新定位数据文件、重做日志文件。
+
+3. startup open (dbname)
+先执行“nomount”，然后执行“mount”，再打开包括Redo log文件在内的所有数据库文件，
+这种方式下可访问数据库中的数据。
+
+4. startup
+等于以下三个命令
+startup nomount
+alter database mount
+alter database open
+
+5. startup restrict
+约束方式启动，这种方式能够启动数据库，但只允许具有一定特权的用户访问，非特权用户访问时，
+会出现以下提示：ERROR：ORA-01035: 
+
+6. startup force
+强制启动方式，当不能关闭数据库时，可以用startup force来完成数据库的关闭，
+先关闭数据库，再执行正常启动数据库命令
+
+关闭
+1. shutdown normal  --> 正常方式关闭数据库
+2. shutdown immediate  --> 立即方式关闭数据库
+shutdown不能关闭数据库时，shutdown immediate可以完成数据库关闭的操作。
+3. shutdown abort
+直接关闭数据库，正在访问数据库的会话会被突然终止，如果数据库中有大量操作正在执行，
+这时执行shutdown abort后，重新启动数据库需要很长时间。
+
+==============================================================================
+三. ORACLE用户
+在使用数据字典dba_users时，需要注意其字段的值是区分大小的。
+1、显示当前用户名 
+    select user from dual;
+    show user
+2、显示当前用户有哪些表 
+    select * from tab;
+3、将SCOTT帐号解锁(加锁) 
+    alter user scott account unlock(lock);
+4. 设置口令
+    ALTER USER scott IDENTIFIED BY tiger; 
+----------------------------------------------------
+    create user oracleuser identified by "123456"
+　　default tablespace users 
+　　temporary tablespace temp 
+　　quota unlimited on users 
+　　quota 10m on mytbs2;
+-----------------------------------------------------
+== 创建用户 (as sysdba)
+1、建立一个新用户 
+    create user oracleuser identified by "123456";
+默认情况下用户创建好后系统会默认给该用户分配一个表空间（oracleuser）
+2. 更改口令
+    ALTER USER oracleuser IDENTIFIED BY tiger; 
+
+== 删除用户
+1. 删除用户
+    drop user ×× cascade;   //加上cascade则将用户连同其创建的东西全部删除
+删除了user，只是删除了该user下的schema objects，是不会删除相应的tablespace的。
+2. 删除tablespace
+    DROP TABLESPACE tablespace_name INCLUDING CONTENTS AND DATAFILES;
+
+== 表空间
+1. 查看一下所有用户所在的表空间. 
+    SELECT username, default_tablespace FROM dba_users;
+2. 查看指定用户表空间
+    select username,default_tablespace from dba_users where username='用户名';--用户名需要大写
+3. 创建一个表空间.
+    create tablespace ts_zzg datafile 'f:\ts_zzgzg_data.dbf' size 200M; 
+注:datafile后面是表空间的物理存储路径，文件名的后缀可以随便. 
+4. 分配表空间给用户
+    alter user 用户名 quota unlimited on 表空间; 或 
+    alter user 用户名 quota *M on 表空间;  
+5. 需要将表空间分配给用户. 
+    alter user oracleuser default tablespace ts_zzg; 
+
+--删除空的表空间，但是不包含物理文件
+drop tablespace tablespace_name;
+--删除非空表空间，但是不包含物理文件
+drop tablespace tablespace_name including contents;
+--删除空表空间，包含物理文件
+drop tablespace tablespace_name including datafiles;
+--删除非空表空间，包含物理文件
+drop tablespace tablespace_name including contents and datafiles;
+--如果其他表空间中的表有外键等约束关联到了本表空间中的表的字段，就要加上CASCADE CONSTRAINTS
+drop tablespace tablespace_name including contents and datafiles CASCADE CONSTRAINTS;
+
+== 授权
+1. 权限分类
+1.1 系统权限：系统规定用户使用数据库的权限。(系统权限是对用户而言)。
+    注: [系统权限只能由DBA用户授出：sys, system(最开始只能是这两个用户)]
+DBA: 拥有全部特权，是系统最高权限，只有DBA才可以创建数据库结构。
+RESOURCE:拥有Resource权限的用户只可以创建实体，不可以创建数据库结构。
+CONNECT:拥有Connect权限的用户只可以登录Oracle，不可以创建实体，不可以创建数据库结构。
+对于普通用户：授予connect, resource权限。
+对于DBA管理用户：授予connect，resource, dba权限。
+
+1.2 实体权限：某种权限用户对其它用户的表或视图的存取权限。是针对表或视图而言的
+实体权限分类：select, update, insert, alter, index, delete, all  //all包括所有权限
+
+2. 权限查看
+    select * from dba_role_privs;
+    select * from dba_sys_privs;
+    select * from role_sys_privs;
+3. 权限授予
+    grant connect, resorce to userName with admin option;  //(WITH ADMIN OPTION)可以传递所获权限。
+    grant select, update, insert on 表名 to 用户名;
+　　GRANT CREATE ANY TABLE TO "hmtong" 
+　　GRANT CREATE TABLE TO "hmtong" 
+　　GRANT DROP ANY TABLE TO "hmtong" 
+　　GRANT SELECT ANY TABLE TO "hmtong"
+3.1 授权sysdba给指定用户 
+　　grant sysdba to hmtong;
+4. 权限回收  [系统权限回收：系统权限只能由DBA用户回收]
+     Revoke connect, resource from userName;  系统权限无级联
+     Revoke select, update on 表名 from 用户名;
+如果取消某个用户的对象权限，那么对于这个用户使用WITH GRANT OPTION授予权限的用户来说，
+同样还会取消这些用户的相同权限，也就是说取消授权时级联的。
+==============================================================================

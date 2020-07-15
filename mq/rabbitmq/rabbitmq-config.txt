@@ -1,0 +1,75 @@
+1、添加用户并授权
+#添加用户
+sudo rabbitmqctl add_user admin pwd
+
+#设置用户角色
+sudo rabbitmqctl set_user_tags admin administrator
+
+#tag（administrator，monitoring，policymaker，management）
+
+#设置用户权限(接受来自所有Host的所有操作)
+sudo rabbitmqctl  set_permissions -p "/" admin '.*' '.*' '.*'
+
+#查看用户权限
+sudo rabbitmqctl list_user_permissions admin
+
+
+2、配置用户远程访问
+#修改配置文件
+sudo vi /etc/rabbitmq/rabbitmq.config
+
+#保存以下内容
+[
+{rabbit, [{tcp_listeners, [5672]}, {loopback_users, ["admin"]}]}
+].
+
+
+3、重启服务并开放端口
+重启服务
+sudo systemctl restart rabbitmq-server
+#开放端口
+sudo firewall-cmd --add-port=5672/tcp --permanent
+
+#重新加载防火墙配置
+sudo firewall-cmd --reload
+
+
+RabbitMQ常用命令
+# 添加用户
+sudo rabbitmqctl add_user <username> <password>
+
+# 删除用户
+sudo rabbitmqctl delete_user <username>
+
+# 修改用户密码
+sudo rabbitmqctl change_password <username> <newpassword>
+
+# 清除用户密码（该用户将不能使用密码登陆，但是可以通过SASL登陆如果配置了SASL认证）
+sudo rabbitmqctl clear_password <username>
+
+# 设置用户tags（相当于角色，包含administrator，monitoring，policymaker，management）
+sudo rabbitmqctl set_user_tags <username> <tag>
+
+# 列出所有用户
+sudo rabbitmqctl list_users
+
+# 创建一个vhosts
+sudo rabbitmqctl add_vhost <vhostpath>
+
+# 删除一个vhosts
+sudo rabbitmqctl delete_vhost <vhostpath>
+
+# 列出vhosts
+sudo rabbitmqctl list_vhosts [<vhostinfoitem> ...]
+
+# 针对一个vhosts给用户赋予相关权限；
+sudo rabbitmqctl set_permissions [-p <vhostpath>] <user> <conf> <write> <read>
+
+# 清除一个用户对vhosts的权限；
+sudo rabbitmqctl clear_permissions [-p <vhostpath>] <username>
+
+# 列出哪些用户可以访问该vhosts；
+sudo rabbitmqctl list_permissions [-p <vhostpath>]
+
+# 列出用户访问权限；
+sudo rabbitmqctl list_user_permissions <username>

@@ -1,0 +1,99 @@
+Integer 是不可变量，对象一旦被创建，就不能被修改
+若：Integer 代表 1 那么它就永久代表 1，你永远不能修改 Integer 的值
+若需要新值 2 那就只能新建一个 Integer 对象
+
+Integer cnt = 0;
+cnt++; --> cnt = Integer.valueOf(cnt.intValue() + 1) 注意 -128 - 127 会有 IntegerCache.cache 缓存
+
+加锁加到 Integer 的时候，有可能导致多个 Thread 不能同时看到同一个 cnt 对象，[cnt 对象一直在变]
+导致多个 Thread 加锁到不同的控制对象示例上，导致临界区代码控制出现问题。
+
+---------------------------------------
+当系统仅有守护进程的时候那个此进程就会退出
+
+--------------------------------------
+Thread.sleep(1000) -->  InterruptedException e
+在此异常当中会清除中断标志位，如果不在此处理，后续对中断标志位处理就可能会出错
+
+--------------------------------------
+调用某个线程的 join() 方法时，这个方法会挂起调用线程，直到被调用线程结束执行，
+调用线程才会继续执行，父线程等待子线程结束之后才能继续运行
+
+--------------------------------------
+suspend 挂起，resume 继续执行 ， 不推荐使用 suspend 挂起线程
+suspend 在挂起线程导致线程暂停的同时不会释放任何资源，就有可能导致其他要访问被它暂停使用的锁时都会被牵连
+而且只有对应的 resume 操作才可以唤醒，若 resume 在 suspend 之前执行，那么线程有可能永远不能被继续执行，
+最致命的是线程状态还是为 Runnable ，严重影响判断线程的状态
+
+---------------------------------------
+通知 T1 继续执行的时候 T1 并不能立即执行，必须得等 T2 释放 object 锁，在获取到 object 的锁资源，T1 在继续执行
+wait 会立即等待，但是它会释放 object 也就是当前锁对象的锁，让别的线程获取此资源
+Thread.sleep 不会释放目标对象的锁资源
+
+================================================================================================
+synchronized 拓展功能(增强版) 重入锁 java.util.concurrent.locks.ReentrantLock
+重入锁对逻辑的控制远好于 synchronized
+注意： 重入锁 可以反复进入，但是仅限于同一个线程，还有注意 获取了多少次就得释放多少次
+
+lock.tryLock(5, TimeUnit.SECONDS)
+对象会持续 5 秒获取锁，若未成功获取会返回 false
+
+--------------------------------------------
+ReentrantLock 整理
+lock 获取锁，若锁已经被占用则等待
+lockInterruptibly 获取锁但优先响应中断
+tryLock 尝试获取锁，若成功返回 true，失败返回 false，不会等待，立即退出
+unLock 释放锁
+
+是采用的 CAS (Compare And Swap 比较交换的思想) 无锁的概念
+
+Object.wait(), Object.notify() --> synchronized 的辅助
+condition --> Lock 的辅助
+    signal(), signalAll() 唤醒 await() 的等待
+注意： singal 后重入锁也得重新获取锁对象。 singal 操作也得在相关对象持有重入锁在当中执行(获取监视)
+    Condition.await() 在调用后也会释放此锁。
+
+---------------------------------------------
+允许多个线程同时访问：信号量（Semaphore）
+无论是内部锁 synchronized 还是重入锁 ReentrantLock 一次都仅允许一个线程访问一个资源
+信号量可以指定多个线程，同时访问某一个资源
+
+ /* 获取信号量 */
+semaphore.acquire();
+/* 注意离开时务必要释放 */
+semaphore.release();
+
+---------------------------------------------
+LockSupport.park();
+LockSupport.unpark(t2);
+
+----------------------------------------------
+线程池操作
+ThreadPoolExecutor(int corePoolSize,
+                    int maximumPoolSize,
+                    long keepAliveTime,
+                    TimeUnit unit,
+                    BlockingQueue<Runnable> workQueue,
+                    ThreadFactory threadFactory,
+                    RejectedExecutionHandler handler)
+1. corePoolSize
+the number of threads to keep in the pool, even if they are idle,
+unless {@code allowCoreThreadTimeOut} is set
+2. maximumPoolSize
+the maximum number of threads to allow in the pool
+3. keepAliveTime
+when the number of threads is greater than the core,
+this is the maximum time that excess idle threads will 
+wait for new tasks before terminating. (超过 corePoolSize 的线程多少时间会被销毁)
+4. workQueue
+the queue to use for holding tasks before they are executed.
+This queue will hold only the {@code Runnable}
+tasks submitted by the {@code execute} method.
+5. threadFactory
+the factory to use when the executor creates a new thread
+6. handler
+the handler to use when execution is blocked 
+because the thread bounds and queue capacities are reached
+
+========================================================
+t != (t = tail) -> != 不是原子操作，先获取 t 的值， 在执行 t=tail 获取新的 t 值，比较

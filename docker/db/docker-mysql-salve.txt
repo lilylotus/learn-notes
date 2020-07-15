@@ -1,0 +1,31 @@
+docker run --name mysql-master \
+-v /data/docker/mysql/conf/:/etc/mysql/mysql.conf.d/:rw \
+-v /data/docker/mysql/logs:/var/log/mysql/:rw \
+-v /data/docker/mysql/data/:/var/lib/mysql/:rw \
+-e MYSQL_ROOT_PASSWORD=123456 \
+-d mysql:5.7
+
+docker exec -it mysql /bin/bash
+GRANT ALL PRIVILEGES ON . TO 'root'@'%' WITH GRANT OPTION;
+
+目录介绍
+basedir 安装目录
+datadir 文件目录 默认地址 /var/lib/mysql/
+
+error_log log_error = /data/mysql/logs/mysql-error.log 默认位置/var/log/mysql/error.log [需要代理] 
+slow_query_log_file = /data/mysql/logs/mysql-slow.log
+
+
+GRANT REPLICATION SLAVE ON *.* to 'backup'@'%' identified by '123456';
+================================
+主：
+    server-id=1
+    log_bin=/var/log/mysql/binlog
+从:
+    server-id=2
+    log_bin=/var/log/mysql/binlog
+    innodb_file_per_table=ON
+    skip_name_resolve=ON
+    binlog-format=row
+    log-slave-updates=true
+    relay_log=/var/log/mysql/relay.log

@@ -1,0 +1,109 @@
+Redis 数据类型
+五种数据类型：string（字符串），hash（哈希），list（列表），
+set（集合）及 zset(sorted set：有序集合)
+
+1. String (字符串)
+string类型是二进制安全的。意思是redis的string可以包含任何数据。
+比如jpg图片或者序列化的对象.
+string类型是Redis最基本的数据类型，一个键最大能存储512MB。
+
+2. Hash（哈希）
+Redis hash 是一个键值对集合。
+Redis hash是一个string类型的field和value的映射表，hash特别适合用于存储对象。
+
+3. List（列表）
+Redis 的 list 类型其实就是一个每个子元素都是string类型的双向链表。
+你可以将元素添加到列表的头和尾。
+
+4. set（集合）
+Redis的set是string类型的无序集合。
+set的是通过hash table实现的，所以添加，删除，查找的复杂度都是O(1)。
+
+5. zset(sorted set：有序集合)
+Redis zset 和 set 一样也是string类型元素的集合,且不允许重复的成员。
+不同的是每个元素都会关联一个double类型的score。
+redis正是通过分数来为集合中的成员进行从小到大的排序。
+zset的成员是唯一的,但分数(score)却可以重复。
+
+-----------------------------------------
+redis-cli 使用
+redis-cli -h host -p port -a password
+
+1. 备份
+save
+config get dir
+
+2. 设置密码
+CONFIG get requirepass
+CONFIG set requirepass "password"
+AUTH password
+
+3. 性能测试
+主机为 127.0.0.1，端口号为 6379，执行的命令为 set,lpush，
+请求数为 10000，通过 -q 参数让结果只显示每秒执行的请求数。
+redis-benchmark -h 127.0.0.1 -p 6379 -t set,lpush -n 100000 -q
+
+-c  指定并发连接数 (50)
+-n  指定请求数 (10000)
+-d  以字节的形式指定 SET/GET 值的数据大小 (2)
+-k  1=keep alive 0=reconnect (1)
+-r  SET/GET/INCR 使用随机 key, SADD 使用随机值
+--csv   以 CSV 格式输出
+
+----------------------------------------
+键值对
+set key "key-value"
+get key
+del key (1-success, 0-fail)
+
+DEL key     # 该命令用于在 key 存在时删除 key
+DUMP key    # 序列化给定 key ，并返回被序列化的值
+EXISTS key  # 检查给定 key 是否存在
+
+EXPIRE key seconds  # 给定 key 设置过期时间
+PEXPIRE key milliseconds # 设置 key 的过期时间以毫秒计
+TTL key         # 以秒为单位，返回给定 key 的剩余生存时间(TTL, time to live)
+PTTL key        # 以毫秒为单位返回 key 的剩余的过期时间
+PERSIST key     # 移除 key 的过期时间，key 将持久保持
+EXPIREAT key timestamp # 设置过期时间, UNIX 时间戳(unix timestamp)。
+PEXPIREAT key milliseconds-timestamp # key 过期时间的时间戳(unix timestamp) 以毫秒计
+
+KEYS pattern    # 查找所有符合给定模式( pattern)的 key
+MOVE key db     # 将当前数据库的 key 移动到给定的数据库 db 当中
+RANDOMKEY       # 从当前数据库中随机返回一个 key 。
+RENAME key newkey # 修改 key 的名称
+RENAMENX key newkey # 仅当 newkey 不存在时，将 key 改名为 newkey 。
+TYPE key        # 返回 key 所储存的值的类型。
+
+--------------------------------------------------
+哈希(hash)
+hmset user name "xixi" age 22 address "shanghai"
+hgetall user
+
+HDEL key field2 [field2]    # 删除一个或多个哈希表字段
+HEXISTS key field           # 查看哈希表 key 中，指定的字段是否存在
+HGET key field              # 获取存储在哈希表中指定字段的值
+HGETALL key                 # 获取在哈希表中指定 key 的所有字段和值
+HMGET key field1 [field2]   # 获取所有给定字段的值
+
+HKEYS key           # 获取所有哈希表中的字段
+HLEN key            # 获取哈希表中字段的数量
+HVALS key           # 获取哈希表中所有值
+
+HSET key field value        # 将哈希表 key 中的字段 field 的值设为 value
+HMSET key field1 value1 [field2 value2 ] # 将多个 field-value对设置到哈希表 key 中
+HSETNX key field value      # 只有在字段 field 不存在时，设置哈希表字段的值
+
+HINCRBY key field increment # 为哈希表 key 中的指定字段的整数值加上增量 increment
+HINCRBYFLOAT key field increment # 为哈希表 key 中的指定字段的浮点数值加上增量 increment
+HSCAN key cursor [MATCH pattern] [COUNT count]  # 迭代哈希表中的键值对。
+
+---------------------------------------------------
+列表(List)
+lpush list value
+lrange list start end
+
+LLEN key # 获取列表长度
+LPOP key # 移出并获取列表的第一个元素
+RPOP key # 移除并获取列表最后一个元素
+LINDEX key index # 通过索引获取列表中的元素

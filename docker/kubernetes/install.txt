@@ -1,0 +1,106 @@
+1. 安装 docker 程序
+ali 源 ：https://opsx.alibaba.com/mirror
+
+1.1 更改 yum 源 ： wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+1.2 添加 docker 源： wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+1.3 添加 kubernetes yum 文件： kubernetes.repo
+[kubernetes]
+name=Kubernetes Repository
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+gpgcheck=1
+enable=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+    https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+
+1.4 添加 sysctl bridge -> /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+
+sysctl -p /etc/sysctl.d/k8s.conf
+
+关闭防火墙、selinux 和 swap
+systemctl stop firewalld
+systemctl disable firewalld
+setenforce 0
+sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+swapoff -a
+sed -i 's/.*swap.*/#&/' /etc/fstab
+
+1.5 安转 docker
+yum install -y docker-ce
+
+1.6 配置 docker
+/etc/docker/daemon.json
+{"registry-mirrors": ["https://registry.docker-cn.com"],
+  "graph": "/data/docker"}
+
+/usr/lib/systemd/system/docker.service 添加：
+Environment="HTTPS_PROXY=http://www.ik8s.io:10070"
+Environment="NO_PROXY=127.0.0.0/8"
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT
+
+systemctl daemon-reload && systemctl restart docker
+
+1.7 安装 kubernetes
+yum install -y kubeadm kubectl kubelet
+
+1.8 忽略 swap 报错
+/etc/sysconfig/kubelet
+KUBELET_EXTRA_ARGS="--fail-swap-on=false
+
+=============================================================
+Kubelet 负责与其他节点集群通信，并进行本节点 Pod 和容器生命周期的管理
+Kubeadm 是 Kubernetes 的自动化部署工具，降低了部署难度，提高效率
+Kubectl 是 Kubernetes 集群管理工具。
+
+二. 部署 master 节点
+systemctl enable kubelet.service
+
+kubeadm init --kubernetes-version=1.14.2 \
+--apiserver-advertise-address=10.10.37.134 \
+--image-repository registry.aliyuncs.com/google_containers \
+--service-cidr=10.1.0.0/16 \
+--pod-network-cidr=10.244.0.0/16
+
+registry.aliyuncs.com/google_containers
+定义POD的网段为: 10.244.0.0/16, api server 地址就是 master 本机 IP 地址。
+这一步很关键，由于kubeadm 默认从官网 k8s.grc.io 下载所需镜像，国内无法访问，
+因此需要通过 --image-repository 指定阿里云镜像仓库地址，很多新手初次部署都卡在此环节无法进行后续配置。
+成功信息:
+kubeadm join 10.10.37.134:6443 --token jegm2i.mg82c9zl6gnsb8cv --discovery-token-ca-cert-hash sha256:6c6a8ecc24242a5a98f4d67be0fa2010419856c72eb946e5bd70b019cc6eb7b2
+
+2. 配置kubectl工具
+mkdir -p /root/.kube
+cp /etc/kubernetes/admin.conf /root/.kube/config
+kubectl get nodes
+kubectl get cs
+
+3.部署flannel网络
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+
+4. 创建Pod以验证集群是否正常
+kubectl create deployment nginx --image=nginx
+kubectl expose deployment nginx --port=80 --type=NodePort
+kubectl get pod,svc
+
+5. 部署Dashboard
+wget https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
+
+sed -i 's/k8s.gcr.io/loveone/g' kubernetes-dashboard.yaml
+sed -i "160a \ \ \ \ \ \ nodePort: 30001" kubernetes-dashboard.yaml
+sed -i "161a \ \ type:\ NodePort" kubernetes-dashboard.yaml
+
+kubectl create -f kubernetes-dashboard.yaml
+
+6. 创建完成后，检查相关服务运行状态
+kubectl get deployment kubernetes-dashboard -n kube-system
+kubectl get pods -n kube-system -o wide
+kubectl get services -n kube-system
+netstat -ntlp|grep 30001
+
+7.在Firefox浏览器输入Dashboard访问地址：https://10.10.10.10:30001
+
+8.查看访问Dashboard的认证令牌
+kubectl describe secrets -n kube-system $(kubectl -n kube-system get secret | awk '/dashboard-admin/{print $1}')

@@ -1,0 +1,49 @@
+Linux 系统动态防火墙管理器 firewalld (Dynamic Firewall Manager Of Linux system)
+
+firewalld 参数作用:
+--get-default-zone : 查询默认的区域名称
+--set-default-zone=<区域名称> : 设置默认的区域，使其永久生效
+--get-zones : 显示可用的区域
+--get-services : 显示预定义的服务
+--get-active-zones : 显示当前正在使用的区域和网卡名称
+--add-source= : 将源 IP 或子网流量导向指定的区域
+--remove-source= : 将源 IP 或子网流量导从指定的区域删除
+--add-interface=<网卡名称> : 将指定网卡的流量导向指定的区域
+--change-inteface=<网卡名称> : 将某个网卡与区域关联
+
+--list-all : 显示当前区域的网卡配置参数、资源、端口及服务信息
+--list-all-zones : 显示所有区域的网卡配置参数、资源、端口及服务信息
+
+--add-service=<服务名称> : 设置默认区域允许服务的流量
+--add-port=<端口号/协议> : 设置默认区域允许端口的流量
+--remove-service=<服务名称> : 设置默认区域不再允许服务的流量
+--remove-port=<端口号/协议> : 设置默认区域不再允许端口的流量
+
+--reload ： 让 "永久生效"的配置规则立即生效，并覆盖当前的规则
+--panic-on : 开启应急模式
+--panic-off : 关闭应急模式
+
+要让规则策略永久生效， 使用永久模式(Permanent) --permanent (仅在系统重启后才自动生效)
+firewall-cmd --reload 让策略立即生效
+
+示例：
+firewall-cmd --get-default-zone (public)
+firewall-cmd --get-zone-of-interface=eno16777736 (public)
+firewall-cmd --get-zones (block dmz drop external home internal public trusted work)
+firewall-cmd --permanent --zone=external --change-interface=eno16777736 (success)
+firewall-cmd --permanent --get-zone-of-interface=eno16777736 (external)
+firewall-cmd --get-zone-of-interface=eno16777736 (public)
+
+firewall-cmd --zone=public --query-service=ssh (yes)
+
+firewall-cmd --zone=public --add-service=https
+firewall-cmd --permanent --zone=public --add-service=https (永久生效)
+firewall-cmd --zone=public --remove-service=https
+
+firewall-cmd --zone=public --add-port=8080-8082/tcp
+firewall-cmd --zone=public --list-ports 
+注意: 流量转发的命令格式 : 
+firewall-cmd --permanent --zone=<区域> --add-forward-port=port=<源端口号>:proto=<协议>:toport=<目标端口号>:toaddr=<目标IP地址>
+firewall-cmd --permanent --zone=public --add-forward-port=port=999:proto=tcp:toport=22:toaddr=192.168.100.100
+
+

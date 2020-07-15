@@ -1,0 +1,89 @@
+// First we must get a reference to a scheduler
+SchedulerFactory sf = new StdSchedulerFactory();
+Scheduler sched = sf.getScheduler();
+
+// Job can be scheduled before sched.start() has been called.
+// get a "nice round" time a few seconds in the future..
+Date startTime = new Date();
+startTime.setTime(startTime.getTime() + 10L * 1000L);
+
+// job1 will only fire once at date/time "ts"
+JobDetail job = JobBuilder.newJob(SimpleJob.class)
+        .withIdentity("job1", "group1")
+        .build();
+SimpleTrigger trigger = (SimpleTrigger) TriggerBuilder.newTrigger()
+        .withIdentity("trigger1", "group1")
+        .startAt(startTime)
+        .build();
+// Schedule it to run!
+Date ft = sched.scheduleJob(job, trigger);
+log.info(job.getKey() + " will run at : " + ft + " and repeat : " + trigger.getRepeatCount()
+        + " times, every " + trigger.getRepeatInterval() / 1000 + " seconds");
+
+// All of the jobs have been added to the scheduler, but none of the 
+// jobs will run until the scheduler has been started.
+sched.start();
+
+// Jobs can also be scheduled after start() has been called...
+// Job7 will repeat 20 times, repeat every 6 seconds
+job = JobBuilder.newJob(SimpleJob.class).withIdentity("job7", "group1").build();
+trigger = TriggerBuilder.newTrigger().withIdentity("trigger7", "group1")
+        .startAt(startTime)
+        .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(6).withRepeatCount(20))
+        .build();
+ft = sched.scheduleJob(job, trigger);
+log.info(job.getKey() + " will run at : " + ft + " and repeat : " + trigger.getRepeatCount()
++ " times, every " + trigger.getRepeatInterval() / 1000 + " seconds");
+
+// Jobs 8 can be fired directly .. (rather than waiting for a trigger)
+job = JobBuilder.newJob(SimpleJob.class).withIdentity("job8", "group1").storeDurably().build();
+sched.addJob(job, true);
+log.info("'Manually' triggering job8...");
+sched.triggerJob(JobKey.jobKey("job8", "group1"));
+
+// Jobs can be re-scheduled..
+// Job 7 will run immediately and repeat 10 times for every second
+startTime.setTime(new Date().getTime() + 5L * 1000L);
+log.info("------ Rescheduling ------");
+trigger = TriggerBuilder.newTrigger().withIdentity("trigger7", "group1")
+        .startAt(startTime)
+        .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(1).withRepeatCount(10))
+        .build();
+ft = sched.rescheduleJob(trigger.getKey(), trigger);
+
+sched.shutdown(true);
+
+// Display some stats about the schedule that just run
+SchedulerMetaData metaData = sched.getMetaData();
+log.info("Executed " + metaData.getNumberOfJobsExecuted() + " jobs.");
+
+============================================================================
+1. 获取一个制作器
+SchedulerFactory sf = new StdSchedulerFactory();
+Scheduler sched = sf.getScheduler();
+
+2. 配置Job任务
+JobDetail job = JobBuilder.newJob(SimpleJob.class)
+        .withIdentity("job1", "group1")
+        .build();
+
+3. 配置触发器 Trigger --> SimpleTrigger 简单触发器
+SimpleTrigger trigger = (SimpleTrigger) TriggerBuilder.newTrigger()
+        .withIdentity("trigger1", "group1")
+        .startAt(startTime)
+        .build();
+
+3.1 配置 Job 的调度情况
+trigger = TriggerBuilder.newTrigger().withIdentity("trigger3", "group1").startAt(startTime)
+        .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(10).withRepeatCount(10))
+        .build();
+
+4. 执行
+sched.start();
+
+5. 结束
+sched.shutdown(true);
+
+6. 获取调度信息
+SchedulerMetaData metaData = sched.getMetaData();
+log.info("Executed " + metaData.getNumberOfJobsExecuted() + " jobs.");

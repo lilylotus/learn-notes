@@ -1,0 +1,74 @@
+1. install
+bind bind-utils bind-chroot
+
+2. confirg file
+doc : /usr/share/doc/bind-9.9.4/sample/var/named/
+/etc/named.conf主配置文件
+/etc/named/zone文件
+
+复制到 /var/named/chroot/var/named/
+
+cp -R /usr/share/doc/bind-9.9.4/sample/var/named/* /var/named/chroot/var/amed/
+touch /var/named/chroot/var/named/data/cache_dump.db
+touch /var/named/chroot/var/named/data/named_stats.txt
+touch /var/named/chroot/var/named/data/named_mem_stats.txt
+touch /var/named/chroot/var/named/data/named.run
+mkdir /var/named/chroot/var/named/dynamic
+touch /var/named/chroot/var/named/dynamic/managed-keys.bind
+chmod -R 777 /var/named/chroot/var/named/data
+chmod -R 777 /var/named/chroot/var/named/dynamic
+cp -R /etc/named* /var/named/chroot/etc/
+chown -R root.named /var/named/chroot
+
+named-checkconf /etc/named.conf
+
+2.1 配置规则
+/var/named/*.zone
+
+[domain]	IN	[[RR type]	[RR data]]
+主机名.	IN	A	IPv4 的 IP 地址
+主机名.	IN	AAAA	IPv6 的 IP 地址
+区域名.	IN	NS	管理这个领域名的服务器主机名字.
+区域名.	IN	SOA	管理这个领域名的七个重要参数(如上说明)
+区域名.	IN	MX	顺序数字
+主机别名.	IN	CNAME	实际代表这个主机别名的主机名字.
+
+checkzone "bindtest.com.zone" /var/named/bindtest.com.zone
+
+2.2 正反向解析
+//正向解析
+zone "bindtest.com" IN {
+        type master;
+        file "bindtest.com.zone";
+};
+
+//反向解析
+//我的目标ip是 192.168.100.xx
+//反响解析的时候，就需要反过来命名 100.168.192.in-addr.arpa
+//in-addr.arpa 这个是固定的，不可以瞎改哦
+zone "100.168.192.in-addr.arpa" IN {
+        type master;
+        file "100.168.192.zone";
+};
+
+---------------------------------------------------
+3. 转发的类型
+全局转发：针对凡本地没有通过zone定义的区域查询请求，全部转给某转发器
+options {
+    forwarders { ip; };    #指明转发器是谁
+    forward only|first;    #only表示仅转发 ；first表示先进行转发，如果没查询到结果，那么它自己还会根据根提示向外迭代查询
+};
+
+etc/named.conf
+forward first;#本机不能解析的转发给202.96.209.5做解析#first：首先转发；转发器不响应时，自行去迭代查询；only:只转发;
+forwarders  {202.96.209.5; 210.22.84.3; 202.96.209.133; 223.5.5.5;114.114.114.114; 8.8.8.8; };
+
+局部转发：仅转发对某特定区域的解析请求
+/etc/named.rfc1912.zones
+zone "google.com.hk" IN {
+    type forward;
+    forward only;
+    forwarders {8.8.8.8;};
+};
+
+

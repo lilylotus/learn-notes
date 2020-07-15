@@ -1,0 +1,383 @@
+﻿一. 策略与规则链
+规则依据数包处理位置的不同进行分类:
+在进路由选择前处理数据包 (PREROUTING)
+处理数据流入的数据包 (INPUT)
+处理数据流出的数据包 (OUTPUT)
+处理数据转发的数据包 (FORWARD)
+在进行路由选择后处理的数据包 (POSTROUTING)
+
+一般来说从内网发送的流量一般都是可控且良性的，因此使用最大的是 INPUT 规则链
+
+处理策略规则的动作:
+允许流量通过 (ACCEPT)
+拒绝流量通过 (REJECT) : 拒绝流量后会回复一条 "您的信息已经收到，但是被扔掉了"
+记录日志 (LOG)
+丢弃流量 (DROP) : 直接将流量丢弃而且不响应
+
+iptables [参数]
+-P(大)    默认策略    -L    查看规则链
+-F    清空规则链    -I num    从规则链的头部加入新规则
+-A    末尾加入新规则    -D num    删除规则链
+-s(x)    匹配源地址(IP/MASK) "!"    表示除了此 IP 外
+-d    匹配目标地址
+-i 网卡名称    匹配从此网卡流入的数据
+-o 网卡名称 匹配从此网卡流出的数据
+-p(x)     匹配协议 TCP UDP ICMP
+--dport num 目标端口号
+--sport num 来源端口号
+
+iptables -I chain [rulenum] rule-specification [options]
+iptables -D chain rulenum [options]
+iptables -P chain target [options]
+
+示例：
+    iptables -I INPUT -p icmp -j reject
+    iptables -D INPUT 1
+    iptables -P INPUT ACCEPT
+    iptables -A INPUT -p tcp --dport 22 -j REJECT
+
+1000:1024 (表示1000-1024之间的值范围)
+=========================================
+
+"路由前"、"转发"、"路由后" -> PREROUTING、FORWARD、POSTROUTING
+
+到本机某进程的报文：PREROUTING --> INPUT
+由本机转发的报文：PREROUTING --> FORWARD --> POSTROUTING
+由本机的某进程发出报文（通常为响应报文）：OUTPUT --> POSTROUTING
+
+filter表：负责过滤功能，防火墙；内核模块：iptables_filter
+nat表：network address translation，网络地址转换功能；内核模块：iptable_nat
+mangle表：拆解报文，做出修改，并重新封装 的功能；iptable_mangle
+raw表：关闭nat表上启用的连接追踪机制；iptable_raw
+
+
+或者说，每个"链"中的规则都存在于哪些"表"中。
+PREROUTING 的规则可以存在于：raw表，mangle表，nat表。
+INPUT 的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。
+FORWARD 的规则可以存在于：mangle表，filter表。
+OUTPUT 的规则可以存在于：raw表mangle表，nat表，filter表。
+POSTROUTING 的规则可以存在于：mangle表，nat表。
+
+raw 表中的规则可以被哪些链使用：PREROUTING，OUTPUT
+mangle 表中的规则可以被哪些链使用：PREROUTING，INPUT，FORWARD，OUTPUT，POSTROUTING
+nat 表中的规则可以被哪些链使用：PREROUTING，OUTPUT，POSTROUTING（centos7中还有INPUT，centos6中没有）
+filter 表中的规则可以被哪些链使用：INPUT，FORWARD，OUTPUT
+
+
+处理动作
+ACCEPT：允许数据包通过。
+DROP：直接丢弃数据包，不给任何回应信息，这时候客户端会感觉自己的请求泥牛入海了，过了超时时间才会有反应。
+REJECT：拒绝数据包通过，必要时会给数据发送端一个响应的信息，客户端刚请求就会收到拒绝的信息。
+SNAT：源地址转换，解决内网用户用同一个公网地址上网的问题。
+MASQUERADE：是SNAT的一种特殊形式，适用于动态的、临时会变的ip上。
+DNAT：目标地址转换。
+REDIRECT：在本机做端口映射。
+LOG：在/var/log/messages文件中记录日志信息，然后将数据包传递给下一条规则，也就是说除了记录以外不对数据包做任何其他操作，仍然让下一条规则去匹配。
+
+===============================================
+
+1.PREROUTING (路由前)
+2.INPUT (数据包流入口)
+3.FORWARD (转发管卡)
+4.OUTPUT(数据包出口)
+5.POSTROUTING（路由后）
+
+1.filter 定义允许或者不允许的
+2.nat 定义地址转换的
+3.mangle 修改报文原数据
+
+规则表：
+1.filter表——三个链：INPUT、FORWARD、OUTPUT
+作用：过滤数据包  内核模块：iptables_filter.
+2.Nat表——三个链：PREROUTING、POSTROUTING、OUTPUT
+作用：用于网络地址转换（IP、端口） 内核模块：iptable_nat
+3.Mangle表——五个链：PREROUTING、POSTROUTING、INPUT、OUTPUT、FORWARD
+作用：修改数据包的服务类型、TTL、并且可以配置路由实现QOS内核模块：iptable_mangle(别看这个表这么麻烦，咱们设置策略时几乎都不会用到它)
+4.Raw表——两个链：OUTPUT、PREROUTING
+作用：决定数据包是否被状态跟踪机制处理  内核模块：iptable_raw
+
+规则链：
+1.INPUT——进来的数据包应用此规则链中的策略
+2.OUTPUT——外出的数据包应用此规则链中的策略
+3.FORWARD——转发数据包时应用此规则链中的策略
+4.PREROUTING——对数据包作路由选择前应用此链中的规则
+（记住！所有的数据包进来的时侯都先由这个链处理）
+5.POSTROUTING——对数据包作路由选择后应用此链中的规则
+（所有的数据包出来的时侯都先由这个链处理）
+
+规则表之间的优先顺序：
+Raw——mangle——nat——filter
+第一种情况：入站数据流向
+    从外界到达防火墙的数据包，先被PREROUTING规则链处理（是否修改数据包地址等）
+    之后会进行路由选择（判断该数据包应该发往何处），如果数据包 的目标主机是防
+    火墙本机（比如说Internet用户访问防火墙主机中的web服务器的数据包），那么内核
+    将其传给INPUT链进行处理（决定是否允许通 过等），通过以后再交给系统上层的应用程序
+    （比如Apache服务器）进行响应。
+第二冲情况：转发数据流向
+    来自外界的数据包到达防火墙后，首先被PREROUTING规则链处理，之后会进行路由选择，
+    如果数据包的目标地址是其它外部地址（比如局域网用户通过网 关访问QQ站点的数据包），
+    则内核将其传递给FORWARD链进行处理（是否转发或拦截），然后再交给POSTROUTING规则链
+    （是否修改数据包的地 址等）进行处理。
+第三种情况：出站数据流向
+    防火墙本机向外部地址发送的数据包（比如在防火墙主机中测试公网DNS服务器时），
+    首先被OUTPUT规则链处理，之后进行路由选择，然后传递给POSTROUTING规则链
+    （是否修改数据包的地址等）进行处理。
+
+
+对于filter来讲一般只能做在3个链上：INPUT ，FORWARD ，OUTPUT
+对于nat来讲一般也只能做在3个链上：PREROUTING ，OUTPUT ，POSTROUTING
+而mangle则是5个链都可以做：PREROUTING，INPUT，FORWARD，OUTPUT，POSTROUTING
+
+注意：规则的次序非常关键，谁的规则越严格，应该放的越靠前，
+    而检查规则的时候，是按照从上往下的方式进行检查的
+
+---------------------------------------------------------------------
+ iptables定义规则的方式比较复杂:
+ 格式：iptables [-t table] COMMAND chain CRETIRIA -j ACTION
+     -t table ：3个filter nat mangle
+     COMMAND：定义如何对规则进行管理
+     chain：指定你接下来的规则到底是在哪个链上操作的，当定义策略的时候，是可以省略的
+     CRETIRIA:指定匹配标准
+     -j ACTION :指定如何进行处理
+
+比如：不允许172.16.0.0/24的进行访问。
+ iptables -t filter -A INPUT -s 172.16.0.0/24 -p udp --dport 53 -j DROP
+ 当然你如果想拒绝的更彻底：
+ iptables -t filter -R INPUT 1 -s 172.16.0.0/16 -p udp --dport 53 -j REJECT
+
+iptables -L -n -v    #查看定义规则的详细信息
+
+-P :设置默认策略的（设定默认门是关着的还是开着的）
+    iptables -P INPUT (DROP|ACCEPT)  默认是关的/默认是开的
+-F: FLASH，清空规则链的(注意每个链的管理权限)
+-X: 用于删除用户自定义的空链
+-E：用来Rename chain主要是用来给用户自定义的链重命名 -E oldname newname
+
+-A：追加，在当前链的最后新增一个规则
+-I num : 插入，把当前规则插入为第几条。
+    -I 3 :插入为第三条
+-R num：Replays替换/修改第几条规则
+    格式：iptables -R 3 …………
+-D num：删除，明确指定删除第几条规则
+
+-t nat：显示所有的关卡的信息
+
+-s：指定作为源地址匹配，这里不能指定主机名称，必须是IP
+    而且地址可以取反，加一个“!”表示除了哪个IP之外
+-d：表示匹配目标地址
+-p：用于匹配协议的（这里的协议通常有3种，TCP/UDP/ICMP）
+-i eth0：从这块网卡流入的数据
+    流入一般用在INPUT和PREROUTING上
+-o eth0：从这块网卡流出的数据
+    流出一般在OUTPUT和POSTROUTING上
+
+扩展匹配
+-p tcp :TCP协议的扩展。一般有三种扩展
+    --dport XX-XX：指定目标端口,不能指定多个非连续端口,只能指定单个端口，比如
+    --dport 21  或者 --dport 21-23 (此时表示21,22,23)
+    --sport：指定源端口
+    --tcp-fiags：TCP的标志位（SYN,ACK，FIN,PSH，RST,URG）
+-p udp：UDP协议的扩展
+    --dport
+    --sport
+ -p icmp：icmp数据报文的扩展
+    --icmp-type：
+    echo-request(请求回显)，一般用8 来表示
+    所以 --icmp-type 8 匹配请求回显数据包
+    echo-reply （响应的数据包）一般用0来表示
+
+详解-j ACTION
+常用的ACTION：
+     DROP：悄悄丢弃 一般我们多用DROP来隐藏我们的身份，以及隐藏我们的链表
+     REJECT：明示拒绝
+     ACCEPT：接受
+    custom_chain：转向一个自定义的链
+     SNAT：源地址转换。
+     DNAT：目标地址转换。
+     MASQUERADE：源地址伪装
+     REDIRECT：重定向：主要用于实现端口重定向
+     MARK：打防火墙标记的
+     RETURN：返回在自定义链执行完毕后使用返回，来返回原规则链。
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+练习题1：只要是来自于172.16.0.0/16网段的都允许访问我本机的172.16.100.1的SSHD服务
+
+定义进来的： iptables -t filter -A INPUT -s 172.16.0.0/16 -d 172.16.100.1 -p tcp --dport 22 -j ACCEPT
+定义出去的： iptables -t filter -A OUTPUT -s 172.16.100.1 -d 172.16.0.0/16 -p tcp --dport 22 -j ACCEPT
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+iptables -P FORWARD DROP
+
+练习题2：假如我们允许自己ping别人，但是别人ping自己ping不通如何实现呢？
+分析：对于ping这个协议，进来的为8（ping），出去的为0(响应).我们为了达到目的，需要8出去,允许0进来
+在出去的端口上：iptables -A OUTPUT -p icmp --icmp-type 8 -j ACCEPT
+在进来的端口上：iptables -A INPUT -p icmp --icmp-type 0 -j ACCEPT
+
+小扩展：对于127.0.0.1比较特殊，我们需要明确定义它
+iptables -A INPUT -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+iptables -A OUTPUT -s 127.0.0.1 -d 127.0.0.1 -j ACCEPT
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+SNAT和DNAT的实现
+内网用户通过一个外网的口上网的时候，这时我们将我们内网的地址转换为一个外网的IP，我们就可以实现连接其他外网IP的功能。
+
+1.SNAT基于原地址的转换
+比如我们现在要将所有192.168.10.0网段的IP在经过的时候
+全都转换成172.16.100.1这个假设出来的外网地址：
+iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SNAT --to-source 172.16.100.1
+
+外网地址是动态变换的。这时我们就要将外网地址换成 MASQUERADE(动态伪装):
+    它可以实现自动寻找到外网地址，而自动将其改为正确的外网地址
+iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j MASQUERADE
+
+2.DNAT目标地址转换
+对于目标地址转换，数据流向是从外向内的，外面的是客户端，里面的是服务器端通过目标地址转换，
+我们可以让外面的ip通过我们对外的外网ip来访问我们服务器不同的服务器，而我们的服务却放在内网服务器的不同的服务器上。
+
+iptables -t nat -A PREROUTING -d 192.168.10.18 -p tcp --dport 80 -j DNAT --todestination 172.16.100.2
+目标地址转换要做在到达网卡之前进行转换,所以要做在PREROUTING这个位置上
+
+1.service iptables save 命令
+    它会保存在/etc/sysconfig/iptables这个文件中
+2.iptables-save 命令
+    iptables-save > /etc/sysconfig/iptables
+3.iptables-restore 命令
+    开机的时候，它会自动加载/etc/sysconfig/iptabels
+    如果开机不能加载或者没有加载，而你想让一个自己写的配置文件（假设为iptables.2）手动生效的话：
+    iptables-restore < /etc/sysconfig/iptables.2
+    则完成了将iptables中定义的规则手动生效
+---------------------------------------------------------------------
+
+---------------------------------------------------------------------
+/etc/sysconfig/iptables文件配置如下:
+# Generated by iptables-save v1.4.7 on Fri Mar  2 19:59:43 2012
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [8:496]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+#ping使用的端口
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -s 127.0.0.1/32 -d 127.0.0.1/32 -j ACCEPT
+-A INPUT -s 192.168.2.200/32 -d 192.168.2.200/32 -j ACCEPT
+#允许服务器自己的SSH（对外部请求来说服务器是目标所以使用--dport）
+-A INPUT -p tcp -m tcp --dport 22 -j ACCEPT
+#80端口不用说了吧，服务器网站访问端口
+-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 11211 -j ACCEPT
+-A INPUT -p tcp -m tcp --dport 11212 -j ACCEPT
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+#53端口是DNS相关，TCP和UDP都要配置
+-A INPUT -p tcp -m tcp --dport 53 -j ACCEPT
+-A INPUT -p udp -m udp --dport 53 -j ACCEPT
+#ping使用的端口
+-A OUTPUT -p icmp -j ACCEPT
+-A OUTPUT -s 127.0.0.1/32 -d 127.0.0.1/32 -j ACCEPT
+-A OUTPUT -s 192.168.2.200/32 -d 192.168.2.200/32 -j ACCEPT
+#允许服务器SSH到其他机器（使用外部端口就使用--dport）
+-A OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT
+#允许服务器自己的SSH（自已为源输出就使用--sport）
+-A OUTPUT -p tcp -m tcp --sport 22 -j ACCEPT
+#访问外部网站80端口（使用外部端口就使用--dport）
+-A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
+#如果服务器需要访问外部网站，那么OUTPUT也需要配置53端口（使用外部端口就使用--dport）
+-A OUTPUT -p tcp -m tcp --dport 53 -j ACCEPT
+-A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+#如果有访问外部邮箱，那么打开邮箱相关端口（使用外部端口就使用--dport）
+-A OUTPUT -p tcp -m tcp --dport 465 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 25 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 110 -j ACCEPT
+#服务器网站访问端口（自已为源输出就使用--sport）
+-A OUTPUT -p tcp -m tcp --sport 80 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --sport 3306 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --sport 11211 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --sport 11212 -j ACCEPT
+COMMIT
+---------------------------------------------------------------------
+
+如果我需要对内网某机器单独开放mysql端口，应该如下配置：
+iptables -A INPUT -s 192.168.2.6 -p tcp -m tcp --dport 3306 -j ACCEPT
+iptables -A OUTPUT -s 192.168.2.6 -p tcp -m tcp --sport 3306 -j ACCEPT
+彻底禁止某IP访问:
+#屏蔽单个IP的命令是
+iptables -I INPUT -s 123.45.6.7 -j DROP
+#封整个段即从123.0.0.1到123.255.255.254的命令
+iptables -I INPUT -s 123.0.0.0/8 -j DROP
+#封IP段即从123.45.0.1到123.45.255.254的命令
+iptables -I INPUT -s 124.45.0.0/16 -j DROP
+#封IP段即从123.45.6.1到123.45.6.254的命令是
+iptables -I INPUT -s 123.45.6.0/24 -j DROP
+
+1、允许PING设置
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+允许本地回环接口（loopback）通过防火墙
+iptables –A INPUT –i lo –p all –j ACCEPT
+iptables –A OUTPUT –o lo –p all –j ACCEPT
+必须设置规则，允许系统域名解析
+iptables –A INPUT –p udp –sport 53 –j ACCEPT
+iptables –A OUTPUT –p udp –dport 53 –j ACCEPT
+
+
+-A INPUT -j REJECT --reject-with icmp-host-prohibited
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+# 这两条的意思是在INPUT表和FORWARD表中拒绝所有其他不符合上述任何一条规则的数据包。
+并且发送一条host prohibited的消息给被拒绝的主机。
+
+
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+
+
+下面的指令厉害了，可以让你的电脑成为铜墙铁壁，百毒不侵，当然这样的绝对防御是有代价的，封起了所有的端口，自己也无法上网了。。。。。。。。
+
+禁止所有数据进入：
+iptables -P INPUT DROP
+禁止所有数据送出：
+iptables -p OUTPUT DROP
+禁止所有FORWARD：
+iptables -p FORWARD DROP
+
+很明显DROP在iptables中是禁止的意思
+
+下面要开始设置iptables规则了。
+
+开放网卡：
+
+iptables -A INPUT -i eth0 -j ACCEPT
+意思是：接受所有来源于eth0网卡的数据；
+
+iptables -A INPUT -i eth0 -j ACCEPT
+意思是：接受所有非来源于eth0网卡的数据（当然有多张网卡的时候才有用）；
+
+开放端口：
+
+下面就于开放SSH默认的22端口为例：（SSH只开放tcp协议的就行了。upd我只是举例的。）
+
+iptables -A INPUT -i eth0 -p tcp --dport 22 -j ACCEPT
+意思是：允许eth0网卡tcp协议的22端口的进入数据；
+iptables -A INPUT -i eth0 -p udp --dport 22 -j ACCEPT
+意思是：允许eth0网卡udp协议的22端口的进入数据；
+
+iptables -A FORWARD -i eth0 -p tcp --dport 22 -j ACCEPT
+iptables -A FORWARD -i eth0 -p udp --dport 22 -j ACCEPT
+还没有搞清楚FORWARDS是什么作用。不好意思。
+
+iptables -A OUTPUT -p tcp --sport  22 -j ACCEPT
+意思是：允许tcp协议的22端口的输出数据；
+iptables -A OUTPUT -p udp --sport  22 -j ACCEPT
+意思是：允许udp协议的22端口的输出数据；
+
+保存设置：iptables-save -c > iptables.save
+注意，这个iptables.save是执行这条命令后在当前文件下生成的iptables存档文件。
+载入iptables.save文档： iptables-restore -c /你保存iptables.save的目录/iptables.save
+
+提示，如果要每次重启电脑时都能自动载入iptables的规则：
+sudo vi /etc/rc.local
+在文件rc.local的exit 0 的前一行加入：iptables-restore -c /你保存iptables.save的目录/iptables.save

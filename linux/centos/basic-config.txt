@@ -1,0 +1,34 @@
+1. 主机名称
+/etc/hostname
+echo "nihility.cn" > /etc/hostname
+
+hostname -> 查看主机名称
+
+2. 配置网卡信息
+/etc/sysconfig/network-scrpts/ifcfg-*
+
+TYPE=Ethernet
+BOOTPROTO=static
+NAME=eno16777736
+ONBOOT=yes
+IPADDR=
+NETMASK=255.255.255.0
+GATEWAY=
+DNS1=
+
+systemctl restart network
+
+3. 配置 YUM 仓库
+/etc/yum.repo.d/*.repo
+
+local.repo
+[local]
+name=local.repo
+baseurl= (file:// | ftp:// | http://)
+enable= (1 | 0)
+gpgcheck= (1 | 0)
+gpgkey=file:///media/cdrom/RPM-GPG-KEY-redhat-release
+
+/etc/fstab
+
+yum list 

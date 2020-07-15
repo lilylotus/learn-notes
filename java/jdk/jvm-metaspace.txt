@@ -1,0 +1,97 @@
+java -jar -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:-PrintGCTimeStamps -XX:-UseCompressedClassPointers -XX:SurvivorRatio=8 -XX:+UseParallelGC jvm.jar
+
+从JDK8开始，永久代 PermGen 的概念被废弃掉了，取而代之的是一个称为Metaspace的存储空间。
+Metaspace 使用的是本地内存，而不是堆内存，也就是说在默认情况下 Metaspace 的大小只与本地内存大小有关。
+当然你也可以通过以下的几个参数对 Metaspace 进行控制
+
+一. 对比
+JDK 1.7 及以往的 JDK 版本中，Java 类信息、常量池、静态变量都存储在 Perm（永久代）里。
+类的元数据和静态变量在类加载的时候分配到 Perm，当类被卸载的时候垃圾收集器从 Perm 处理掉类的元数据和静态变量。
+当然常量池的东西也会在 Perm 垃圾收集的时候进行处理。
+
+JDK 1.8 的对 JVM 架构的改造将类元数据放到本地内存中，将常量池和静态变量放到 Java 堆里。
+HotSopt VM 将会为类的元数据明确分配和释放本地内存。在这种架构下，
+类元信息就突破了原来 -XX:MaxPermSize 的限制，现在可以使用更多的本地内存。
+这样就从一定程度上解决了原来在运行时生成大量类的造成经常 Full GC 问题，如运行时使用反射、代理等。
+
+二. 注意
+如果服务器内存足够，升级到 JDK 1.8 修改 JVM 参数最简单的办法就是将 
+-XX:PermSize 和 -XX:MaxPermSize 参数替换为 -XX:MetaspaceSize 和 -XX:MaxMetaspaceSize
+1.8 中 -XX:PermSize 和 -XX:MaxPermSize 已经失效，取而代之的是一个新的区域 Metaspace（元数据区）。
+使用 JDK1.8 以及之后的版本，不会再碰上 “java.lang.OutOfMemoryError: PermGen space” 这个错误了
+
+三. 优势
+permSize：原来的jar包及你自己项目的class存放的内存空间，这部分空间是固定的，启动参数里面 -permSize 确定，
+如果你的 jar 包很多，经常会遇到 permSize 溢出，且每个项目都会占用自己的 permGen 空间
+改成 metaSpaces，各个项目会共享同样的 class 内存空间，
+比如两个项目都用了 fast-json 开源包，在 mentaSpaces 里面只存一份 class，提高内存利用率，且更利于垃圾回收
+
+四. 参数
+1. -XX:MetaspaceSize
+初始空间大小，达到该值就会触发垃圾收集进行类型卸载，同时 GC 会对该值进行调整，如果释放了大量的空间，就适当降低该值；
+如果释放了很少的空间，那么在不超过 MaxMetaspaceSize 时，适当提高该值。
+2. -XX:MaxMetaspaceSize  最大空间，默认是没有限制的。
+
+除了上面两个指定大小的选项以外，还有两个与 GC 相关的属性：
+3. -XX:MinMetaspaceFreeRatio，在GC之后，最小的Metaspace剩余空间容量的百分比，减少为分配空间所导致的垃圾收集
+4. -XX:MaxMetaspaceFreeRatio，在GC之后，最大的Metaspace剩余空间容量的百分比，减少为释放空间所导致的垃圾收集
+
+五. GC是什么
+GC（Garbage Collection）是垃圾回收机制，在 java 中开发人员无法使用指针来自由的管理内存，
+GC 是 JVM 对内存（实际上就是对象）进行管理的方式。GC 使得 Java 开发人员摆脱了繁琐的内存管理工作，让程序的开发更有效率。
+
+六. GC的工作原理
+分配对象使用 new 关键字，释放对象时，只要将对象所有引用赋值为 null，让程序不能够再访问到这个对象，
+我们称该对象为"不可达的"或者"不被引用"。GC 将负责回收所有"不可达"对象的内存空间。
+
+1. 新new的对象都放在Eden区
+2. Eden 区满或者快满的时候进行一次清理，不被引用的对象直接被干掉；还有引用的对象，但是年龄比较大的，挪到 S0 区
+3. 下次 Eden 区快满的时候，会进行上一步的操作，
+并且将 Eden 和 S0 区的年纪大的对象放到 S1 区 (原理上随时保持 S0 和 S1 有一个是空的，用来存下一次的对象)
+4. 下下次，Eden 区快满的时候，会进行上一步操作，并且将 Eden 和 S1 区的年纪大的对象放到 S0 区 (此时S1区就是空的)
+5. 直到 Eden 区快满，S0 或者 S1 也快满的时候，这时候就把这两个区的年纪大的对象放到 Old 区
+6. 依次循环，直到 Old 区也快满的时候，Eden 区也快满的时候，会对整个这一块内存区域进行一次大清洗，
+腾出内存，为之后的对象创建，程序运行腾地方。
+
+七. Minor GC、Major GC 和 Full GC
+1. 清理 Eden 区和 Survivor区叫 Minor GC。
+2. 清理 Old 区叫 Major GC。
+3. 清理整个堆空间—包括年轻代和老年代叫 Full GC。
+================================================================
+
+1. -XX:MetaspaceSize=N
+这个参数是初始化的 Metaspace 大小，该值越大触发 Metaspace GC 的时机就越晚。
+随着 GC 的到来，虚拟机会根据实际情况调控 Metaspace 的大小，可能增加上线也可能降低。
+在默认情况下，这个值大小根据不同的平台在 12M 到 20M 浮动。使用 java -XX:+PrintFlagsInitial 命令查看本机的初始化参数，
+-XX:Metaspacesize 为 21810376B（大约20.8M）
+
+2. -XX:MaxMetaspaceSize=N
+这个参数用于限制 Metaspace 增长的上限，防止因为某些情况导致 Metaspace 无限的使用本地内存，影响到其他程序。
+在本机上该参数的默认值为 4294967295B（大约4096MB）。
+
+3. -XX:MinMetaspaceFreeRatio=N
+当进行过 Metaspace GC 之后，会计算当前 Metaspace 的空闲空间比，如果空闲比小于这个参数，那么虚拟机将增长 Metaspace 的大小。
+在本机该参数的默认值为 40，也就是 40%。设置该参数可以控制 Metaspace 的增长的速度，
+太小的值会导致 Metaspace 增长的缓慢，Metaspace 的使用逐渐趋于饱和，可能会影响之后类的加载。
+而太大的值会导致 Metaspace 增长的过快，浪费内存。
+
+4. -XX:MaxMetasaceFreeRatio=N
+当进行过 Metaspace GC 之后，会计算当前 Metaspace 的空闲空间比，
+如果空闲比大于这个参数，那么虚拟机会释放 Metaspace 的部分空间。在本机该参数的默认值为70，也就是70%。
+
+5. -XX:MaxMetaspaceExpansion=N
+Metaspace 增长时的最大幅度。在本机上该参数的默认值为5452592B（大约为5MB）。
+
+6. -XX:MinMetaspaceExpansion=N
+Metaspace 增长时的最小幅度。在本机上该参数的默认值为 340784B（大约330KB为）。
+
+==========================================================
+# 第一个参数用于打印GC日志，第二个参数用于打印对应的时间戳
+-XX:+PrintGCDetails -XX:+PrintGCDateStamps
+
+在 JVM 使用 -XX:+UseCompressedClassPointers 和 -XX:+UseCompressedOops 开启 Compressed Class 的功能后，
+会在 Metaspace 中开辟出一块新的空间(Compressed Class Space)，上面的错误正是由于这个空间出现了 OutOfMemory，
+可以通过设置 -XX:CompressedClassSpaceSize（默认值为1G）的大小或者 -XX:-UseCompressedClassPointers 来关闭该功能。
+为了不影响下面的测试，暂时使用-XX:-UseCompressedClassPointers来关闭。
+
+-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:-UseCompressedClassPointers

@@ -1,0 +1,10 @@
+一. 数值计算问题
+Float.NaN != Float.NaN  --> true
+0 / 0  --> Exception : java.lang.ArithmeticException: / by zero
+0 / 0.0, 0.0 / 0, 0.0 / 0.0 --> NaN
+
+字面 整型 字符默认类型为 int, 默认计算会把类型自动提升到 int 类型.
+有一个计算数字为 Long 类型，默认就会把最后的计算类型提升到 Long 类型， Int 类型同理，提升到最大类型。
+字面 浮点类型 字符默认类型为 double, 默认计算会把类型自动提升到 double 类型
+
+(x > y) == !(x <= y) --- (2 > Float.NaN == !(2 <= 1))

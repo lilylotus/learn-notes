@@ -1,0 +1,34 @@
+一: bytes流
+
+OutputStream (abstract)
+    FileOutputStream (File),(String) : write(byte[] b, int off, int len) 
+    FilterOutputStream
+        BufferedOutputStream (OutputStream) : write(byte[] b, int off, int len)
+        DataOutputStream (OutputStream)
+        PrintStream (File, String csn), (OutputStream), (String)
+    ObjectOutputStream (OutputStream)
+    ByteArrayOutputStream (int)
+
+InputStream (abstract)
+    FileInputStream (File), (String) : read(byte[] b, int off, int len)
+    FilterInputStream
+        BufferedInputStream (InputStream in, int size)
+        DataInputStream (InputStream in)
+        ObjectInputStream (InputStream in)
+    ByteArrayInputStream (byte[] buf, int offset, int length)
+
+二: 字符流
+
+Writer (abstract)
+    BufferedWriter (Writer)
+    FilterWriter
+    OutputStreamWriter (OutputStream, Charset), (OutputStream, String)
+    PrintWriter (File), (OutputStream), (String), (Writer)
+
+Reader (abstract)
+    BufferedReader (Reader in)
+    InputStreamReader (InputStream, Charset), (InputStream in, String charsetName)
+    FilterReader 
+
+
+

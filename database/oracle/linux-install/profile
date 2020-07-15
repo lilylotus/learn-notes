@@ -1,0 +1,7 @@
+TMP=/oracle/tmp
+TMPDIR=/oracle/tmp
+ORACLE_BASE=/oracle/app/oracle_base
+ORACLE_HOME=$ORACLE_BASE/product/11.2.0/oracle_home
+ORACLE_SID=sales
+PATH=$PATH:$ORACLE_HOME/bin
+export TMP TMPDIR ORACLE_SID ORACLE_BASE ORACLE_HOME PATH

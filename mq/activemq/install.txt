@@ -1,0 +1,28 @@
+myactivemq start
+http://127.0.0.1:8161/
+ActiveMQ WebConsole available at http://127.0.0.1:8161/
+ActiveMQ Jolokia REST API available at http://127.0.0.1:8161/api/jolokia/
+
+----------------------------------------------
+1. 打开后台管理地址
+http://127.0.0.1:8161/admin/
+2. 用户名和密码存在 \myactivemq\conf\users.properties
+admin=admin
+
+
+===============================================
+Apache ActiveMQ Artemis
+1. 在 bin 目录下，先创建用户
+artemis.cmd create E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis [自定义的文件目录]
+2. 启动，在自定义的目录 bin 下
+E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis\bin\artemis run
+
+E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis\bin\artemis-service.exe install
+E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis\bin\artemis-service.exe start
+E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis\bin\artemis-service.exe stop
+E:\mq\activemq\apache-artemis-2.8.0\bin\myartemis\bin\artemis-service.exe uninstall
+
+3. 打开主页
+HTTP Server started at  http://localhost:8161
+Artemis Jolokia REST API available at http://localhost:8161/console/jolokia
+Artemis Console available at http://localhost:8161/console [登录窗口]

@@ -1,0 +1,28 @@
+Installation using repository
+1. Adding repository entry
+To add Erlang Solutions repository (including our public key for apt-secure) to your system, call the following commands:
+
+wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
+sudo dpkg -i erlang-solutions_1.0_all.deb
+Alternatively: adding the repository entry manually
+Add one of the following lines to your /etc/apt/sources.list (according to your distribution):
+
+deb https://packages.erlang-solutions.com/ubuntu trusty contrib
+deb https://packages.erlang-solutions.com/ubuntu saucy contrib
+deb https://packages.erlang-solutions.com/ubuntu precise contrib
+To verify which distribution you are running, run "lsb_release -c" in console.
+
+Next, add the Erlang Solutions public key for "apt-secure" using following commands:
+wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
+sudo apt-key add erlang_solutions.asc
+
+=============================================
+2. Installing Erlang
+Refresh the repository cache and install either the "erlang" package:
+
+sudo apt-get update
+sudo apt-get install erlang
+or the "esl-erlang" package:
+
+sudo apt-get update
+sudo apt-get install esl-erlang

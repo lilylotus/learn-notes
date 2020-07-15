@@ -1,0 +1,18 @@
+apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: https://apiserver.nihility.cn:6443
+  name: admin
+contexts:
+- context:
+    cluster: admin
+    user: admin
+  name: admin
+current-context: admin
+kind: Config
+preferences: {}
+users:
+- name: admin
+  user:
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi10b2tlbi1tdDJiaCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJhZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImQzMjU4MTJiLTkwNDktMTFlOS04ZjkwLTAwMGMyOWIyMTViZCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTphZG1pbiJ9.WZ62mL6FewB0T5ie6SEy8eJh1ob9ATUp9DJAXMUQfQdx86l_daqJcDbF6U_f2OD_bzHZAyUkwUHTW6E8BVcdFzpF6_PZ5tXFKW80K7lV1YZZu_HZzeK7hg8zjVe_tUO7KRgkOvtSfUCNi7moeZH107hP81ie84_q_pLBePDfpiozxg2P3soSEWpYeR3x_HrQzJxTm3cfVMpETSmcasvGgAjxIYdyYJWo5I1gTn_ICqg6h1v0S-V4rRTIAFlF14j5IngaeQMThzb9Zcyg_JoJaPf-hcEkR8EVLiP7I-PZSHnLZoV6xGGpMIKUchhxQAEttz-ExzlwJmlobg6JaM9tNw

@@ -1,0 +1,29 @@
+一. 使用配置文件注入属性
+1. Spring Boot 默认的配置文件
+src/main/java/resources/application.properties 或 src/main/java/resources/application.yml
+bean.id = ${random.uuid}
+
+注意： @Value 注入测试失败。@Value 注解不支持 .yml
+.propertie 和 .yml 配置文件同时存在时
+SpringBoot 会优先加载 .yml (SpringBoot 会把 .yml 转化为 .properties 文件)
+
+2. 通过注解@Value(value="${config.name}") 就可以绑定到你想要的属性上面
+
+3. yml 的书写规则
+    key: value 中间的空格不可少
+    使用缩进表示层级关系
+    缩进时不允许使用 Tab 键，只允许使用空格
+    缩进的空格数目不重要，只要相同层级的元素左侧对齐即可
+    # 表示注释，从这个字符一直到行尾，都会被解析器忽略
+    使用变量时 "${ymlEntity.simpleTypeProp}"
+    ~ 代表 NULL
+    字符串 value 之中包含空格或特殊字符，需要放在引号之中
+    单引号和双引号都可以使用，双引号不会对特殊字符转义
+
+4. 制定加载配置文件
+@PropertySource(value = "classpath:persion.yml")
+注意: @PropertySource 通常用于属性加载配置文件，注意 @PropertySource 注解不支持加载 yaml 文件，支持 properties 文件。
+@ImportResource 通常用于加载 Spring 的 xml 配置文件
+
+5. properties 文件中文乱码
+将 GBK 修改为UTF-8并勾选 Transparent native-to ascill conversion(在运行的时候转换成ascii码)

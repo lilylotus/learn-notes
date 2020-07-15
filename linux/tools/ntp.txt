@@ -1,0 +1,42 @@
+NTP服务器 Network Time Protocol（NTP）是用来使计算机时间同步化的一种协议
+它可以使计算机对其服务器或时钟源（如石英钟，GPS等等)做同步化，
+它可以提供高精准度的时间校正（LAN上与标准间差小于1毫秒，WAN上几十毫秒），
+且可介由加密确认的方式来防止恶毒的协议攻击。
+时间按NTP服务器的等级传播。按照离外部UTC源的远近把所有服务器归入不同的Stratum（层）中
+
+ntp             123/tcp
+ntp             123/udp                         # Network Time Protocol
+
+nntp            119/tcp         readnews untp   # USENET News Transfer Protocol
+nntp            119/udp         readnews untp   # USENET News Transfer Protocol
+
+配置文件 ： /etc/ntp.conf
+监听：netstat -anlutp | grep 123
+
+systemctl status ntpd
+
+-----------------------------------------------
+1. 同步时间
+ntp IP/ntp服务器地址
+ntpdate 0.centos.pool.ntp.org
+
+server 0.centos.pool.ntp.org iburst
+server 1.centos.pool.ntp.org iburst
+server 2.centos.pool.ntp.org iburst
+server 3.centos.pool.ntp.org iburst
+
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org
+
+2. 配置文件详解
+
+restrict 127.0.0.1 // 指定可访问的地址
+restrict ::1
+restrict 192.168.100.0 mask 255.255.255.0
+restrict 192.168.40.100 // 指定某个指定的机器
+
+3. 同步状态
+ntpstat
+ntpq -pn

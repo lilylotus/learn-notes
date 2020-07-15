@@ -1,0 +1,43 @@
+web.xml中各个元素的执行顺序是这样的
+context-param-->listener-->filter-->servlet
+
+而拦截器是在Spring MVC中配置的，
+如果从整个项目中看，一个servlet请求的执行过程就变成了
+context-param-->listener-->filter-->servlet-->interceptor(指的是拦截器)为什么拦截器是在servlet执行之后，因为拦截器本身就是在servlet内部的
+
+2.概念
+context-param：就是一些需要初始化的配置，放入context-param中，从而被监听器
+    这里特指org.springframework.web.context.ContextLoaderListener监听，然后加载；
+
+监听器(listener)：就是对项目起到监听的作用，它能感知到包括
+    request(请求域)，session(会话域)和applicaiton(应用程序)的初始化和属性的变化；
+
+过滤器(filter)：就是对请求起到过滤的作用
+    它在监听器之后，作用在servlet之前，对请求进行过滤；
+
+servlet：就是对request和response进行处理的容器，它在filter之后执行，
+    servlet其中的一部分就是controller层（标记为servlet_2），
+    还包括渲染视图层(标记为servlet_3)和进入controller之前系统的一些处理部分(servlet_1)另外我们把servlet开始的时刻标记为servlet_0，servlet结束的时刻标记为servlet_4
+    servlet0(开始) -> servlet1 -> servlet2 -> servlet3 -> servlet4
+
+拦截器(interceptor)：就是对请求和返回进行拦截，
+    它作用在servlet的内部，具体来说有三个地方：
+    1. servlet_1和servlet_2之间，即请求还没有到controller层
+    2. servlet_2和servlet_3之间，即请求走出controller层次，还没有到渲染时图层
+    3. servlet_3和servlet_4之间，即结束视图渲染，但是还没有到servlet的结束
+
+-------------------------------------------------------------------------
+使用原则
+对整个流程清楚之后，然后就是各自的使用，在使用之前应该有一个使用规则，
+因为有些功能比如判断用户是否登录，既可以用过滤器，也可以用拦截器，
+用哪一个才是合理的呢？那么如果有一个原则，使用起来就会更加合理。
+
+把整个项目的流程比作一条河，
+监听器的作用就是能够听到河流里的所有声音，
+过滤器就是能够过滤出其中的鱼，
+而拦截器则是拦截其中的部分鱼，并且作标记。
+
+所以当需要监听到项目中的一些信息，并且不需要对流程做更改时，用监听器；
+当需要过滤掉其中的部分信息，只留一部分时，就用过滤器；
+当需要对其流程进行更改，做相关的记录时用拦截器。
+

@@ -1,0 +1,87 @@
+# user group
+user www www;
+
+worker_process 2;
+worker_cpu_affinity 00000001 00000010;
+worker_relimt_nofile 1024; # ulimit -n 一致， 打开文件数
+
+error_log /usr/local/nginx/logs/error.log;
+# [debug, info, notice, warn, error]
+pid /usr/local/nginx/nginx.pid;
+
+
+# 工作模式， 连接上限
+events {
+    use epoll; # epoll 多路复用IO
+    worker_connections 1024; # 单个worker porcess 进程最大并发连接，max=连接数*进程数
+    multi_accept on;  # 尽可能的多接受请求
+}
+
+# http ，反向代理，负载均衡
+http {
+    include mime。types;
+    default_type application/octet-stream;
+    access_log  /usr/local/nginx/log/access.log;
+    sendfile on; # 普通应用必须设置 on
+    # autoindex on; 开启目录列表访问，适合下载
+    tcp_nopush on; # 防止网络阻塞
+    keepalive_timeout 60; # 超时时间
+    tcp_nodelay on; # 提高数据的实时响应
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffer 4 16k;
+    gzip_http_version 1.1;
+    gzip_comp_level 2;
+    gzip_types text/plain application/x_javascript text/css application/xml;
+    gzip_vary on;
+
+    client_max_body_size 10m;
+    client_body_buffer_size 128k;
+    proxy_connect_timeout 90;
+    proxy_read_timeout 90;
+    proxy_buffer 4 32k;
+    proxy_busy_buffers_size 64k;
+
+    large_client_header_buffers 4 4k;
+    client_header_buffer_size 4k;
+
+    open_file_cache_valid 30s;
+    open_file_cache_min_uses 1;
+}
+
+
+----------------------------------------
+负载均衡
+
+注意：负载均衡名称 与 vhosts.conf虚拟主机 pass 一致，否则不能转发请求
+
+upstream (负载均衡名称)lily {
+    server 127.0.0.1:8080 weight=1 max_fails=2 fail_timeout=30s;
+    server 127.0.0.1:8081 weight=1 max_fails=2 fail_timeout=30s;
+}
+
+# 配置主机
+server {
+    listen 80;
+    server_name www.nihility.cn;
+    access_log logs/access.log main;
+    root /www/webapps/data; # 定义服务器的默认网站根目录
+    index index.html index.jsp;
+    location ~/ { # 默认请求
+        root /www/data; # 网站默认根目录
+        index index.html index.jsp;
+
+        proxy_next_upstream http_502 http_504 timeout invalid_header;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_setheader X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $porxy_add_x_forwarded_for;
+        proxy_pass http://lily; # 转向后端均衡模块
+    }
+
+    location ~.*\.(html|htm|gif|jpg|bmp|png|ico|txt|js|css)$ {
+        root /data/www/static;
+        expires 3d;
+    }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+    <!-- 引入properties数据库配置文件 -->
+    <context:property-placeholder location="classpath:dbconfig/*.properties" />
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.classDriver}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
+        <property name="user" value="${jdbc.user}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="minPoolSize" value="${pool.minPoolSize}" />
+        <property name="maxPoolSize" value="${pool.maxPoolSize}" />
+        <property name="initialPoolSize" value="${pool.initialPoolSize}" />
+        <property name="acquireIncrement" value="${pool.acquireIncrement}" />
+        <property name="acquireRetryAttempts" value="${pool.acquireRetryAttempts}" />
+        <property name="acquireRetryDelay" value="${pool.acquireRetryDelay}" />
+        <property name="maxIdleTime" value="${pool.maxIdleTime}" />
+        <property name="numHelperThreads" value="${pool.numHelperThreads}" />
+        <property name="maxStatementsPerConnection" value="${pool.maxStatementsPerConnection}" />
+    </bean>
+
+    <!-- 定义一个事务的管理器，从而进行所有事务的统一管理 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- Spring事务管理模板 -->
+    <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+        <property name="transactionManager" ref="transactionManager" />
+    </bean>
+
+    <bean id="transactionDao" class="cn.nihility.transaction1.dao.TransactionDaoImpl">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <bean id="transactionService" class="cn.nihility.transaction1.service.TransactionServiceImpl">
+        <property name="transactionDao" ref="transactionDao"/>
+        <property name="transactionTemplate" ref="transactionTemplate" />
+    </bean>
+
+</beans>

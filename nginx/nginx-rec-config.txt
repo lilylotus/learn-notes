@@ -1,0 +1,113 @@
+配置划分
+
+全局配置
+events { events块配置 }
+http {
+    http全局配置;
+    server 块1 {
+        server 全局配置
+        location 块1
+        location 块1
+    }
+}
+
+1. 全局块 ：配置主要影响Nginx全局，通常包括下面几个部分
+配置运行Nginx服务器用户（组）
+worker process数
+Nginx进程PID存放路径
+错误日志的存放路径
+配置文件的引入
+
+2. events块 ：配置主要影响Nginx服务器与用户的网络连接，主要包括：
+设置网络连接的序列化
+是否允许同时接收多个网络连接
+事件驱动模型的选择
+最大连接数的配置
+
+3. http块
+定义MIMI-Type
+自定义服务日志
+允许sendfile方式传输文件
+连接超时时间
+单连接请求数上限
+
+4. server块
+配置网络监听
+基于名称的虚拟主机配置
+基于IP的虚拟主机配置
+
+5. location块
+location配置
+请求根目录配置
+更改location的URI
+网站默认首页配置
+
+---------------------------------------------
+
+# 全局块
+user  nobody  nobody;
+worker_processes  3;
+error_log  logs/error.log;
+pid  logs/nginx.pid;
+
+# events块
+events {
+    use epoll;
+    worker_connections  1024;
+}
+
+
+http {
+    # http 全局块
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log  logs/access.log  main;
+    sendfile  on;
+    keepalive_timeout  65;
+
+    server {
+        # server 全局块
+        listen       8088;
+        server_name  demo1;
+        access_log  /codesheep/webserver/server1/log/access.log;
+        error_page  404  /404.html;
+
+        # location 块
+        location /server1/location1 {
+            root   /codesheep/webserver;
+            index  index.html;
+        }
+
+        location /server1/location2 {
+        root   /codesheep/webserver;
+            index  index.server2-location2.htm;
+        }
+
+    }
+
+    server {
+        listen       8089;
+        server_name  192.168.31.177;
+        access_log  /codesheep/webserver/server2/log/access.log;
+        error_page  404  /404.html;
+
+        location /server2/location1 {
+            root   /codesheep/webserver;
+            index  index.server2-location1.htm;
+        }
+
+        location /srv2/loc2 {
+            alias   /codesheep/webserver/server2/location2/;
+            index  index.server2-location2.htm;
+        }
+
+        location = /404.html {
+            root /codesheep/webserver/;
+            index 404.html;
+        }
+    }
+}

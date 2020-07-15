@@ -1,0 +1,82 @@
+user nobody nobody;
+
+worker_processes  1;
+error_log  /nginx/logs/error.log;
+error_log  /nginx/logs/notice.log notice;
+error_log  /nginx/logs/info.log info;
+
+pid        /nginx/logs/nginx.pid;
+
+events {
+    worker_connections 1024;    #单个后台worker process进程的最大并发链接数
+    accept_mutex on;   #设置网路连接序列化，防止惊群现象发生，默认为on
+    multi_accept off;  #设置一个进程是否同时接受多个网络连接，默认为off
+    use epoll;      #事件驱动模型，select|poll|kqueue|epoll|resig|/dev/poll|eventport
+}
+
+http {
+    include       /nginx/mime.types;
+    default_type  application/octet-stream;
+    log_format  mainlogformat  '[$remote_addr] - [$remote_user] [$time_local] "$request" '
+                     '$status $body_bytes_sent "$http_referer" '
+                     '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log    /nginx/logs/access.log mainlogformat;
+
+    sendfile        on;
+    sendfile_max_chunk 100k;  #每个进程每次调用传输数量不能大于设定的值，默认为0，即不设上限。
+    keepalive_timeout 65;  #连接超时时间，默认为75s，可以在http，server，location块。
+
+    keepalive_timeout  120;
+    tcp_nodelay        on;
+
+    #设定负载均衡的服务器列表
+    upstream load_balance_server {
+        server 192.168.1.11:80   weight=2;
+        server 192.168.1.12:80   weight=1;
+        server 192.168.1.13:80   weight=3;
+    }
+
+    server {
+        listen       80;
+        server_name  www.nginxdemo.com;
+        index index.html
+        charset utf-8;
+
+        location / {
+            #代理配置参数
+            proxy_connect_timeout 180;
+            proxy_send_timeout 180;
+            proxy_read_timeout 180;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarder-For $remote_addr;
+
+            #对所有请求进行负载均衡请求
+            root        /webroot/;                 #定义服务器的默认网站根目录位置
+            index       index.html index.htm;  #定义首页索引文件的名称
+            proxy_pass  http://load_balance_server ;#请求转向load_balance_server 定义的服务器列表
+
+            #以下是一些反向代理的配置(可选择性配置)
+            #proxy_redirect off;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            #后端的Web服务器可以通过X-Forwarded-For获取用户真实IP
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_connect_timeout 90;          #nginx跟后端服务器连接超时时间(代理连接超时)
+            proxy_send_timeout 90;             #后端服务器数据回传时间(代理发送超时)
+            proxy_read_timeout 90;             #连接成功后，后端服务器响应时间(代理接收超时)
+            proxy_buffer_size 4k;              #设置代理服务器（nginx）保存用户头信息的缓冲区大小
+            proxy_buffers 4 32k;               #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
+            proxy_busy_buffers_size 64k;       #高负荷下缓冲大小（proxy_buffers*2）
+            proxy_temp_file_write_size 64k;    #设定缓存文件夹大小，大于这个值，将从upstream服务器传
+
+            client_max_body_size 10m;          #允许客户端请求的最大单文件字节数
+            client_body_buffer_size 128k;      #缓冲区代理缓冲用户端请求的最大字节数
+        }
+
+        location ~* \.(js|css|ico|png|jpg|eot|svg|ttf|woff)$ {
+            root /webroot/static/;
+            autoindex on;
+            expires 60m;
+        }
+    }
+}

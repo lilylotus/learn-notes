@@ -1,0 +1,13 @@
+1. @ResponseBody注解生成大量Accept-Charset
+<bean id="stringHttpMessageConverter" class="org.springframework.http.converter.StringHttpMessageConverter">  
+    <constructor-arg value="UTF-8"></constructor-arg>  
+    <property name="writeAcceptCharset" value="false"/>  
+</bean>  
+
+2. 设置Content-Type
+text/html
+text/plain
+application/json;charset=UTF-8
+application/octet-stream
+
+@RequestMapping(value = "/upload",produces="application/json;charset=UTF-8")  

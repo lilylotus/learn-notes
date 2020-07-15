@@ -1,0 +1,36 @@
+问题一
+WARNING: bridge-nf-call-iptables is disabled
+WARNING: bridge-nf-call-ip6tables is disabled
+
+/etc/sysctl.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+
+2. 镜像加速
+services -> /etc/default/docker
+DOCKER_OPTS="--registry-mirror=https://registry.docker-cn.com"
+sudo service docker restart
+
+systemd -> /etc/docker/daemon.json
+{"registry-mirrors": ["https://registry.docker-cn.com"] }
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+====================================================
+Centos7 :
+/usr/lib/systemd/system/docker.service ->
+ExecStart=/usr/bin/dockerd --graph /data/docker/imagedata
+
+systemctl daemon-reload
+systemctl restart docker.service
+
+docker是1.12或以上的版本 ->  /etc/docker/daemon.json
+{"registry-mirrors":"https://registry.docker-cn.com","graph":"/data/docker/imagedata"}
+
+
+======================================================
+centos7 : WARNING: bridge-nf-call-iptables is disabled
+vim /etc/sysctl.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1

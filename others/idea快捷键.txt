@@ -1,0 +1,94 @@
+Ctrl+]			诸如{}围起来的代码块，使用该快捷键可以快速跳转至代码块的结尾处
+Ctrl+[			同上，快速跳至代码块的开始出
+Ctrl+Shift+}	选择{}代码块内容
+Ctrl+Shift+{	选择{}代码块内容
+Shift+{			自动{}
+
+Ctrl+Shift+Enter	将输入的if、for、函数等等补上{}或者;使代码语句完整
+Shift+Enter			在当前行的下方开始新行
+Ctrl+Alt+Enter		在当前行上方插入新行
+Ctrl+向上箭头		向上滚动一行
+Ctrl+向下箭头		向下滚动一行
+
+
+---------------------- Edit
+
+Ctrl+Z			撤销
+Ctrl+Shift+Z	重做
+Ctrl+X			剪切
+Ctrl+C			复制
+Ctrl+V			粘贴
+Ctrl+Shift+J	将选中的行合并成一行
+
+Ctrl+Shift+向上箭头		向上移动
+Ctrl+Shift+向下箭头		向下移动
+
+
+----------------------- Find
+
+Ctrl+F			在当前文件中查找
+Ctrl+R			替换字符串
+Ctrl+Shift+F	在全局文件中查找字符串
+Ctrl+Shift+R	在全局中替换字符串
+
+Alt+F7			查找当前变量的使用，并列表显示
+Ctrl+Alt+F7		查找当前变量的使用，并直接对话框显示
+Ctrl+F7			在文件中查找符号的使用
+Ctrl+Shift+F7	在文件中高亮显示变量的使用
+
+
+----------------------- Navigate
+
+Ctrl+N			查找类文件
+Ctrl+Shift+N	查找文件
+Ctrl+G			定位到文件某一行
+Ctrl+E 			打开曾经操作过的文件历史列表。
+Alt+向左箭头	返回至上次光标位置
+Alt+向右箭头	返回至后一次光标位置
+Ctrl+Shift+Backspace	返回上次编辑位置
+ctrl+alt+ 左右
+
+
+Ctrl+B			定位至变量定义的位置
+Ctrl+Alt+B		定位至选中类或方法的具体实现
+Ctrl+Shift+B	直接定位至光标所在变量的类型定义
+
+Ctrl+F12		打开类的结构列表
+Ctrl+H			显示当前类的继承层次
+Ctrl+Shift+H	显示当前方法的继承层次
+Ctrl+Alt+H		显示当前方法的调用层次
+Ctrl+Alt+Shift+N 查找方法
+Alt+7           structure
+
+
+-------------------- Code
+
+Ctrl+O			重写基类的方法
+Ctrl+I			实现基类或接口中的方法
+Alt+Insert		产生构造方法、getter/setter等方法
+Ctrl+Alt+T		将选中的代码使用if、while、try/catch等包装
+Ctrl+Shift+Delete	去除相关的包装代码
+
+
+-----------------------------------------
+
+Ctrl+P 			在某个方法中，调用该按键后，会展示出这个方法的调用参数列表信息。
+Ctrl+Q			展示某个类或者方法的 API 说明文档
+Ctrl+W			选中当前光标所在的代码块，多次触发，代码块会逐级变大
+Ctrl+D 			复制当前选中的代码
+Ctrl+Y			删除当前光标所在的代码行
+
+Ctrl+Alt+V 		生成返回值变量
+
+
+--------------------- Debugging
+
+F8				跳到当前代码下一行
+Alt+F8		 	计算表达式
+F7				跳入到调用的方法内部代码
+Shift+F7 		选择具体要跳入的类方法
+Shift+F8		跳出当前的类，到上一级
+Alt+F9			让代码运行到当前光标所在处
+F9				结束当前断点的本轮调试
+
+

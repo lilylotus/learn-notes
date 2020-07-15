@@ -1,0 +1,89 @@
+SpringMVC环境中，@RequestBody接收的是一个Json对象的字符串，而不是一个Json对象。
+在ajax请求往往传的都是Json对象，用 JSON.stringify(data)的方式就能将对象变成字符串。
+同时ajax请求的时候也要指定dataType: "json", contentType:"application/json"
+
+服务器为什么会对表单提交和文件上传做特殊处理，因为表单提交数据是名值对的方式，
+且Content-Type为application/x-www-form-urlencoded，文件上传服务器需要特殊处理，
+普通的post请求（Content-Type不是application/x-www-form-urlencoded）数据格式不固定，
+不一定是名值对的方式，所以服务器无法知道具体的处理方式，所以只能通过获取原始数据流的方式来进行解析。
+
+jquery在执行post请求时，会设置Content-Type为application/x-www-form-urlencoded，所以服务器能够正确解析，
+而使用原生ajax请求时，如果不显示的设置Content-Type，那么默认是text/plain，
+这时服务器就不知道怎么解析数据了，所以才只能通过获取原始数据流的方式来进行解析请求数据。
+
+
+ data: JSON.stringify({"id":10, "name":"流流"}),
+ JSON.stringify  (json -> String)
+ JSON.parse(str) (string -> JSON)
+
+总结：@RequestBody 注解下，contentType: 'application/json'
+并且  data: JSON.stringify({"id":10, "name":"流流"}), (使用字符串类型)
+其余的contentType: 'application/x-www-form-urlencoded', data: {"id":10, "name":"流流"},(使用json类型)
+
+$.ajax({
+    async: false, # true
+    cache: fasle,
+    url: '',
+    type: 'POST|GET|PUT|DELETE',
+    timeout: 2000,
+    data: {}, // 为Object或String类型的参数，不是字符串，将自动转换为字符串。get请求中将附加在url后。
+    dataType: "json", // 预期服务器返回的数据类型， script, html, xml,jsonp
+    contentType: 'application/x-www-form-urlencoded',
+
+});
+
+------------------------------------------
+@RequestMapping(value = {"/bean/name/get"}, method = RequestMethod.GET, produces = "application/json;")
+public TestBean getBeanByName(@RequestParam String name) { }
+$.ajax({
+    url: 'http://localhost:8080/test/bean/name/get',
+    data: {"name":"1"},
+    type: 'GET',
+    contentType: 'application/x-www-form-urlencoded',  -- 发送的类型
+    dataType: 'json', -- 注意此处为 'json' 不是 'applicaiton/json'  接收的类型
+    success: function(data, textStatus) {
+        console.log(data + ' | ' + textStatus);
+        $('#response-content').text('');
+        $('#response-content').text('result' + JSON.stringify(data));
+    }
+});
+
+---------------------------------------------------------
+@RequestMapping(value = {"/bean/insert"}, method = RequestMethod.POST, produces = "application/json;")
+public TestBean insertTestBean(@RequestBody TestBean bean,
+                                  @RequestHeader(value = "Accept-Language") String refere,
+                                  @RequestHeader(value = "User-Agent")String useragent,
+                                  @CookieValue(value = "JSESSIONID") String cookie) {
+$('#req5').click(function() {
+    $.ajax({
+        url: 'http://localhost:8080/test/bean/insert',
+        data: JSON.stringify({"id":10, "name":"流流"}),
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function(data, textStatus) {
+            console.log(data + ' | ' + textStatus);
+            $('#response-content').text('');
+            $('#response-content').text('result' + JSON.stringify(data));
+        }
+    });
+});
+
+
+----------------------------------------------
+@RequestMapping(value = {"/bean/bean/get"}, method = RequestMethod.POST, produces = "application/json;")
+public TestBean getParameterByPost(@RequestParam String name) {
+
+$.ajax({
+    url: 'http://localhost:8080/test/bean/bean/get',
+    /*data: {"name":"流流"},*/
+    data: {"id":10, "name":"流流"},
+    type: 'POST',
+    contentType: 'application/x-www-form-urlencoded',
+    dataType: 'json',
+    success: function(data, textStatus) {
+        console.log(data + ' | ' + textStatus);
+        $('#response-content').text('');
+        $('#response-content').text('result' + JSON.stringify(data));
+    }
+});

@@ -1,0 +1,129 @@
+JSP (Java Server Pages) : 目的是为了简化 Servlet 的编写
+JSP 是动态网页的技术标准也是 JAVAEE 的标准，是在服务器端执行的
+JAVA 平台，安全性高，适用于大型的、企业级的 Web 应用程序开发
+
+JSP 的页面元素构成 :
+1. 静态内容 2. 指令 3. 表达式 4. 小脚本 5. 声明 6. 注释
+
+JSP 指令:
+page 指令:
+    <%@page 属性1="属性值" ... %>
+    language="java" contentType="text/html,ISO-8859-1" import=""
+include 指令:
+taglib 指令: 
+
+JSP 生命周期:
+用户请求 index.jsp  -> (是否是第一次请求) --是--> 
+JSP 引擎会把该 JSP 文件转换为一个 Servlet，生成字节码文件，执行 jspInit() 方法
+--> 解析执行 jspService() 方法
+每个客户端请求会生成一个新的线程来处理该请求
+
+JSP 内置对象(9个)
+application session request response out page pageContext config exception
+
+out :
+clear() 方法不能在 flush() 之后调用，会出现异常
+clearBuffer() 清除缓冲区内容，但是在 flush() 之后调用不会出现异常
+
+get 与 post 提交方式:
+get : 以明文的方式通过 URL 提交数据，数据在 URL 中可以看到，且提交的数据大小不能超过 2KB。
+安全性低但是效率比 post 高。适合提交数据量不大安全性不高的数据。
+post : 将用户的信息封装在 HTMl HEADER 内。适合提交数据量大，安全性高的用户数据。
+
+request :
+客户端的请求信息被封装到了 request 对象中，通过他了解到客户端的需求在做出响应。
+HttpServletRequest 的实例，reques 对象具有请求域，完成客户端请求之前，该对象一直存在(有效)
+getContentType()
+getProtocol()
+getServerName()
+
+注意: request.setCharacterEncoding("UTF-8"); 无法解决 URL 中文乱码问题
+Tomcat -> server.xml     <Connector + URIEncoding="UTF-8" />
+
+response :
+response 对象包含了响应客户端的请求相关信息， 是 HttpServletResponse 的实例。
+具有页面作用域，访问一个页面时，该页面的 response 对象只能对此次的访问有效。
+
+response.setContentType("text/html; charset=UTF-8");
+请求转发和请求重定向:
+请求重定向: 客户端行为， response.sendRedirect(), 本质上讲等同于两次请求，前一次请求对象不会保存，
+地址栏 URL 会改变。
+请求转发: 服务器行为， request.getRequestDispatcher().forward(req, resp); 是一次请求
+转发后对象会保存，地址栏的 URL 不会改变。
+
+Session :
+Session 表示客户端和服务器的一次会话。
+Web session 表示用户在浏览某个网站，从进入网站到浏览器关闭所经过的时间段
+保存在服务器内存中，每个用户对应一个 Session
+
+application :
+实现用户之间数据共享，可存放全局变量。
+开始与服务器启动关闭与服务器关闭
+
+page :
+page 对象指的是当前 JSP 页面本身，有点像类中的 this 指针， java.lang.Object 对象
+
+pageContext :
+提供了对 JSP 页面内所有对象及名称空间的访问
+可以访问本页面的 Session 也可以取本页面所在的 application 中的某一个值
+pageContext.getSession();
+pageContext.getRequest();
+pageContext.getResponse();
+
+config :
+在一个 Servlet 初始化时，JSP 引擎向他传递信息，信息包括 Servlet 初始化时所要的全部参数
+
+exception :
+异常对象，当一个页面发送异常就会产生一个对象
+如果 JSP 要使用此对象，必须包 isErrorPage="true",否则无法编译 (errorPage="指定传错的页面")
+是 java.lang.Throwable 对象
+
+-------------------------------------------------
+JSP 动作:
+<jsp:useBean id=""></jsp:useBean>
+<jsp:setProperty property="" name=""/>
+<jsp:getProperty property="" name=""/>
+<jsp:include page=""></jsp:include>
+<jsp:forward page=""></jsp:forward>
+<jsp:param value="" name=""/>
+<jsp:plugin code="" codebase="" type="bean"></jsp:plugin>
+<jsp:fallback></jsp:fallback>
+
+JavaBean :
+<jsp:useBean id="myPerson" class="cn.nihility.bean.Person" scope="page"></jsp:useBean>
+<jsp:setProperty property="*" name="myPerson"/>
+自定义值:
+<jsp:setProperty property="name" name="myPerson" value="自定义值"/>
+<jsp:setProperty property="password" name="myPerson" value="8888"/>
+通过 URL 传递参数赋值:
+<jsp:setProperty property="name" name="myPerson" param="name"/>
+<jsp:setProperty property="password" name="myPerson" param="password"/>
+
+<jsp:getProperty property="name" name="myPerson"/>
+
+作用范围(scope) : 
+application session request page
+
+<jsp:useBean id="myPerson" class="cn.nihility.bean.Person" scope="request"></jsp:useBean>
+<jsp:setProperty property="name" name="myPerson" param="name"/>
+<jsp:setProperty property="password" name="myPerson" param="password"/>
+
+request.getRequestDispatcher("scope.jsp").forward(request, response);
+pageContext.getAttribute("myPerson");
+
+-------------------------------------------------
+保存用户状态两大机制:
+Session :
+
+Cookie : 保存在客户端中的 (判定用户是否登录，购物车处理)
+
+-------------------------------------------------
+include 指令和 include 动作比较:
+<%@ include file="" %>
+页面转换期间，文件实际内容，编译较慢，执行较快
+<jsp:include page="" flush="false" ></jsp:inlcude>
+请求期间，页面输出，编译较快，执行较慢
+
+<jsp:forward page="*.jsp">  相当于服务器内部跳转
+    <jsp:param value="value" name="name" />
+</jsp:forward>

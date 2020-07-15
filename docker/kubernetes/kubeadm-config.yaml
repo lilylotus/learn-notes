@@ -1,0 +1,61 @@
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: v1.14.1
+controlPlaneEndpoint: "apiserver.nihility.cn:6443"
+apiServer:
+  certSANs:
+  - "apiserver.nihility.cn"
+  - "172.16.1.61"
+  - "172.16.10.45"
+  - "172.16.10.46"
+  - "172.16.10.47"
+  extraArgs:
+    allow-privileged: "true"
+    feature-gates: "VolumeSnapshotDataSource=true,CSINodeInfo=true,CSIDriverRegistry=true"
+etcd:
+  local:
+    dataDir: /data/etcd
+networking:
+  podSubnet: "10.244.0.0/16"
+ControllerManager:
+  extraArgs:
+    address: 0.0.0.0
+scheduler:
+  extraArgs:
+    address: 0.0.0.0
+imageRepository: registry.aliyuncs.com/google_containers
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs
+
+================================================================
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: v1.14.1
+controlPlaneEndpoint: "apiserver.nihility.cn:6443"
+imageRepository: registry.aliyuncs.com/google_containers
+apiServer:
+  certSANs:
+  - "apiserver.nihility.cn"
+  - "10.10.37.134"
+  - "10.10.37.135"
+  - "10.10.37.136"
+  extraArgs:
+    allow-privileged: "true"
+    feature-gates: "VolumeSnapshotDataSource=true,CSINodeInfo=true,CSIDriverRegistry=true"
+etcd:
+  local:
+    dataDir: /data/etcd
+networking:
+  podSubnet: "10.244.0.0/16"
+ControllerManager:
+  extraArgs:
+    address: 0.0.0.0
+scheduler:
+  extraArgs:
+    address: 0.0.0.0
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs

@@ -1,0 +1,24 @@
+oracle创建一个数据库需要以下三个步骤：
+1. 创建两个数据库的文件
+2. 创建用户与上面创建的文件形成映射关系
+3. 给用户添加权限
+
+一、创建两个数据库的文件（monitor.dbf 和monitor_temp.dbf 两个文件）
+CREATE TABLESPACE monitor LOGGING DATAFILE 'E:\app\owner\oradata\orcl\monitor.dbf'
+SIZE 100M AUTOEXTEND ON NEXT 32M MAXSIZE 500M EXTENT MANAGEMENT LOCAL;
+
+create temporary tablespace monitor_temp tempfile 'E:\app\owner\oradata\orcl\monitor_temp.dbf'
+size 100m autoextend on next 32m maxsize 500m extent management local;
+
+二、创建用户与上面创建的文件形成映射关系（用户名为monitor,密码为monitor）
+CREATE USER monitor IDENTIFIED BY monitor DEFAULT TABLESPACE monitor TEMPORARY TABLESPACE monitor_temp;
+
+三、添加权限
+grant connect,resource,dba to monitor;
+grant create session to monitor;
+
+四、删除数据库
+DROP TABLESPACE monitor INCLUDING CONTENTS AND DATAFILES;
+
+五、删除用户
+drop user monitor cascade;

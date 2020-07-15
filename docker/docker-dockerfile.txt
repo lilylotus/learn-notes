@@ -1,0 +1,76 @@
+1. build
+指定 Dockerfile 的位置：
+docker build -f <target-dockerfile-location> . (注意最后的 . 符号)
+指定构建 image 的名称：
+docker build -t <image-name>(shykes/myapp) .
+
+注意：
+Dcokerfile 必须以 FROM 开头，指定构建的基础镜像
+# 字符开头的行是注解行
+
+2. ENV 环境变量设置
+FROM busybox
+ENG foo /bar
+WORKDIR ${foo}  # WORKDIR /bar
+ADD . $foo      # ADD . /bar
+COPY \$foo /quux # COPY $foo /quux
+ENV 环境变量可被以下指令支持：
+ADD COPY ENV EXPOSE FROM LABEL STOPSIGNAL USER VOLUME WORKDIR
+
+3. .dockerignore 忽略文件、文件夹
+# comment
+*/tmp*
+*/*/tmp*
+tmp?
+
+4. FROM 必须的开始指令
+FROM <image> [AS <name>]
+FROM <image>[:<tag>] [AS <name>]
+FROM <iamge>[@<digest>] [AS <name>]
+
+5. MAINTAINER: 维护者信息
+MAINTAINER <name>   [MAINTAINER Test maintaner]
+
+6. RUN 构建镜像时执行的命令
+6.1 RUN <command> (shell form, run in a shell, default is /bin/sh -c on Linux)
+> RUN /bin/bash -c 'source $HOME/.bashrc; echo $HOME'
+
+6.2 RUN ["executable", "param1", "param2"] (exec form)
+> RUN ["/bin/bash", "-c", "echo hello"]
+
+7. CMD：构建容器后调用，也就是在容器启动时才进行调用。
+7.1 CMD ["executable", "param1", "param2"] (exec form, this is the preferred form)
+7.2 CMD ["param1", "param2"] (as default parameters to ENTRYPOINT)
+7.3 CMD command param1 param2 (shell form)
+
+注意：仅最后一个 CMD 有效 (ENTRYPOINT 可关联)
+
+8. EXPOSE 指定于外界交互的端口 (默认 EXPOSE tcp 协议)
+EXPOSE <port> [<port>/<protocol> ... ]
+注意： EXPOSE并不会让容器的端口访问到主机。要使其可访问，
+需要在 docker run 运行容器时通过 -p 来发布这些端口
+或通过 -P 参数来发布EXPOSE导出的所有端口
+EXPOSE 80/udp
+EXPOSE 80/tcp
+
+9. ADD 将本地文件添加到容器中，tar类型文件会自动解压(网络压缩资源不会被解压)
+9.1 ADD [--chown=<user>:<group>] <src> ... <dest>
+ADD hom* /newdir/     # adds all file starting with "hom"
+ADD hom?.txt /newdir/ # ? is replaced whith any single character. e.g., "home.txt"
+------------------------
+ADD test relativeDir/   # adds "test" to `WORKDIR`/relativeDir/
+ADD test /absoluteDir/  # adds "test" to /absoluteDir/
+
+注意： 所有的文件和目录创建的 UID/GID 都为 0
+9.2 ADD [--chown=<user>:<group>] ["<src>", ... "<dest>"] (this form is required for paths containing whitespace)
+
+10. COPY：功能类似ADD，但是是不会自动解压文件，也不能访问网络资源
+
+11. WORKDIR ： 工作目录，类似于 cd 命令
+WORKDIR /path/to/workdir
+
+WORKDIR /a (-> /a)
+WORKDIR b  (-> /a/b)
+WORKDIR c  (-> /a/b/c)
+注意： 通过 WORKDIR 设置工作目录后，Dockerfile 中其后的命令 RUN、CMD、ENTRYPOINT、ADD、COPY 等命令都会在该目录下执行。
+在使用 docker run 运行容器时，可以通过 -w 参数覆盖构建时所设置的工作目录。

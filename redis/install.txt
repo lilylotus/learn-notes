@@ -1,0 +1,70 @@
+wget http://download.redis.io/releases/redis-4.0.10.tar.gz
+tar xzf redis-4.0.10.tar.gz
+cd redis-4.0.10
+make
+
+1. Run Redis with
+src/redis-server  redis.conf [conf-location]
+
+2. You can interact with Redis using the built-in client
+src/redis-cli
+
+set foo bar
+get foo
+
+----------------------------------------
+redis 127.0.0.1:6379 (默认端口 6379)
+Redis 的配置文件位于 Redis 安装目录下，文件名为 redis.conf
+
+
+1. 编辑配置文件 redis.conf
+修改 redis.conf 文件或使用 CONFIG SET 命令来修改配置
+
+CONFIG SET loglevel "notice"
+CONFIG GET loglevel
+
+daemonize no|yes    # Redis默认不是以守护进程的方式运行
+pidfile /var/run/redis.pid  # Redis以守护进程方式运行时
+
+port 6379
+bind 127.0.0.1  #绑定的主机地址
+timeout 300     # 当客户端闲置多长时间后关闭连接，如果指定为0，表示关闭该功能
+# 日志记录级别，Redis总共支持四个级别：debug、verbose(默)、notice、warning
+loglevel verbose
+# 日志记录方式，默认为标准输出，如果配置Redis为守护进程方式运行，
+# 而这里又配置为日志记录方式为标准输出，则日志将会发送给/dev/null
+logfile stdout
+
+# 设置数据库的数量，默认数据库为0,SELECT <dbid>命令在连接上指定数据库id
+databases 16
+# 多长时间内，有多少次更新操作，就将数据同步到数据文件，可以多个条件配合
+save 900 1  # save seconds changes
+save 300 10 # 表示900秒内有1个更改，300秒内有10个更改
+
+# 储至本地数据库时是否压缩数据，默认为yes，Redis采用LZF压缩
+rdbcompression yes
+dbfilename dump.rdb     # 本地数据库文件名，默认值为dump.rdb
+dir ./                  # 指定本地数据库存放目录
+
+# 本机为slav服务时，设置master服务的IP地址及端口，Redis启动时，自动从master数据同步
+slaveof masterip masterport
+masterauth master-password  # master服务设置了密码，slave连接密码
+
+maxclients 128      # 同一时间最大客户端连接数，默认无限制，0表示不作限制
+# Redis最大内存限制，Redis在启动时会把数据加载到内存中，会把Key存放内存，Value会存放在swap区
+maxmemory bytes
+
+# 是否在每次更新操作后进行日志记录，Redis在默认情况下是异步的把数据
+# 写入磁盘，如果不开启，可能会在断电时导致一段时间内的数据丢失
+appendonly on       # 默认为no
+appendfilename appendonly.aof   # 更新日志文件名，默认为appendonly.aof
+
+# 更新日志条件，共有3个可选值
+# no：表示等操作系统进行数据缓存同步到磁盘（快）
+# always：表示每次更新操作后手动调用fsync()将数据写到磁盘（慢，安全）
+# everysec：表示每秒同步一次（折衷，默认值）
+appendfsync everysec
+
+vm-enabled no       # 是否启用虚拟内存机制，默认值为no
+vm-swap-file /tmp/redis.swap # 虚拟内存文件路径，默认值为/tmp/redis.swap,不可共享
+include /path/to/local.conf     # 包含其它的配置文件

@@ -1,0 +1,37 @@
+1、如何取当前时间
+sysdate--返回当前系统日期和时间，精确到秒
+systimestamp--返回当前系统日期和时间，精确到毫秒
+
+2、如何进行日期运算
+日期型数据可以与数值加减得到新的日期，加减数值单位为天
+sysdate+1--取明天的当前时间
+sysdate-1/24--取当前时间的前一个小时
+
+select sysdate d1,sysdate+1 d2,sysdate-1/24 d3 from dual;
+
+
+D1                       D2                       D3
+------------------------ ------------------------ ------------------------
+2010-5-13 下午 10:55:16  2010-5-14 下午 10:55:16  2010-5-13 下午 09:55:16
+
+3、如何求两个日期的间隔时间
+可以直接把两个日期相减，返回的单位为天，小时及分秒会换算成小数
+
+select date'2012-01-01'-sysdate from dual;
+
+ 
+DATE'2012-01-01'-SYSDATE
+------------------------
+        597.046030092593
+
+4、如何将日期转字符
+to_char(sysdate,'YYYY-MM-DD HH24:MI:SS')
+5、如何将字符转日期
+to_date('2010-02-24 15:01:54','YYYY-MM-DD HH24:MI:SS')
+to_timestamp('1999-12-01 11:00:00.123456','YYYY-MM-DD HH:MI:SS.FF6')
+
+6 常用日期函数
+TO_CHAR(DATE,FORMATSTR)--格式化日期成字符
+
+select to_char(sysdate,'YYYY-MM-DD HH24:MI:SS') d1 from dual;
+

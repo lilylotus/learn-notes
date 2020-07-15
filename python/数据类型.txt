@@ -1,0 +1,109 @@
+\oyy    八进制数，yy代表的字符，例如：\o12代表换行
+\xyy    十六进制数，yy代表的字符，例如：\x0a代表换行
+\other  其它的字符以普通格式输出
+
++       字符串连接   a + b 输出结果： HelloPython
+*           重复输出字符串 a*2 输出结果：HelloHello
+[]      通过索引获取字符串中字符    a[1] 输出结果 e
+[ : ]   截取字符串中的一部分  a[1:4] 输出结果 ell
+in      成员运算符 - 如果字符串中包含给定的字符返回 True    H in a 输出结果 1
+not in  成员运算符 - 如果字符串中不包含给定的字符返回 True   M not in a 输出结果 1
+r/R     原始字符串 - 原始字符串：所有的字符串都是直接按照字面的意思来使用，没有转义特殊或不能打印的字符。
+        在字符串的第一个引号前加上字母"r"（可以大小写） print R'\n' prints \n
+%       格式字符串   请看下一章节
+
+Python字符串格式化
+print "My name is %s and weight is %d kg!" % ('Zara', 21) 
+%c   格式化字符及其ASCII码
+%s     格式化字符串
+%d     格式化整数
+%u     格式化无符号整型
+%o     格式化无符号八进制数
+%x     格式化无符号十六进制数
+%X     格式化无符号十六进制数（大写）
+%f     格式化浮点数字，可指定小数点后的精度
+%e     用科学计数法格式化浮点数
+%E     作用同%e，用科学计数法格式化浮点数
+%g     %f和%e的简写
+%G     %f 和 %E 的简写  
+%p     用十六进制数格式化变量的地址
+
+Unicode 字符串  u'Hello World !'
+
+========================================================================
+==列表
+list = []
+
+del list[1]
+
+list.append(obj)    在列表末尾添加新的对象
+list.count(obj)     统计某个元素在列表中出现的次数
+list.extend(seq)    在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
+list.index(obj)     从列表中找出某个值第一个匹配项的索引位置
+list.insert(index, obj) 将对象插入列表
+list.pop(obj=list[-1])  移除列表中的一个元素（默认最后一个元素），并且返回该元素的值
+list.remove(obj)    移除列表中某个值的第一个匹配项
+list.reverse()      反向列表中元素
+list.sort([func])   对原列表进行排序
+
+==元组    元组的元素不能修改
+
+tup1 = ();
+tup1 = (10,);  // 元组类型 元组中只包含一个元素时，需要在元素后面添加逗号
+tup2 = (10); --> int类型
+
+== 字典(Dictionary)  且可存储任意类型对象  
+键值(key=>value)对用冒号(:)分割，每个对之间用逗号(,)分割，整个字典包括在花括号({})中 
+d = {key1 : value1, key2 : value2 }
+
+dic = {}  --> dict
+
+radiansdict.clear()     删除字典内所有元素
+radiansdict.copy()      返回一个字典的浅复制
+radiansdict.fromkeys()  创建一个新字典，以序列seq中元素做字典的键，val为字典所有键对应的初始值
+radiansdict.get(key, default=None)  返回指定键的值，如果值不在字典中返回default值
+radiansdict.has_key(key)    如果键在字典dict里返回true，否则返回false
+radiansdict.items()     以列表返回可遍历的(键, 值) 元组数组
+radiansdict.keys()      以列表返回一个字典所有的键
+radiansdict.setdefault(key, default=None)   和get()类似, 但如果键不已经存在于字典中，将会添加键并将值设为default
+radiansdict.update(dict2)   把字典dict2的键/值对更新到dict里
+radiansdict.values()    以列表返回字典中的所有值
+
+========================================================================
+
+========================================================================
+Python 日期和时间
+Python 提供了一个 time 和 calendar 模块可以用于格式化日期和时间
+
+time.localtime(time.time()) --->
+time.struct_time
+(tm_year=2017, tm_mon=9, tm_mday=20, tm_hour=23, tm_min=50, tm_sec=5, tm_wday=2, tm_yday=263, tm_isdst=0)
+
+time 模块的 strftime 方法来格式化日期
+time.strftime(format[, t])
+# 格式化成2016-03-20 11:45:39形式
+print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) 
+
+%y 两位数的年份表示（00-99）
+%Y 四位数的年份表示（000-9999）
+%m 月份（01-12）
+%d 月内中的一天（0-31）
+%H 24小时制小时数（0-23）
+%I 12小时制小时数（01-12）
+%M 分钟数（00=59）
+%S 秒（00-59）
+%a 本地简化星期名称
+%A 本地完整星期名称
+%b 本地简化的月份名称
+%B 本地完整的月份名称
+%c 本地相应的日期表示和时间表示
+%j 年内的一天（001-366）
+%p 本地A.M.或P.M.的等价符
+%U 一年中的星期数（00-53）星期天为星期的开始
+%w 星期（0-6），星期天为星期的开始
+%W 一年中的星期数（00-53）星期一为星期的开始
+%x 本地相应的日期表示
+%X 本地相应的时间表示
+%Z 当前时区的名称
+%% %号本身
+========================================================================

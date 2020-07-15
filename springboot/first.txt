@@ -1,0 +1,8 @@
+@EnableAutoConfiguration
+@ComponentScan(basePackages = {"cn.nihility.springbootdemo.first"})
+以上的两个注解现在使用
+@SpringBootApplication 代替
+
+@SpringBootApplication -> 只是扫描子包的注解
+
+

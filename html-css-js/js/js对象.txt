@@ -1,0 +1,35 @@
+对象定义 
+var obj = new Object(); 
+或 
+var obj = {}; 
+
+添加属性 
+obj.name = 'tom'; 
+obj.ses='man'; 
+
+添加方法 
+obj.say = function(){ 
+alert('22222'); 
+} 
+
+调用 obj.say(); 
+
+修改属性 
+obj.name='jack'; 
+
+删除属性 
+obj.name = undefined; 
+obj.say = undefined; 
+其name、say属性仍存在obj对象中，怎样才能在obj中移除name属性呢？ 
+delete obj.name; 
+
+
+在添加、修改或者删除属性时，和引用属性相同，也可以采用方括号（[]）语法： 
+obj[“name”]=”tom”; 
+使用这种方式还有一个额外的特点，就是可以使用非标识符字符串作为属性名称，例如 
+标识符中不允许以数字开头或者出现空格，但在方括号（[]）语法中却可以使用： 
+obj[“my name”]=”tom”; 
+需要注意，在使用这种非标识符作为名称的属性时，仍然要用方括号语法来引用： 
+alert(obj[“my name”]); 
+而不能写为： 
+alert(user.my name); 

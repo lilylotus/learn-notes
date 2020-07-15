@@ -1,0 +1,208 @@
+1. 启动容器
+docker run IMAGE [COMMAND] [ARG...]
+docker run -it IMAGE /bin/bash
+-i --interactive=true | false 默认是false (使用打开标准输出)
+-t --tty=true | false 默认是false (为docker分配一个伪tty终端)
+--> exit 退出此交互式docker CTRL + P 和 CTRL + Q退出而不关闭docker
+
+为容器自定义名称:
+docker run --name=docker-name -i -t ubuntu /bin/bash
+重新启动停止的docker
+docker start -i [id|name]
+
+2.守护容器
+以守护式运行容器: docker run -i -t IMAGE /bin/bash (Ctrl+P Ctrl+Q)
+进入正在运行的守护容器: docker attach [id|name]
+启动守护容器: docker run -d IAMGE [COMMAND] [ARG..]
+
+查看容器内的情况: docker logs [-f] [-t] [--tail] id|name
+-f --follows=true | false 默认false
+-t --timestamps=true | false 默认false
+--tail= "all"
+docker logs -tf id|name
+
+查看容器内进程: docker top id|name
+在运行的容器中启动新的进程: docker exec [-d][-i][-t] 容器名 [COMMAND] [ARG..]
+停止守护容器:
+	docker stop id|name (发送信号给容器,停止)
+	docker kill id|name (直接停止容器)
+
+3. 容器的端口映射
+run [-P][-p] (大小写的p)
+-P(大写) --publish-all=true | false 默认false
+docker run -P -i -t centos /bin/bash (为容器暴露的所有端口映射)
+
+-p(小写) --publish=[]
+containerPort: (制定容器端口,而宿主机端口随机映射)
+docker run -p 80 -i -t ubuntu /bin/bash
+hostPort:containerPort (容器和宿主机端口一一映射)
+docker run -p 8080:80 -i -t centos /bin/bash
+ip::containerPort (ip + 容器的端口)
+docker run -p 0.0.0.0:80 -i -t ubuntu /bin/bash
+ip:hostPort:containerPort (IP:宿主端口:容器端口)
+docker run -p 0.0.0.0:8080:80 -i -t ubuntu /bin/bash
+
+4. 查看镜像
+docker images [-q][--no-trunc][-a] [image-name]
+docker images -q ubuntu
+
+5. docker 拉取镜像 : docker pull [OPTIONS] NAME[:TAG]
+-a, --all-tags=false Download all tagged images in the repository.
+
+=========================================================
+1. 启动容器
+docker run IMAGE_NAME [COMMAND] [ARGS…]
+如 : docker run ubuntu echo "hello ubuntu docker."
+
+1.1 启动交互式容器：docker run -t -i –name=自定义名称 IMAGE_NAME /bin/bash
+-i –interactive=true | false，默认是false
+-t –tty=true | false，默认是false
+–name 给启动的容器自定义名称，方便后续的容器选择操作
+如 : docker -i -t ubuntu /bin/bash
+
+1.2 docker 相互拷贝文件
+docker cp [OPTIONS] CONTAINER:SRC_PATH_DEST_PATH
+docker cp [OPTIONS] SRC_PATH CONTAINER DEST_PATH
+如:
+/RS-MapReduce目录拷贝到容器30026605dcfe的/home/cloudera目录下。
+docker cp RS-MapReduce 30026605dcfe:/home/cloudera
+将容器026605dcfe/home/cloudera/RS-MapReduce目录拷贝到主机的/tmp目录中。
+docker cp  30026605dcfe:/home/cloudera/RS-MapReduce /tmp/
+
+﻿从主机复制到容器 : docker cp host_path containerID:container_path
+从容器复制到主机 : docker cp containerID:container_path host_path
+如 : docker cp txcrm2:/home/log/production.log /system/logs
+
+
+2. 查看容器：docker ps [-a] [-l]
+-a all 列出所有容器
+-l latest 列出最近的容器
+如 : docker ps -a
+
+2.1 查看指定容器： docker inspect [name | id]
+如 : docker inspect 8a3b2e035101
+
+3. 重新启动停止的容器：docker start -i [name|id]
+如 : docker start -i 8a3b2e035101
+
+4. 删除停止的容器：docker rm [name | id]
+如 ： docker rm 8a3b2e035101
+
+5. 附加到运行中的容器， 退出正在运行的容器，再次进入：docker attach [name | id]
+如 : docker attach 8a3b2e035101
+
+6. 启动守护式容器,在后台执行操作 :
+docker run [--name container-alias-name] -d IMAGE_NAME [COMMAND] [ARG…]
+如 : docker run --name ualias -d ubuntu /bin/sh -c "while true; do echo hello world; sleep 1; done"
+注意：这里没 bash
+
+7. 查看容器日志,当守护式容器在后台运行时，可利用docker的日志命令查看其输出
+docker logs [-f] [-t] [–tail] IMAGE_NAME
+-f –follows=true | false，默认是false，显示更新
+-t –timestamps=true | false，默认是false，显示时间戳
+–tail | 行数，显示最新行数的日志
+如 : docker log -tail 10 -tf 8a3b2e035101
+
+8. 查看容器内进程,对运行的容器查看其进程：docker top IMAGE_NAME
+如 : docker top 8a3b2e035101
+
+9. 运行中容器启动新进程
+Docker的理念是一个容器运行一个服务，但是往往需要对一个服务进行监控，需要在已运行的容器启动新进程：
+docker exec [-d] [-i] [-t] IMAGE_NAME [COMMAND] [ARG…]
+如 : docker exec -i -t ualias /bin/bash
+
+10. 停止守护式容器
+发送信号停止容器：docker stop 容器名
+强制停止：docker kill 容器名
+
+11. 容器的端口映射
+令：run [-P] [-p]
+-P，–publish-all=true | false，大写的P表示为容器暴露的所有端口进行映射；
+-p，–publish=[]，小写的p表示为容器指定的端口进行映射，有四种形式：
+containerPort：只指定容器的端口，宿主机端口随机映射
+hostPort:containerPort：同时指定容器与宿主机端口一一映射
+ip::containerPort：指定ip和容器的端口
+ip:hostPort:containerPort：指定ip、宿主机端口以及容器端口
+
+docker run -p 80 -i -t ubuntu /bin/bash
+docker run -p 8080:80 -i -t ubuntu /bin/bash
+docker run -p 0.0.0.0::80 -i -t ubuntu /bin/bash
+docker run -p 0.0.0.0:8080:80 -i -t ubuntu /bin/bash
+
+查看容器进程 : docker top name|id
+查看容器端口映射情况 : docker port name|id
+
+12. 查看删除镜像
+列出镜像：docker images [OPTIONS] [REPOSITORY]
+-a，–all=false，显示所有镜像
+-f，–filter=[]，显示时过滤条件
+–no-trunc=false，指定不使用截断的形式显示数据
+-q，–quiet=false，只显示镜像的唯一id
+如 : docker images -a
+
+12.1 查看镜像：docker inspect [OPTIONS] CONTAINER|IMAGE [CONTAINER|IMAGE]
+-f，–format=""
+
+12.2 删除镜像：docker rmi [OPTIONS] IMAGE [IMAGE]
+-f，–force=false，强制删除镜像
+–no-prune=false，保留未打标签的父镜像
+
+12.3 查找镜像：docker search [OPTIONS] TEAM
+–automated=false，仅显示自动化构建的镜像
+–no-trunc=false，不以截断的方式输出
+–filter，添加过滤条件
+
+12.4 拉取镜像：docker pull [OPTIONS] NAME [:TAG]
+-a，–all-tags=false，下载所有的镜像(包含所有TAG)
+
+========================================================
+守护式容器
+交互式容器在运行完命令退出后即停止，而守护式容器是即使退出也能后台运行的容器。
+守护式容器具有：能够长期运行；没有交互式会话；适合于运行应用程序和服务。
+
+守护形式运行容器
+执行完需要的操作退出容器时，不要使用exit退出，可以利用Ctrl+P Ctrl+Q代替，以守护式形式推出容器。
+
+构建镜像
+构建Docker镜像，可以保存对容器的修改，并且再次使用，提供了自定义镜像的能力，以软件的形式打包并分发服务及其运行环境。
+Docker中提供了两种方式来构建镜像：
+通过容器构建：docker commit
+通过 Dockerfile：docker build
+
+1. 使用commit命令构建镜像
+命令：docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+参数：-a，–author=""，指定镜像的作者信息
+​-m，–message=""，提交信息
+​-p，–pause=true，commit时是否暂停容器
+如 : docker commit -a "docker" -m "centos contain nginx" ngnixcentos(被构建的容器名) nginxcentos7(生成的镜像名)
+
+2. 使用Dockerfile文件构建镜像
+Docker允许我们利用一个类似配置文件的形式来进行构建自定义镜像，
+在文件中可以指定原始的镜像，自定义镜像的维护人信息，对原始镜像采取的操作以及暴露的端口等信息。
+
+
+# Sample Dockerfile
+FROM ubuntu:16.04
+MAINTAINER wgp "user@163.com"
+RUN apt-get update
+RUN apt-get install -y nginx
+EXPOSE 80
+
+命令：docker build [OPTIONS] DockerFile_PATH | URL | -
+参数：
+–force-rm=false
+​–no-cache=false
+–pull=false
+-q，quite=false，构建时不输出信息
+–rm=true
+-t，tag=""，指定输出的镜像名称信息
+
+==============================================
+1. 删除所有容器先得停止容器
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+
+2. 删除镜像
+docker rmi $(docker images -q)
+docker rmi $(docker images | grep "^<none>" | awk '{print $3}')
+

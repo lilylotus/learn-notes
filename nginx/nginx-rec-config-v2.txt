@@ -1,0 +1,104 @@
+worker_processes 8;
+pid /var/run/nginx.pid;
+worker_rlimit_nofile 65535;
+
+events{
+    use epoll;
+    worker_connections 65535;
+    multi_accept on; # 新连接通知后接受尽可能多的连接，默认是on
+}
+
+http{
+    include mime.types;
+    default_type application/octet-stream;
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for"';
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 16 64K;
+    gzip_http_version 1.1;
+    gzip_comp_level 6;
+    gzip_types text/plain application/x-javascript text/css application/xml application/javascript;
+    gzip_vary on;
+
+    proxy_redirect off;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    client_max_body_size 10m;
+    client_body_buffer_size 128k;
+    proxy_connect_timeout 65;
+    proxy_send_timeout 65;
+    proxy_read_timeout 65;
+    proxy_buffer_size 4k;
+    proxy_buffers 4 32k;
+    proxy_busy_buffers_size 64k;
+
+    fastcgi_connect_timeout 3000;
+    fastcgi_send_timeout 3000;
+    fastcgi_read_timeout 3000;
+    fastcgi_buffer_size 256k;
+    fastcgi_buffers 8 256k;
+    fastcgi_busy_buffers_size 256k;
+    fastcgi_temp_file_write_size 256k;
+    fastcgi_intercept_errors on;
+
+    #缓存配置
+    proxy_cache_key '$host:$server_port$request_uri';
+    proxy_temp_file_write_size 64k;
+    proxy_temp_path /dev/shm/JieLiERP/proxy_temp_path;
+    proxy_cache_path /dev/shm/JieLiERP/proxy_cache_path levels=1:2 keys_zone=cache_one:200m inactive=5d max_size=1g;
+    proxy_ignore_headers X-Accel-Expires Expires Cache-Control Set-Cookie;
+
+    # 集群
+    upstream static {
+        ip_hash;
+        server 127.0.0.1:808 weight=1;
+        server 192.168.8.203:808 weight=1;
+    }
+
+    server{
+        listen 80;
+        server_name localhost;
+
+        location / {
+            index hello.jsp;
+        }
+
+        location ~ .*.(js|css|ico|png|jpg|eot|svg|ttf|woff) {
+            proxy_cache cache_one;
+            proxy_cache_valid 200 304 302 5d;
+            proxy_cache_valid any 5d;
+            proxy_cache_key '$host:$server_port$request_uri';
+            add_header X-Cache '$upstream_cache_status from $host';
+
+            proxy_pass http://192.168.8.203:8080;
+            expires 30d;
+        }
+
+        location ~ .*$ {
+            index index;
+            proxy_pass http://192.168.8.203:8080;
+        }
+    }
+}
+
+#制作CA证书
+openssl genrsa -des3 -out ca.key 2048
+openssl req -new -x509 -days 7305 -key ca.key -out ca.crt
+
+#生成Nginx服务器所需证书，并使用CA签名
+openssl genrsa -des3 -out client.key 1024
+openssl req -new -key client.key -out client.csr
+openssl x509 -req -in client.csr -out client.pem -signkey client.key -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650
+
+#取消证书密码
+openssl rsa -in client.key -out client.key.unsecure

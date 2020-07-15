@@ -1,0 +1,42 @@
+springMVC处理异常的3种方式：
+(1) 使用Spring MVC提供的简单异常处理器SimpleMappingExceptionResolver；
+(2) 实现Spring的异常处理接口HandlerExceptionResolver 自定义自己的异常处理器(常用)
+public class CustomSimpleMappingExceptionResolver extends SimpleMappingExceptionResolver {
+3) 使用@ExceptionHandler注解实现异常处理；
+
+统一异常处理的好处是能够将异常信息统一捕捉并组装成固定格式的数据返回，
+在ajax回调处理中好处可多了， 回调得到的数据因为格式统一，
+前端可以很方便的通过某种控件进行呈现或友好提示 。 
+虽然也可以手动在Controller层的方法返回的结果中添加异常信息，
+但是只会徒增代码量，却不能使我们更好的专注于业务逻辑。 
+
+
+系统中异常包括：编译时异常和运行时异常RuntimeException
+前者通过捕获异常从而获取异常信息，
+后者主要通过规范代码开发、测试通过手段减少运行时异常的发生。
+
+springmvc中自带了一个异常处理器叫SimpleMappingExceptionResolver，
+该处理器实现了HandlerExceptionResolver 接口，全局异常处理器都需要实现该接口。
+首先得在springmvc.xml文件中配置该处理器：
+<!-- springmvc提供的简单异常处理器 -->
+<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+     <!-- 定义默认的异常处理页面 -->
+    <property name="defaultErrorView" value="/WEB-INF/jsp/error.jsp"/>
+    <!-- 定义异常处理页面用来获取异常信息的变量名，也可不定义，默认名为exception --> 
+    <property name="exceptionAttribute" value="ex"/>
+    <!-- 定义需要特殊处理的异常，这是重要点 --> 
+    <property name="exceptionMappings">
+        <props>
+            <prop key="ssm.exception.CustomException">/WEB-INF/jsp/custom_error.jsp</prop>
+        </props>
+        <!-- 还可以定义其他的自定义异常 -->
+    </property>
+</bean>
+
+--------------------------------------------------------------------
+自定义全局异常处理器 (HandlerExceptionResolver接口)
+全局异常处理器处理思路：
+1. 解析出异常类型
+2. 如果该异常类型是系统自定义的异常，直接取出异常信息，在错误页面展示
+3. 如果该异常类型不是系统自定义的异常，构造一个自定义的异常类型（信息为“未知错误”）
+springmvc提供一个HandlerExceptionResolver接口，自定义全局异常处理器必须要实现这个接口

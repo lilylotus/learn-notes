@@ -1,0 +1,57 @@
+spring:
+  profiles:
+    active: dev
+
+  datasource:
+    # 如果存在多个数据源，监控的时候可以通过名字来区分开来
+    name: mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT&useSSL=false
+    username: root
+    password: mysql
+    # 扩展插件,监控统计用的filter:stat 日志用的filter:log4j 防御sql注入的filter:wall
+    filters: stat,wall,log4j
+    druid:
+      max-active: 20
+      initial-size: 10
+      min-idle: 10
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: select count(1) from 'table'
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: false
+      max-open-prepared-statements: -1
+      connection-properties: "druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000"
+      stat-view-servlet:
+        enabled: true
+        url-pattern: "/druid/*"
+        reset-enable: true
+        login-username: root
+        login-password: root
+        allow: 127.0.0.1
+      web-stat-filter:
+        enabled: true
+        url-pattern: "/*"
+        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: cn.nihility.mybatis.po
+
+resources:
+  midpHost: midpHost
+  logdir: D:/log/spring-boot
+  appname: spring-boot-example
+  basepackage: cn.nihility
+
+jwt:
+  expiredTime: 60000
+  secret: jwtkey

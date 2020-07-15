@@ -1,0 +1,97 @@
+一般数据库默认都会为主键生成索引
+
+1. 使用ALTER TABLE语句创建索引。语法如下：
+alter table table_name add index index_name (column_list) ;
+alter table table_name add unique (column_list) ;
+alter table table_name add primary key (column_list) ;
+
+2. 使用CREATE INDEX语句对表增加索引。
+能够增加普通索引和UNIQUE索引两种。其格式如下：
+create index index_name on table_name (column_list) ;
+create unique index index_name on table_name (column_list) ;
+
+3. 删除索引。
+删除索引可以使用ALTER TABLE或DROP INDEX语句来实现。DROP INDEX可以在ALTER TABLE内部作为一条语句处理，其格式如下：
+drop index index_name on table_name ;
+alter table table_name drop index index_name ;
+alter table table_name drop primary key ;
+
+====================================================================================
+1. 普通索引
+最基本的索引，它没有任何限制，MyIASM中默认的BTREE类型的索引
+
+1.1 直接创建索引
+CREATE INDEX index_name ON table(column(length))
+
+1.2 修改表结构的方式添加索引
+ALTER TABLE table_name ADD INDEX index_name ON (column(length))
+1.3 创建表的时候同时创建索引
+CREATE TABLE `table` (
+`id` int(11) NOT NULL AUTO_INCREMENT ,
+`title` char(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+PRIMARY KEY (`id`), INDEX index_name (title(length)) ) 
+1.3 删除索引
+DROP INDEX index_name ON table
+
+2. 唯一索引
+与普通索引类似，不同的就是：索引列的值必须唯一，但允许有空值（注意和主键不同）。
+如果是组合索引，则列值的组合必须唯一
+2.1 创建唯一索引
+CREATE UNIQUE INDEX indexName ON table(column(length))
+2.2 修改表结构
+ALTER TABLE table_name ADD UNIQUE indexName ON (column(length))
+2.3 创建表的时候直接指定
+CREATE TABLE `table` (
+`id` int(11) NOT NULL AUTO_INCREMENT ,
+`title` char(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+`content` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL ,
+`time` int(10) NULL DEFAULT NULL ,
+PRIMARY KEY (`id`),
+UNIQUE index Name (title(length))
+);
+
+3. 全文索引（FULLTEXT）
+支持全文索引和全文检索，FULLTEXT索引仅可用于 MyISAM 表；
+可以从CHAR、VARCHAR或TEXT列中作为CREATE TABLE语句的一部分被创建，或是随后使用ALTER TABLE 或CREATE INDEX被添加。
+
+4. 单列索引、多列索引
+多个单列索引与单个多列索引的查询效果不同，因为执行查询时，MySQL只能使用一个索引，会从多个索引中选择一个限制最为严格的索引。
+
+5. 组合索引（最左前缀）
+平时用的SQL查询语句一般都有比较多的限制条件，所以为了进一步榨取MySQL的效率，就要考虑建立组合索引。
+例如上表中针对title和time建立一个组合索引：
+ALTER TABLE article ADD INDEX index_titme_time (title(50),time(10))
+建立这样的组合索引，其实是相当于分别建立了下面两组组合索引：
+–title,time
+–title
+为什么没有time这样的组合索引呢？这是因为MySQL组合索引“最左前缀”的结果。
+简单的理解就是只从最左面的开始组合。并不是只要包含这两列的查询都会用到该组合索引
+
+====================================================================================
+1. 索引不会包含有NULL值的列
+只要列中包含有NULL值都将不会被包含在索引中，复合索引中只要有一列含有NULL值，那么这一列对于此复合索引就是无效的。
+所以我们在数据库设计时不要让字段的默认值为NULL。
+
+2. 使用短索引
+对串列进行索引，如果可能应该指定一个前缀长度。例如，如果有一个CHAR(255)的列，
+如果在前10个或20个字符内，多数值是惟一的，那么就不要对整个列进行索引。
+短索引不仅可以提高查询速度而且可以节省磁盘空间和I/O操作。
+
+3. 索引列排序
+MySQL查询只使用一个索引，因此如果where子句中已经使用了索引的话，那么order by中的列是不会使用索引的。
+因此数据库默认排序可以符合要求的情况下不要使用排序操作；尽量不要包含多个列的排序，如果需要最好给这些列创建复合索引。
+
+4. like语句操作
+一般情况下不鼓励使用like操作，如果非使用不可，如何使用也是一个问题。
+like “%aaa%” 不会使用索引而like “aaa%”可以使用索引。
+
+5. 不要在列上进行运算
+例如：select * from users where YEAR(adddate)<2007，
+将在每个行上进行运算，这将导致索引失效而进行全表扫描，
+因此我们可以改成：select * from users where adddate<’2007-01-01′。
+关于这一点可以围观：一个单引号引发的MYSQL性能损失。
+
+MySQL只对以下操作符才使用索引：<,<=,=,>,>=,between,in,以及某些时候的like(不以通配符%或_开头的情形)。
+而理论上每张表里面最多可创建16个索引，不过除非是数据量真的很多，否则过多的使用索引也不是那么好玩的，
+比如我刚才针对text类型的字段创建索引的时候，系统差点就卡死了。
+====================================================================================

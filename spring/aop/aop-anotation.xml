@@ -1,0 +1,25 @@
+<!-- 1. 包扫描 -->
+<context:component-scan base-package="cn.nihility.spring.mvc.demo.aop"/>
+<!-- 2. 注解配置 -->
+<context:annotation-config/>
+<!-- 3. aop 自动代理 -->
+<!-- 
+	当 Spring IOC 容器侦测到 Bean 配置文件中的
+	<aop:aspectj-autoproxy><aop:aspectj-autoproxy/> 元素时
+	会自动为与 AspectJ 切面匹配的 Bean 创建代理。 
+-->
+<!-- 
+	proxy-target-class属性，默认为false，表示使用jdk动态代理织入增强，
+	当配为<aop:aspectj-autoproxy poxy-target-class="true"/>时，
+	表示使用CGLib动态代理技术织入增强
+-->
+<aop:aspectj-autoproxy proxy-target-class="true" expose-proxy="true"/>
+
+
+------------------------------------------------
+AspectJ 支持 5 种类型的通知注解：
+	@Before：前置通知，在方法执行之前执行
+	@After：后置通知，在方法执行之后执行 
+	@AfterRunning：返回通知，在方法返回结果之后执行
+	@AfterThrowing：异常通知，在方法抛出异常之后
+	@Around：环绕通知，围绕着方法执行

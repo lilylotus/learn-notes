@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.nihility.mybatis.dao.DynamicSqlMapper">
+
+    <!-- 引用缓存：namespace：指定和哪个名称空间下的缓存一样 -->
+    <cache-ref namespace="cn.nihility.mybatis.dao.MybatisDeptMapper"/>
+
+    <!--  & - &amp; " - &quot; -->
+    <!-- where 会自动删除前面的 and -->
+    <select id="selectBeanByBeanUseIf" parameterType="MybatisTestBean" resultType="MybatisTestBean">
+        select id, age, gender, name, email, test_address from mybatis_test
+        <where>
+            <if test="id!=0"> and id=#{id}</if>
+            <if test="age!=0"> and age=#{age}</if>
+            <if test="name!=null &amp;&amp; name.trim()!=&quot;&quot;"> and name like #{name}</if>
+            <if test="gender!=null &amp;&amp; gender.trim()!=&quot;&quot;"> and gender=#{gender}</if>
+            <if test="email!=null &amp;&amp; email.trim()!=&quot;&quot;"> and email like #{email}</if>
+            <if test="testAddress!=null &amp;&amp; testAddress.trim()!=&quot;&quot;"> and test_address like #{testAddress}</if>
+        </where>
+    </select>
+    
+    <!--
+        prefix="": 前缀：trim 标签体中是整个字符串拼串 后的结果。 prefix给拼串后的整个字符串加一个前缀 
+        prefixOverrides="": 前缀覆盖： 去掉整个字符串前面多余的字符
+        suffix="": 后缀 suffix给拼串后的整个字符串加一个后缀 
+        suffixOverrides="" 后缀覆盖：去掉整个字符串后面多余的字符
+    -->
+    <select id="selectBeanByBeanUseSuffix" parameterType="MybatisTestBean" resultType="MybatisTestBean">
+        select id, age, gender, name, email, test_address from mybatis_test
+        <trim prefix="WHERE" suffixOverrides="and">
+            <if test="id!=0">id=#{id} and</if>
+            <if test="age!=0">age=#{age} and</if>
+            <if test="name!=null &amp;&amp; name.trim()!=&quot;&quot;">name like #{name} and</if>
+            <if test="gender!=null &amp;&amp; gender.trim()!=&quot;&quot;">gender=#{gender} and</if>
+            <if test="email!=null &amp;&amp; email.trim()!=&quot;&quot;">email like #{email} and</if>
+            <if test="testAddress!=null &amp;&amp; testAddress.trim()!=&quot;&quot;">test_address like #{testAddress} and</if>
+        </trim>
+    </select>
+    
+    <select id="selectBeanByIdsUseForeach" parameterType="list" resultType="MybatisTestBean">
+        select id, age, gender, name, email, test_address from mybatis_test
+        <foreach collection="list" item="item" separator="," open="WHERE id in (" close=")">#{item}</foreach>
+    </select>
+    
+    <!-- set 会自动删除后面的 "," 号 -->
+    <update id="updateMybatisTestSet" parameterType="MybatisTestBean">
+        update mybatis_test
+        <set>
+            <if test="gender!=null &amp;&amp; gender.trim()!=&quot;&quot;">gender=#{gender},</if>
+            <if test="email!=null &amp;&amp; email.trim()!=&quot;&quot;">email=#{email},</if>
+            <if test="testAddress!=null &amp;&amp; testAddress.trim()!=&quot;&quot;">test_address=#{testAddress},</if>
+        </set>
+        where id=#{id}
+    </update>
+
+</mapper>

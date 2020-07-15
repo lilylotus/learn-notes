@@ -1,0 +1,41 @@
+通用形式print "a = %letter, b = %letter, c = %letter." % (value1, value2, value3)
+%letter可以是：
+%s 符串
+%d 整形数
+%u 无符号整形数
+%x 十六进制
+%o 八进制
+%f 浮点数
+%e 科学计数法
+%g 根据数值不同自动选择%f或%e
+%r 原样输出
+
+#%s打印时结果是hello  
+print "string=%s" % string      # output: string=hello  
+
+#%2s意思是字符串长度为2，当原字符串的长度超过2时，按原长度打印，所以%2s的打印结果还是hello  
+print "string=%2s" % string     # output: string=hello 
+  
+#%7s意思是字符串长度为7，当原字符串的长度小于7时，在原字符串左侧补空格，  
+#所以%7s的打印结果是  hello  
+print "string=%7s" % string     # output: string=  hello 
+  
+#%-7s意思是字符串长度为7，当原字符串的长度小于7时，在原字符串右侧补空格，  
+#所以%-7s的打印结果是  hello  
+print "string=%-7s!" % string     # output: string=hello  ! 
+  
+#%.2s意思是截取字符串的前2个字符，所以%.2s的打印结果是he  
+print "string=%.2s" % string    # output: string=he  
+
+#%.7s意思是截取字符串的前7个字符，当原字符串长度小于7时，即是字符串本身，  
+#所以%.7s的打印结果是hello  
+print "string=%.7s" % string    # output: string=hello  
+ 
+#%a.bs这种格式是上面两种格式的综合，首先根据小数点后面的数b截取字符串，  
+#当截取的字符串长度小于a时，还需要在其左侧补空格  
+print "string=%7.2s" % string   # output: string=     he  
+print "string=%2.7s" % string   # output: string=hello  
+print "string=%10.7s" % string  # output: string=     hello 
+ 
+#还可以用%*.*s来表示精度，两个*的值分别在后面小括号的前两位数值指定  
+print "string=%*.*s" % (7,2,string)      # output: string=     he  

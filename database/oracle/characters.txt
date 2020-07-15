@@ -1,0 +1,37 @@
+影响Oracle数据库字符集最重要的参数是NLS_LANG参数。
+格式如下: NLS_LANG = language_territory.charset (语言、地域和字符集)
+Language： 指定服务器消息的语言， 影响提示信息是中文还是英文
+Territory： 指定服务器的日期和数字格式，
+Charset：  指定字符集。
+
+查询数据库服务端的字符集
+select * from v$nls_parameters where parameter='NLS_CHARACTERSET';
+select * from nls_database_parameters 可以分别查出字符集各组成部分的值
+select userenv('language') from dual  可以整体查出
+select * from nls_instance_parameters 查看你客户端的字符集
+客户端的字符集要求与服务器一致，才能正确显示数据库的非Ascii字符。
+AMERICAN_AMERICA.AL32UTF8
+
+ALTER DATABASE CHARACTER SET INTERNAL_USE AL32UTF8 ;
+ALTER DATABASE CHARACTER SET INTERNAL_USE AL32UTF8 ;
+
+
+alter system set nls_language='AMERICAN' scope=spfile ;
+alter system set nls_territory='AMERICAN'  scope=spfile ;
+
+select * from v$nls_parameters;
+select * from nls_database_parameters;
+
+
+shutdown immediate;
+startup mount;
+alter session set sql_trace=true;
+alter system enable restricted session;
+alter system set job_queue_processes=0;
+alter system set aq_tm_processes=0;
+alter database open;
+
+ALTER DATABASE character set INTERNAL_USE AL32UTF8;
+
+alter system set nls_language='...' scope=spfile;
+alter system set NLS_TERRITORY='AMERICAN' scope=spfile;

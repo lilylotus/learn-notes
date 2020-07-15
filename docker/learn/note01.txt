@@ -1,0 +1,16 @@
+一. Dockerfile
+
+1. CMD 指令
+CMD 命令
+CMD ["executable", "param1", "param2"]
+
+CMD 指令会在 docker run 后被显示指定的 [指令] 替代
+示例: docker run -d ubuntu /bin/bash [/bin/bash] 就会替换 CMD 命令
+
+2. ENTRYPOINT 指令
+ENTRYPOINT 命令
+ENTRYPOINT ["executable"]
+
+该指令不会被 docker run 的指令所替换, run 后面的命令只会作为 ENTRYPOINT 的参数执行
+
+3. 推荐使用 COPY 而不用 ADD

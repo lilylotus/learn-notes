@@ -1,0 +1,26 @@
+http://localhost:8080/myweb/hello.html
+URL = http://localhost:8080/myweb/hello.html
+URI = /myweb/hello.html
+
+URL（Uniform Resource Locator）：统一资源定位符
+URL就是一个表示资源位置的字符串，
+基本的URL格式为 "协议://IP地址/路径和文件名"，如：ftp://ftp.is.co.za/rfc/rfc1808.txt
+
+URL：uniform resource location 统一资源定位符
+URI：uniform resource identifier 统一资源标识符 (以 "/" 开始)
+
+---------------------------------------------------
+String path = request.getContextPath();  
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/"; 
+
+request.getSchema() -- 返回的是当前连接使用的协议，一般应用返回的是http、SSL返回的是https；
+request.getServerName() -- 返回当前页面所在的服务器的名字；
+request.getServerPort() -- 返回当前页面所在的服务器使用的端口，80；
+request.getContextPath() -- 返回当前页面所在的应用的名字。
+
+以访问的jsp为：http://localhost:8080/dmsd/course/index.jsp，工程名为/dmsd为例
+
+request.getContextPath() : 得到工程名：/dmsd
+request.getServletPath() : 返回当前页面所在目录下全名称：/course/index.jsp
+request.getRequestURL() : 返回IE地址栏地址：http://localhost:8080/dmsd/course/index.jsp
+request.getRequestURI() : 返回包含工程名的当前页面全路径：/dmsd/course/index.jsp

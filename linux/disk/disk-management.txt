@@ -1,0 +1,177 @@
+一. 分区表
+1. MBR 主引导记录(Main Boot Record) - 位于磁盘最前边的一段引导（Loader）代码
+包含MBR引导代码的扇区称为主引导扇区。因这一扇区中，引导代码占有绝大部分的空间，
+故而将习惯将该扇区称为MBR扇区（简称MBR）。这一扇区承担有不同于磁盘上其他普通存储空间的特殊管理职能，
+作为管理整个磁盘空间的一个特殊空间，它不属于磁盘上的任何分区，
+因而分区空间内的格式化命令不能清除主引导记录的任何信息。
+(4个主分区)
+主引导扇区由三个部分组成(共占用512个字节) :
+    1. 主引导程序即主引导记录（MBR）（占446个字节）
+        偏移地址0000H--0088H）负责从活动分区中装载，并运行系统引导程序
+    2. 磁盘分区表项（DPT，Disk Partition Table) 由四个分区表项构成（每个16个字节）
+    3. 结束标志（占2个字节）其值为AA55，存储时低位在前，高位在后，即看上去是55AA（十六进制）
+
+2. GPT (GUID Partition Table) GPT也是UEFI所使用的磁盘分区格式
+GUID (Globally Unique Identifier Partition Table Format) - 全局唯一标识磁盘分区表 
+
+ GPT分区的一大优势就是针对不同的数据建立不同的分区，同时为不同的分区创建不同的权限。
+ GPT能够保证磁盘分区的GUID唯一性，所以GPT不允许将整个硬盘进行复制，从而保证了磁盘内数据的安全性。
+
+ 在GTP磁盘的第一个数据块中同样有一个与MBR（主引导记录）类似的标记，叫做PMBR。
+ PMBR的作用是，当使用不支持GPT的分区工具时，整个硬盘将显示为一个受保护的分区，
+ 以防止分区表及硬盘数据遭到破坏。UEFI并不从PMBR中获取GPT磁盘的分区信息，它有自己的GPT分区表。
+ GPT分区方案中逻辑块地址（LBA）采用64位二进制数表示，可以计算一下2^64是一个多么庞大的数据，
+ 这个大小约等于无限.
+ GPT分区方案在硬盘的末端还有一个备份分区表，保证了分区信息不容易丢失。
+
+-------------------------------------------------------------------------------------------
+二. 磁盘管理 (fdisk) 命令
+1. 添加磁盘步骤
+    添加设备 -> 分区 -> 格式化 -> [起名 label] -> 修改配置文件 -> 创建挂载点 -> 挂载
+
+2. fdisk 使用
+    > fdisk -l  (查看设备，列出所有的分区)
+    > fdisk [设备路径] (磁盘分区编辑)
+        m (帮助)
+        p (打印分区)
+        n (新建)
+        p (主分区) e (拓展 MBR中)
+        q (退出)
+        d (删除)
+        w (保存)
+
+3. 分区类型 ID
+    82  交换分区    83  Linux分区
+    8e  Linux LVM   ef  EFI(FAT-12/16)
+    ee  GPT         
+4. 更新分区表
+    -> partprobe
+
+5. 格式化分区
+    > mkfs -t [文件系统类型] [设备名称]  (ext3、ext4等)
+        查看支持文件系统类型 : >ls /sbin/mkfs.*
+    简写形式 :
+    > mkfs.ext4 [设备名称]   例: mkfs.ext4 /dev/sda4
+
+6. 挂载
+    > mount /dev/sda5 /sda5
+6.1 卸载
+    > umount /dev/sda5
+
+7. fstab 自动挂载 (/etc/fstab)
+书写格式:
+      挂载设备  挂载点 文件系统类型  文件系统参数  备份命令    是否fsck检查扇区
+dump备份命令(通常这个参数的值为 0|1)
+    0   代表不要做dump备份
+    1   代表要每天进行dump的操作
+    2   代表不定日期的进行dump操作
+是否检验扇区：开机的过程中，系统默认会以fsck检验我们系统是否为完整（clean）
+    0   不要检验
+    1   最早检验（一般根目录会选择）
+    2   1级别检验完成之后进行检验
+
+设备名称方式: /dev/sda5       /sda5   ext4    defaults        0 0
+卷标方式: LABEL=demo-label        /sda5   ext4    defaults        0 0
+UUID方式：UUID=a1938530-b23f-47f4-b49a-484a6ac7e0a7       /sda5   ext4    defaults        0 0
+
+挂载光盘： /dev/cdrom    /mnt    iso9660 defaults    0   0
+
+UUID码全称是通用唯一识别码 (Universally Unique Identifier, UUID)
+让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定
+UUID格式是：包含32个16进位数字，以“-”连接号分为五段，形式为8-4-4-4-12的32个字符
+1. 查看UUID
+    > cat /proc/sys/kernel/random/uuid
+    > blkid [设备名称]
+    > tune2fs -l /dev/sda1 | grep UUID
+        tune2fs是调整和查看ext2/ext3文件系统的文件系统参数
+        -l 查看文件系统信息
+        -c max-mount-counts 设置强制自检的挂载次数，
+            如果开启，每挂载一次mountconut就会加1，超过次数就会强制自检
+        -i interval-between-checks[d|m|w] 设置强制自检的时间间隔[d天m月w周]
+        -m reserved-blocks-percentage 保留块的百分比
+        -j 将ext2文件系统转换为ext3类型的文件系统
+        -L volume-label 类似e2label的功能，可以修改文件系统的标签
+        -r reserved-blocks-count 调整系统保留空间
+        -o [^]mount-option[,...] Set or clear the indicated default mount options in the filesystem. 设置或清除默认挂载的文件系统选项
+
+== 检验 fstab 书写是否成功
+    > mount -a 
+
+卷标的使用
+1. 显示设备的卷标
+    > e2label [设备]
+2. 给设备设置卷标
+    > e2label [设备名称] [卷标名]  
+        例: e2label /dev/sda5 demo-label (设置sda5的卷标为demo-label)
+-------------------------------------------------------------------------------------------
+补充内容：
+1. lsof（list open files）
+是一个列出当前文件系统打开文件的工具，该文件系统分区中有什么程序在使用
+lsof输出各列信息的意义如下：
+    COMMAND：进程的名称
+    PID：进程标识符
+    USER：进程所有者
+    FD：文件描述符，应用程序通过文件描述符识别该文件。如cwd、txt等
+    TYPE：文件类型，如DIR、REG等
+    DEVICE：指定磁盘的名称
+    SIZE：文件的大小
+    NODE：索引节点（文件在磁盘上的标识）
+    NAME：打开文件的确切名称
+牢记：
+    默认 : 没有选项，lsof列出活跃进程的所有打开文件
+    组合 : 可以将选项组合到一起，如-abc，但要当心哪些选项需要参数
+    -a : 结果进行“与”运算（而不是“或”）
+    -l : 在输出显示用户ID而不是用户名
+    -h : 获得帮助
+    -t : 仅获取进程ID
+    -U : 获取UNIX套接口地址
+    -F : 格式化输出结果，用于其它命令。可以通过多种方式格式化，
+        如-F pcfn（用于进程id、命令名、文件描述符、文件名，并以空终止）
+参数：
+    -i      显示所有连接
+    -i6     仅获取IPv6流量
+    -iTCP   仅显示TCP连接（同理可获得UDP连接）
+    -i:port 显示与指定端口相关的网络信息
+    -i@host 来显示指定到指定主机的连接
+    -sTCP:LISTEN    找出监听端口
+    -u  [USER]    显示指定用户打开了什么   >lsof -u ^daniel (显示除指定用户以外)
+    -p      查看指定进程ID已打开的内容      >lsof -p 10075
+    -c      查看指定的命令正在使用的文件和网络连接    >lsof -c syslog-ng
+
+2. fusr 显示出当前哪个程序在使用磁盘上的某个文件、挂载点、甚至网络端口，并给出程序进程的详细信息. 
+访问类型如下：  
+    c 代表当前目录  
+    e 将此文件作为程序的可执行对象使用 
+    f 打开的文件。默认不显示。  
+    F 打开的文件，用于写操作。默认不显示。  
+    r 根目录。  
+    m 映射文件或者共享库。 
+常用参数:
+    -m name     指定一个挂载文件系统上的文件或者被挂载的块设备（名称name）
+    -u          在每个PID后面添加进程拥有者的用户名称
+    -v          详细模式。输出似ps命令的输出
+    -a          显示所有命令行中指定的文件，默认情况下被访问的文件才会被显示。  
+
+-------------------------------------------------------------------------------------------
+三. 磁盘管理 (parted) 命令
+parted [选项]... [设备 [命令 [参数]...]...]
+
+命令参数 : 
+    -h, --help  显示此求助信息 
+    -l, --list  列出所有设别的分区信息
+交互式命令参数 : 
+    help [COMMAND]          Prints general help, or help on command. ((parted)help mklabel)
+    mklabel 标签类型        创建新的磁盘标签 (分区表) [ msdos | gpt]
+    name number name
+    mkpart PART-TYPE [FS-TYPE] START END    #创建一个分区 
+        (ext4 ,fat16, fat32 ,linux-swap ,NTFS ,reiserfs ,ufs)
+        (part-type primary, extended, logical)
+    print [number]           #打印分区表，或者分区 
+    resizepart number end
+    rm number               (parted) rm 3
+    select device           (parted) select /dev/hdb
+    set number flag state       
+    quit                                 #退出程序 
+
+命令分区:
+    parted /dev/sdb mklabel gpt mkpart 1 ext3 1 5T

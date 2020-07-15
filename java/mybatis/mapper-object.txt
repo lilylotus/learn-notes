@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+一对一
+<resultMap type="cn.nihility.entity.Class" id="ClassResultMap">
+    <id property="id" column="c_id" />
+    <result property="name" column="c_name" />
+    <association property="teacher" javaType="cn.nihility.entity.Teacher">
+        <id property="id" column="t_id" />
+        <result property="name" column="t_name" />
+    </association>
+</resultMap>
+
+<resultMap type="cn.nihility.entity.Class" id="ClassResultMap1">
+    <id property="id" column="c_id" />
+    <result property="name" column="c_name" />
+    <association property="teacher" column="t_id" select="getTeacher" />
+</resultMap>
+
+===================================================================================
+
+===================================================================================
+一对多
+1. 方式一
+嵌套结果: 使用嵌套结果映射来处理重复的联合结果的子集
+<resultMap type="cn.nihility.entity.Classes" id="ClassesResultMap">
+    <id property="id" column="c_id" />
+    <result property="name" column="c_name" />
+    <!-- 处理一对一的关系 -->
+    <association property="teacher" javaType="cn.nihility.entity.Teacher">
+        <id property="id" column="t_id" />
+        <result property="name" column="t_name" />
+    </association>
+    <!-- 一对多的关系 -->
+    <!-- ofType指定students集合中的对象类型 -->
+    <collection property="students" ofType="cn.nihility.entity.Student">
+        <id property="id" column="s_id" />
+        <result property="name" column="s_name" />
+    </collection>
+</resultMap>
+
+2. 方式二
+嵌套查询：通过执行另外一个SQL映射语句来返回预期的复杂类型
+SELECT * FROM class WHERE c_id=1;
+SELECT * FROM teacher WHERE t_id=1   //1 是上一个查询得到的teacher_id的值
+SELECT * FROM student WHERE class_id=1  //1是第一个查询得到的c_id字段的值
+<resultMap type="cn.nihility.entity.Classes" id="ClassesResultMap1">
+    <id property="id" column="c_id" />
+    <result property="name" column="c_name" />
+    <!-- 处理一对一的关系 -->
+    <association property="teacher" column="t_id"
+        javaType="cn.nihility.entity.Teacher" select="getTeacher" />
+    <!-- 一对多的关系 -->
+    <!-- ofType指定students集合中的对象类型 -->
+    <collection property="students" column="c_id"
+        ofType="cn.nihility.entity.Student" select="getStudents" />
+</resultMap>
+
+===================================================================================
+
+===================================================================================
+Association元素
+Association元素处理“has-one”（一对一）这种类型关系。
+
+property
+映射数据库列的字段或属性。如果JavaBean 的属性与给定的名称匹配，就会使用匹配的名字。
+否则，MyBatis 将搜索给定名称的字段。两种情况下您都可以使用逗点的属性形式。
+
+column
+数据库的列名或者列标签别名。与传递给resultSet.getString(columnName)的参数名称相同。
+注意： 在处理组合键时，您可以使用column= “{prop1=col1,prop2=col2}”这样的语法，
+设置多个列名传入到嵌套查询语句。这就会把prop1和prop2设置到目标嵌套选择语句的参数对象中。
+
+javaType
+完整java类名或别名(参考上面的内置别名列表)。
+如果映射到一个JavaBean，那MyBatis 通常会自行检测到。
+然而，如果映射到一个HashMap，那您应该明确指定javaType 来确保所需行为。
+
+jdbcType
+支持的JDBC类型列表中列出的JDBC类型。这个属性只在insert,update 或delete 的时候针对允许空的列有用。
+JDBC 需要这项，但MyBatis 不需要。如果您直接编写JDBC代码，在允许为空值的情况下需要指定这个类型。
+
+typeHandler
+我们已经在文档中讨论过默认类型处理器。使用这个属性可以重写默认类型处理器。
+它的值可以是一个TypeHandler实现的完整类名，也可以是一个类型别名。
+联合嵌套选择（Nested Select for Association）
+
+select
+通过这个属性，通过ID引用另一个加载复杂类型的映射语句。
+从指定列属性中返回的值，将作为参数设置给目标select 语句。表格下方将有一个例子。
+注意：在处理组合键时，您可以使用column=”{prop1=col1,prop2=col2}”这样的语法，
+设置多个列名传入到嵌套语句。这就会把prop1和prop2设置到目标嵌套语句的参数对象中。
+
+
+===================================================================================

@@ -1,0 +1,15 @@
+default-lease-time 600;
+max-lease-time 7200;
+log-facility local7;
+
+subnet 10.10.37.0 netmask 255.255.255.0 {
+	option routers 10.10.37.1;
+	option subnet-mask 255.255.255.0;
+	option domain-name-servers 10.10.37.1;
+	option time-offset -18000; # Eastern Standard Time
+	range dynamic-bootp 10.10.37.60 10.10.37.200;
+	default-lease-time 21600;
+	max-lease-time 43200;
+	next-server 10.10.37.129;
+	filename "pxelinux.0";
+}

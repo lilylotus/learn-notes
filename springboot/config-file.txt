@@ -1,0 +1,52 @@
+项目中存在 application.properties 文件，
+那么 application.yml 文件就只是一个摆设。
+
+------------------------------------------
+日期转JSON格式
+
+1. 可以在属性上添加
+    @JsonFormat(timezone="GMT+8", pattern="yyyy-MM-dd")
+    @JsonFormat(shap=JsonFormat.Shape.NUMBER)
+
+2. application.yml
+    spring:
+        jackson:
+            date-format: yyyy-MM-dd
+            time-zone: GMT+8
+            serialization:
+                write-dates-as-timestamps: true # 使用数值 timestamp 表示日期
+
+
+-------------------------------------------
+POST 方法传递为表单数据
+
+需先声明传入的是 application/x-www-form-urlencode 格式
+可在 RequestMapping 添加 consumes 参数 ：
+    consumes = MediaType.APPLICATION_FORM_URLENCODE_VALUE
+
+获取头信息
+    @ReuqestHeader("user-agent")
+获取 Cookie 值
+    @CookieValue
+文件上传
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    (@RequestParam("file") MultipartFile file) ;
+
+--------------------------------------------
+校验结果
+    (@Validated @RequestBody OneDto dto, BindingResult result);
+Bean Validation
+1.0     JSR-303 2009    JAVA EE 6
+1.1     JSR-349 2013    JAVA EE 7
+2.0     JSR-380 2017    JAVA EE 8
+
+---------------------------------------------
+事务管理 @Transactional 注解
+name 有多个 TransactionManager，可以通过该属性指定是那个事务管理器
+propagation 事务的传播行为，默认为 REQUIRED
+isolation 事务的隔离，默认 DEFAULT
+timeout 事务超时时间，默认 -1 ，超过时间还未完成，则自动回滚事务
+readOnly 指定事务是否为只读，默认为 false
+rollbackFor 指定能够触发事务回滚的异常类型
+noRollbackFOr 指定异常类型，不回滚事务
+

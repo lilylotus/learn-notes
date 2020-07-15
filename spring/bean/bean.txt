@@ -1,0 +1,185 @@
+1. Bean (scope) 生命周期
+单例(singleton)
+	Spring容器中只会存在一个共享的Bean实例，所有对Bean的请求只要id与bean的定义相匹配，
+	则只会返回bean的同一实例。单一实例会被存储在单例缓存中，为Spring的缺省作用域
+原型（prototype）: 一个Bean定义，任意多个对象
+请求（request）
+	一个HTTP请求会产生一个Bean对象，每一个HTTP请求都有自己的Bean实例。
+	只在基于web的Spring ApplicationContext中可用
+会话（session）
+	限定一个Bean的作用域为HTTPsession的生命周期。只有基于web的Spring ApplicationContext才能使用
+全局会话（global session）
+	限定一个Bean的作用域为全局HTTPSession的生命周期。
+	通常用于门户网站场景，同样，只有基于web的Spring ApplicationContext可用
+应用(application)
+	限定一个Bean的作用域为ServletContext的生命周期。只有基于web的Spring ApplicationContext可用
+
+1.1 singleton
+	Spring容器中只会存在一个共享的Bean实例，所有对Bean的请求只要id与bean的定义相匹配，
+	则只会返回bean的同一实例。单一实例会被存储在单例缓存中，为Spring的缺省作用域
+1.2 prototype
+	每次对该Bean请求的时候，Spring IoC都会创建一个新的作用域。
+	对于有状态的Bean应该使用prototype，对于无状态的Bean则使用singleton
+	对于任何对象实例的单个bean定义的范围，每次请求都创建此bean的实例
+1.3 request
+	Request作用域针对的是每次的Http请求，Spring容器会根据相关的Bean的
+	定义来创建一个全新的Bean实例。而且该Bean只在当前request内是有效的。
+	每次HTTP请求生命周期的单个bean定义范围；即，每个HTTP请求返回一个bean实例。
+	仅在ApplicationContext的上下文中有效
+1.4 session
+	单个bean定义的HTTP会话生命周期的范围。仅在ApplicationContext的上下文中有效
+	Spring容器会根据该Bean的定义来创建一个全新的Bean的实例。而且该Bean只在当前http session内是有效的。
+1.5 global session
+	单个bean定义的全局HTTP会话的生命周期。一般地在门户导入的信息组件的上下文中有效。
+	仅在ApplicationContext的上下文中有效
+1.6 application
+	Spring容器为整个web应用只会创建一个 AppPreferences实例。
+	AppPreferences范围是ServletContext 级别的，存入为一个普通的ServletContext 属性。
+	这有些和Spring的singleton相似，但是两点主要的不同：它在每个ServletContext中是唯一的，
+	而不是每个‘ApplicationContext’（或者在给定的应用中可能有多个实例），
+	而且它实际上是作为ServletContext 的参数暴漏出来的。
+
+--------------------------------------------------------------------------
+2. 资源加载
+Resource resource = applicationContext.getResource("classpath:config.txt");
+Resource resource = applicationContext.getResource("file:D:/Java.zip");
+Resource resource = applicationContext.getResource("url:http://www.baidu.com");
+Resource resource = applicationContext.getResource("config.txt");
+
+--------------------------------------------------------------------------
+1、@Component 一般的bean类上面配置。
+2、@Controller 对应表现层的Bean，也就是action。
+3、@ Service 对应业务层bean。
+4、@ Repository 对应持久层Bean。
+上面的4种起到相同的效果，都是注入bean，注入bean的四大金刚，张龙赵虎王朝马汉，辅佐包黑炭。
+
+5、@Autowired 成员变量或方法入参处标注，按类型匹配自动注入。
+6、@Qualifier 按名称匹配方式注入。
+7、@PostConstruct指定初始化方法。（相当于XML配置中的init-method）
+8、@PreDestroy指定销毁方法。(相当于XML配置中的destroy-method)
+9、@Scope 指定bean是prototype还是singleton。
+
+============================================================================
+1
+（默认）每一个Spring IoC容器都拥有唯一的一个实例对象
+那么Spring容器会根据Bean定义创建一个唯一的Bean实例
+
+原型（prototype）
+一个Bean定义，任意多个对象
+
+============================================================================================
+request,session以及global session这三个作用域都是只有在基于web的SpringApplicationContext实现的
+（比如XmlWebApplicationContext）中才能使用。
+
+而在Servlet 3.0以后，这些都能够通过WebApplicationInitializer接口来实现
+<web-app>
+    ...
+    <listener>
+        <listener-class>
+            org.springframework.web.context.request.RequestContextListener
+        </listener-class>
+    </listener>
+    ...
+</web-app>
+============================================================================================
+
+请求（request）
+一个HTTP请求会产生一个Bean对象，每一个HTTP请求都有自己的Bean实例。
+只在基于web的Spring ApplicationContext中可用
+
+会话（session）
+限定一个Bean的作用域为HTTPsession的生命周期。只有基于web的Spring ApplicationContext才能使用
+
+全局会话（global session）
+限定一个Bean的作用域为全局HTTPSession的生命周期。
+通常用于门户网站场景，同样，只有基于web的Spring ApplicationContext可用
+
+应用(application)
+限定一个Bean的作用域为ServletContext的生命周期。只有基于web的Spring ApplicationContext可用
+
+
+============================================================================================
+1. 自动装配
+
+default-autowire="byName"   与id的名称有关    根据名称去匹配
+default-autowire="byType"   与id的名称无关    根据类型去匹配
+default-autowire="constructor"  与id的名称无关 根据类型去匹配
+
+<bean id="autoWiringDAO11" class="cn.nihility.aware.AutoWiringDAO"></bean>
+<bean id="autoWiringService" class="cn.nihility.aware.AutoWiringService"></bean>
+============================================================================================
+
+============================================================================================
+1. 元数据的获取
+public class BeanName implements BeanNameAware, ApplicationContextAware {
+
+============================================================================================
+
+============================================================================================
+1. 资源加载
+
+Resource resource = applicationContext.getResource("classpath:config.txt");
+Resource resource = applicationContext.getResource("file:D:/Java.zip");
+Resource resource = applicationContext.getResource("url:http://www.baidu.com");
+Resource resource = applicationContext.getResource("config.txt");
+============================================================================================
+
+============================================================================================
+Bean的完整生命周期经历了各种方法调用，这些方法可以划分为以下几类：
+
+1、Bean自身的方法
+这个包括了Bean本身调用的方法和通过配置文件中<bean>的init-method和destroy-method指定的方法
+
+2、Bean级生命周期接口方法
+这个包括了BeanNameAware、BeanFactoryAware、InitializingBean和DiposableBean这些接口的方法
+
+3、容器级生命周期接口方法
+这个包括了InstantiationAwareBeanPostProcessor 和 BeanPostProcessor 这两个接口实现，一般称它们的实现类为“后处理器”。
+
+4、工厂后处理器接口方法
+这个包括了AspectJWeavingEnabler, ConfigurationClassPostProcessor, CustomAutowireConfigurer等等非常有用的工厂后处理器接口的方法。
+工厂后处理器也是容器级的。在应用上下文装配配置文件之后立即调用。
+
+============================================================================================
+
+============================================================================================
+1. 5种作用域介绍
+
+singleton
+Spring容器中只会存在一个共享的Bean实例，所有对Bean的请求只要id与bean的定义相匹配，则只会返回bean的同一实例。单一实例会被存储在单例缓存中，为Spring的缺省作用域
+
+prototype
+每次对该Bean请求的时候，Spring IoC都会创建一个新的作用域。
+对于有状态的Bean应该使用prototype，对于无状态的Bean则使用singleton
+对于任何对象实例的单个bean定义的范围，每次请求都创建此bean的实例
+
+request
+Request作用域针对的是每次的Http请求，Spring容器会根据相关的Bean的
+定义来创建一个全新的Bean实例。而且该Bean只在当前request内是有效的。
+每次HTTP请求生命周期的单个bean定义范围；即，每个HTTP请求返回一个bean实例。
+仅在ApplicationContext的上下文中有效
+
+session
+单个bean定义的HTTP会话生命周期的范围。仅在ApplicationContext的上下文中有效
+Spring容器会根据该Bean的定义来创建一个全新的Bean的实例。而且该Bean只在当前http session内是有效的。
+
+global session
+单个bean定义的全局HTTP会话的生命周期。一般地在门户导入的信息组件的上下文中有效。
+仅在ApplicationContext的上下文中有效
+
+application
+Spring容器为整个web应用只会创建一个 AppPreferences实例。也就是， AppPreferences范围是ServletContext 级别的，存入为一个普通的ServletContext 属性。这有些和Spring的singleton相似，但是两点主要的不同：它在每个ServletContext中是唯一的，而不是每个‘ApplicationContext’（或者在给定的应用中可能有多个实例），而且它实际上是作为ServletContext 的参数暴漏出来的。
+
+============================================================================================
+
+1、@Component 一般的bean类上面配置。
+2、@Controller 对应表现层的Bean，也就是action。
+3、@ Service 对应业务层bean。
+4、@ Repository 对应持久层Bean。
+上面的4种起到相同的效果，都是注入bean，注入bean的四大金刚，张龙赵虎王朝马汉，辅佐包黑炭。
+
+5、@Autowired 成员变量或方法入参处标注，按类型匹配自动注入。
+6、@Qualifier 按名称匹配方式注入。
+7、@PostConstruct指定初始化方法。（相当于XML配置中的init-method）
+8、@PreDestroy指定销毁方法。(相当于XML配置中的destroy-method)
+9、@Scope 指定bean是prototype还是singleton。

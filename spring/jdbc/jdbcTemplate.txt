@@ -1,0 +1,150 @@
+/* 第一个参数为执行sql   第二个参数为参数数据 */ 
+jdbcTemplate.update("insert into tb_test1(name,password) values(?,?)",   
+        new Object[]{user.getUsername(),user.getPassword()});
+
+/* 第一个参数为执行sql 第二个参数为参数数据 第三个参数为参数类型 */
+jdbcTemplate.update(  "insert into tb_test1(name,password) values(?,?)",
+                new Object[]{user.getUsername(),user.getPassword()},   
+                new int[]{java.sql.Types.VARCHAR,java.sql.Types.VARCHAR} );
+
+ //避免sql注入
+jdbcTemplate.update("insert into tb_test1(name,password) values(?,?)",   
+                new PreparedStatementSetter(){  
+                    @Override  
+                    public void setValues(PreparedStatement ps) throws SQLException {  
+                        ps.setString(1, user.getUsername());  
+                        ps.setString(2, user.getPassword());
+                    }});  
+
+ public List<User> list(User user) {  
+        return jdbcTemplate.query("select * from tb_test1 where username like '%?%'",   
+                new Object[]{user.getUsername()},   
+                new int[]{java.sql.Types.VARCHAR},   
+                new RowMapper(){  
+                    @Override  
+                    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {  
+                        User user  = new User();  
+                        user.setId(rs.getInt("id"));  
+                        user.setUsername(rs.getString("username"));  
+                        user.setPassword(rs.getString("password"));  
+                        return user;  
+                    }  
+        });  
+    }  
+final class PersonRowMapper implements RowMapper{
+    //默认已经执行rs.next(),可以直接取数据
+    @Override
+    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+        PersonBean pb = new PersonBean(rs.getInt("id"), rs.getString("name"));
+        return pb;
+    }
+}
+
+
+批量操作batchupdate或者单个update
+public int[] batchUpdate(final List actors) {
+    String sql="update t_actor set first_name = ?, last_name = ? where id = ?";
+    int[] updateCounts = jdbcTemplate.batchUpdate(sql,new BatchPreparedStatementSetter() {
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    ps.setString(1, ((Actor)actors.get(i)).getFirstName());
+                    ps.setString(2, ((Actor)actors.get(i)).getLastName());
+                    ps.setLong(3, ((Actor)actors.get(i)).getId().longValue());
+                }
+                public int getBatchSize() {
+                    return actors.size();
+                }
+            } );
+    return updateCounts;
+}
+==================================================================================
+
+==================================================================================
+//1.查询一行数据并返回int型结果
+jdbcTemplate.queryForInt("select count(*) from test");
+//2. 查询一行数据并将该行数据转换为Map返回
+jdbcTemplate.queryForMap("select * from test where name='name5'");
+//3.查询一行任何类型的数据，最后一个参数指定返回结果类型
+jdbcTemplate.queryForObject("select count(*) from test", Integer.class);
+//4.查询一批数据，默认将每行数据转换为Map
+jdbcTemplate.queryForList("select * from test");
+//5.只查询一列数据列表，列类型是String类型，列名字是name
+jdbcTemplate.queryForList("
+select name from test where name=?", new Object[]{"name5"}, String.class);
+//6.查询一批数据，返回为SqlRowSet，类似于ResultSet，但不再绑定到连接上
+SqlRowSet rs = jdbcTemplate.queryForRowSet("select * from test");
+=================================================================================
+
+=================================================================================
+1. public <T> List<T> query(String sql, RowMapper<T> rowMapper)
+RowMapper接口提供mapRow(ResultSet rs, int rowNum)方法将结果集的每一行转换为一个Object或者map，当然可以转换为其他类.
+
+List<PersonBean> persons = jdbcTemplate.query(sql, new RowMapper<PersonBean>() {
+    @Override
+    public PersonBean mapRow(ResultSet rs, int rowNum) throws SQLException {
+        PersonBean ps = new PersonBean();
+        ps.setId(rs.getInt("id"));
+        ps.setName(rs.getString("name"));
+
+        return ps;
+    }
+});
+
+2. public void query(String sql, RowCallbackHandler rch)
+RowCallbackHandler接口也提供方法processRow(ResultSet rs)，能将结果集的行转换为需要的形式
+=== 注意 final
+final List<PersonBean> persons = new ArrayList<>();
+jdbcTemplate.query(sql, new RowCallbackHandler() {
+    PersonBean ps;
+    @Override
+    public void processRow(ResultSet rs) throws SQLException {
+        ps = new PersonBean();
+        ps.setId(rs.getInt("id"));
+        ps.setName(rs.getString("name"));
+        persons.add(ps);
+    }
+});
+
+3. public <T> T query(final String sql, final ResultSetExtractor<T>)
+
+ResultSetExtractor使用回调方法extractData(ResultSet rs)提供给用户整个结果集，让用户决定如何处理该结果
+
+List<PersonBean> persons = jdbcTemplate.query(sql, new ResultSetExtractor<List<PersonBean>>() {
+    @Override
+    public List<PersonBean> extractData(ResultSet rs) throws SQLException, DataAccessException {
+        List<PersonBean> persons = new ArrayList<>();
+        PersonBean ps;
+        while (rs.next()) {
+            ps = new PersonBean();
+            ps.setId(rs.getInt("id"));
+            ps.setName(rs.getString("name"));
+
+            persons.add(ps);
+        }
+        return persons;
+    }
+});
+
+4. 批量操作batchupdate或者单个update
+
+final List<String> names = new ArrayList<>();
+names.add("第一"); names.add("第二"); names.add("第三"); names.add("第四"); names.add("第五"); names.add("第六"); 
+
+String sql1 = "INSERT INTO person(id, name) VALUES(NULL, ?)";
+int[] counts = jdbcTemplate.batchUpdate(sql1, new BatchPreparedStatementSetter() {
+    @Override
+    public void setValues(PreparedStatement ps, int i) throws SQLException {
+        ps.setString(1, names.get(i));
+    }
+    @Override
+    public int getBatchSize() {
+        return names.size();
+    }
+});
+
+5. 处理一条数据
+jdbcTemplate.update(sql, new PreparedStatementSetter() {
+    @Override
+    public void setValues(PreparedStatement ps) throws SQLException {
+        ps.setString(1, "第1");
+    }
+});

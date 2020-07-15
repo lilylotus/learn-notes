@@ -1,0 +1,137 @@
+xargs命令是给其他命令传递参数的一个过滤器，也是组合多个命令的一个工具。
+它擅长将标准输入数据转换成命令行参数，xargs能够处理管道或者stdin并将其转换成特定命令的命令参数。
+xargs也可以将单行或多行文本输入转换为其他格式，例如多行变单行，单行变多行。
+
+xargs的默认命令是echo，空格是默认定界符。
+这意味着通过管道传递给xargs的输入将会包含换行和空白，不过通过xargs的处理，换行和空白将被空格取代。
+xargs是构建单行命令的重要组件之一。
+
+xargs 可以读入 stdin 的资料，并且以空白字元或断行字元作为分辨，将 stdin 的资料分隔成为 arguments
+因为是以空白字元作为分隔，所以，如果有一些档名或者是其他意义的名词内含有空白字元的时候，
+xargs可能就会误判了,如果需要处理特殊字符，
+需要使用-0参数进行处理。
+
+============================================================
+xargs处理的优先级或顺序了：先分割，再分批，然后传递到参数位。
+分割有三种方法：独立的xargs、xargs -d和xargs -0。
+分批方法从逻辑上说是两种：-n选项和-L选项。
+优先级从-n --> -L --> -i逐渐变高，当指定高优先级的分批选项会覆盖低优先级的分批选项
+
+xargs命令的符号分类：文本意义上的空格、制表符、反斜线、引号和非文本意义上的符号。
+
+分行处理掉不是echo实现的，而是管道传递过来的stdin经过xargs处理后的：
+**将所有空格、制表符和分行符都替换为空格并压缩到一行上显示，这一整行将作为一个整体，
+这个整体的所有空格属性继承xargs处理前的符号属性，即原来是文本意义的或标记意义的在替换为空格后符号属性不变。
+**想要保存制表符、空格等特殊符号，需要将它们用单引号或双引号包围起来，但是单双引号（和反斜线）都会被xargs去掉。
+
+指定-n时按空格分段
+
+============================================================
+-a    Read arguments from FILE, not standard input
+-d    Input items are separated by CHARACTER
+-n    Use at most MAX-ARGS arguments per command line
+
+xargs -a passwd -d: -n3
+
+-p
+xargs并不会马上执行其后面的命令，而是输出即将要执行的完整的命令
+(包括命令以及传递给命令的命令行参数)，询问是否执行，输入 y 才继续执行，否则不执行
+
+-0 选项表示以 '\0' 为分隔符，一般与find结合使用
+默认情况下find的输出结果是每条记录后面加上换行，也就是每条记录是一个新行
+find . -name "*.txt" -print0
+加上 -print0 参数表示find输出的每条结果后面加上 '\0' 而不是换行
+find . -name "*.txt" -print0 | xargs -d '\0' echo
+
+-E
+该选项指定一个字符串，当xargs解析出多个命令行参数的时候，
+如果搜索到-e指定的命令行参数，则只会将-e指定的命令行参数之前的参数
+不包括-e指定的这个参数,传递给xargs后面的命令
+注意：
+-E只有在xargs不指定-d的时候有效，如果指定了-d则不起作用，而不管-d指定的是什么字符，空格也不行。
+
+
+============================================================
+xargs用作替换工具，读取输入数据重新格式化后输出。
+
+-n选项多行输出
+-I/-i 指定一个替换字符串{}，这个字符串在xargs扩展时会被替换掉
+-L  从标准输入一次读取num行送给Command命令 ，-l和-L功能一样
+
+-d选项可以自定义一个定界符
+-0 ：当sdtin含有特殊字元时候，将其当成一般字符，如/'空格等
+
+-p 操作具有可交互性，每次执行comand都交互式提示用户选择，当每次执行一个询问一次用户
+-P 修改最大的进程数，默认是1，为0时候为as many as it can 。
+
+-t, --verbose  Print commands before executing them
+-d, --delimiter=CHARACTER    Input items are separated by CHARACTER,
+    not by blank space. Disables quote and backslash processing
+-0, --null     Items are separated by a null, not whitespace.
+-L,-l, --max-lines=MAX-LINES Use at most MAX-LINES nonblank input lines per command line
+-n, --max-args=MAX-ARGS      Use at most MAX-ARGS arguments per command line
+-P, --max-procs=MAX-PROCS    Run up to max-procs processes at a time
+-x, --exit                   Exit if the size (see -s) is exceeded
+
+cat test.txt | xargs -n3
+cho "nameXnameXnameXname" | xargs -dX
+echo "nameXnameXnameXname" | xargs -dX -n2
+
+选项-I，使用，当-I与xargs结合使用，每一个参数命令都会被执行一次：
+cat arg.txt | xargs -I {} ./sk.sh -p {} -l
+
+echo "/ /  "|xargs echo
+
+ls | xargs -n 2  -> -n是按空格分割的
+ls | xargs -L 2  -> 文件名中的空格没有分割这个段
+
+xargs -0的行为和xargs -d基本是一样的，只是-d是指定分隔符，-0是指定固定的\0作为分隔符。
+其实xargs -0就是特殊的xargs -d的一种，它等价于xargs -d"\0"。
+
+echo {1..1000000} | xargs  touch
+
+1. -d
+将接收stdin的所有的标记意义的符号替换为\n，
+替换完成后所有的符号（空格、制表符、分行符）变成字面意义上的普通符号，即文本意义的符号。
+
+============================================================
+
+cat test.txt
+a b c d e f
+g h i j k l
+m n o p q r
+s t u v w x
+y zxargs用作替换工具，读取输入数据重新格式化后输出。
+
+来自: http://man.linuxde.net/xargs
+
+cat test.txt | xargs
+
+-n选项多行输出
+cat test.txt | xargs -n3
+a b c
+d e f
+g h i
+
+-d选项可以自定义一个定界符
+echo "nameXnameXnameXname" | xargs -dX
+
+echo "nameXnameXnameXname" | xargs -dX -n2
+
+xargs的一个选项-I，使用-I指定一个替换字符串{}，
+这个字符串在xargs扩展时会被替换掉，当-I与xargs结合使用，每一个参数命令都会被执行一次：
+cat arg.txt | xargs -I {} ./sk.sh -p {} -l
+
+复制所有图片文件到 /data/images 目录下： ls *.jpg | xargs -n1 -I cp {} /data/images
+
+===========================================================
+用rm 删除太多的文件时候，可能得到一个错误信息：/bin/rm Argument list too long. 用xargs去避免这个问题：
+find . -type f -name "*.log" -print0 | xargs -0 rm -f
+
+=================================================================
+剩下的就是处理xargs的细节问题了，
+比如如何分割（xargs、xargs -d、xargs -0）
+分割后如何划批（xargs -n、xargs -L）
+参数如何传递（xargs -i）
+另外xargs还提供询问交互式处理（-p选项）和预先打印一遍命令的执行情况（-t选项）
+传递终止符（-E选项）等

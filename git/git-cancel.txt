@@ -1,0 +1,16 @@
+1. 取消缓存 -> 工作区
+git reset -q -- (file)
+
+2. 移除缓存  ->  删除文件 (缓存+工作区+[仓库])
+git rm -q -f -- (file)
+
+3. 缓存中丢弃 -->  恢复清空缓存和工作区，内容和仓库一样
+git reset -q HEAD -- file   (丢弃缓存内容)
+git checkout HEAD -- file   (工作区同仓库一致)
+
+4. 工作区停止跟踪
+git rm -q --cached -- file
+
+5. 工作区丢弃
+git checkout -- file
+

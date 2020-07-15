@@ -1,0 +1,53 @@
+DDL：数据库模式定义语言，关键字：create
+DML：数据操纵语言，关键字：Insert、delete、update
+DCL：数据库控制语言 ，关键字：grant、remove
+DQL：数据库查询语言，关键字：select
+
+
+一、事务（行级）锁（TX）
+行锁：当事务执行数据库插入、更新、删除操作时，该事务自动获得操作表中操作行的排它锁。 
+select * from tmpemp where deptno=20 for update;
+
+事务发起第一个修改时会得到TX 锁（事务锁），而且会一直持有这个锁，直至事务执行
+提交（COMMIT）或回滚（ROLLBACK）。
+
+1. 一般在for update 时加nowait，这样就不用等待其他事务执行了，一判断有事务，立马抛出错误。
+2. 一般的of column都是在多表操作的时候，能锁定其中一个表的某些列，
+    如果还是同一张表的话，并不能锁定某些列
+
+二、表级锁（TM）
+TM 锁用于确保在修改表的内容时，表的结构不会改变，例如防止在 DML 语句执行期间相关的表被移除。
+当用户对表执行 DDL 或 DML 操作时，将获取一个此表的表级锁。
+
+LOCK TABLE tmpemp IN SHARE MODE NOWAIT;
+
+表级锁需要用户明确指定使用"LOCK TABLE"语句进行手工锁定
+-- LOCAK TABLE 表名称 | 视图名称,表名称 | ... IN 锁定模式 MODE [NOWAIT];
+NOWAIT : 可选项，当视图锁定一张数据表时，若发现已经被其他的事务锁定，不会等待。
+锁定的模式：
+    ROW SHARE : 行共享锁，在锁定期间允许进行其它事务对表的各种操作，
+        但不允许任何事务对同一张表进行手工锁定或独占操作。
+    ROW EXCLUSIVE : 行排它锁，允许用户进行任何操作，与行共享锁不同的是
+        不能防止别的事务对同一张表进行手工锁定或独占操作
+    SHARE : 共享锁，其它事务只允许执行查询操作，不能进行修改操作
+    SHARE ROW EXCLUSIVE : 共享排它锁，允许执行查询操作，但不允许其它用户使用共享锁，
+        SELECT FOR UPDATE 就是共享锁的常见应用。
+    EXCLUSIVE : 排它锁，
+        事务将以独占的方式锁定表，其他的用户允许进行查询，但是不能修改，也不能设置任何的锁。
+
+三. 解除锁定 (必须超级管理员)
+ALTER SYSTEM KILL SESSION 'SID, SERIAL#'
+
+查询数据字典 v$locked_object, v$session
+
+1. select session_id, oracle_username, process from v$locked_object;
+2. select sid, serial#, lockwait, status from v$session where sid in (68, 192);
+3. alter system kill session '68,2510';
+
+SELECT * FROM v$lock;
+SELECT * FROM v$sqlarea;
+SELECT * FROM v$session;
+SELECT * FROM v$process ;
+SELECT * FROM v$locked_object;
+SELECT * FROM all_objects;
+SELECT * FROM v$session_wait;

@@ -1,0 +1,96 @@
+docker run -it --name c02 centos /bin/bash
+
+yum install openssl openssh-server openssh-client -y
+/usr/sbin/sshd -D
+
+配置：
+/etc/ssh/ssh_host_rsa_key
+/etc/ssh/ssh_host_ecdsa_key
+/etc/ssh/ssh_host_ed25519_key
+
+ssh-keygen -q -t rsa -b 2048 -f /etc/ssh/ssh_host_rsa_key && ssh-keygen -q -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key && ssh-keygen -t dsa -f /etc/ssh/ssh_host_ed25519_key
+
+sed -i "s/#UsePrivilegeSeparation.*/UsePrivilegeSeparation no/g" /etc/ssh/sshd_config
+sed -i "s/UsePAM.*/UsePAM no/g" /etc/ssh/sshd_config
+
+echo "centos" | passwd --stdin root
+
+docker run -it --name c02 -p 20000:22 centos /bin/bash
+
+
+========================================
+nginx :
+
+centos:
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+gpgcheck=0
+enabled=1
+
+yum install epel-release
+yum install pcre
+yum install pcre-devel
+yum install -y zlib-devel
+yum install nginx
+
+NGINX will be installed in /usr/local/nginx
+
+
+nginx -s signal
+    stop — fast shutdown
+    quit — graceful shutdown
+    reload — reloading the configuration file
+    reopen — reopening the log files
+
+
+==============================
+dockerfile
+
+FROM ubuntu
+RUN apt-get update \
+&& apt-get install -y openssh-server openssh-client nginx vim \
+&& mkdir /var/run/sshd \
+&& echo "ubuntu" | chpasswd \
+&& ip ad | grep inet > /var/www/html/index.html \
+&& echo "PermitRootLogin yes" >> /etc/ssh/sshd_config \
+&& /usr/sbin/nginx \
+&& apt-get clean \
+&& apt-get autoremove
+
+EXPOSE 80
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]
+
+=================================
+参数  作用
+#Port 22    默认的sshd服务端口。
+#ListenAddress 0.0.0.0  设定sshd服务端监听的IP地址。
+#Protocol 2 SSH协议的版本号。
+#HostKey /etc/ssh/ssh_host_key  SSH协议版本为1时，私钥存放的位置。
+HostKey /etc/ssh/ssh_host_rsa_key   SSH协议版本为2时，RSA私钥存放的位置。
+#HostKey /etc/ssh/ssh_host_dsa_key  SSH协议版本为2时，DSA私钥存放的位置。
+#PermitRootLogin yes    设定是否允许root用户直接登录。
+#StrictModes yes    当远程用户私钥改变时则直接拒绝连接。
+#MaxAuthTries 6 最大密码尝试次数
+#MaxSessions 10 最大终端数
+#PasswordAuthentication yes 是否允许密码验证
+#PermitEmptyPasswords no    是否允许空密码登陆（很不安全）
+
+
+=================================
+dockerfile
+FROM ubuntu
+
+RUN apt-get update \
+&& apt-get install -y openssh-server openssh-client curl vim nginx \
+&& apt-get autoclean \
+&& apt-get clean \
+&& apt-get autoremove \
+&& mkdir /var/run/sshd \
+&& echo "root:123" | chpasswd \
+&& echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+EXPOSE 80
+EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D"]

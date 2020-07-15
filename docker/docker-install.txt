@@ -1,0 +1,96 @@
+yum install -y yum-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+yum list docker-ce --showduplicates | sort -r
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+
+==========================================
+usermod -aG docker your-user
+{"registry-mirrors":["https://registry.docker-cn.com"]}
+
+==========================================
+docker 镜像 https://hub.docker.com/explore/
+
+1. Ubuntu 安装 docker
+sudo apt install apt-transport-https ca-certificates software-properties-common curl
+sudo apt-get install docker.io
+sudo apt install docker-ce
+
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
+2. centos7 安装 docker
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum install -y docker
+或者
+sudo wget -q0 https://get.docker.com | sh
+sudo usermod -aG docker $USER
+或者
+sudo yum-config-manager add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum-config-manager --enable docker-ce-edge
+sudo yum install docker-ce
+yum list docker-ce --showduplicates | sort -r
+
+2.1 first remove old version docker
+sudo yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-selinux docker-engine-selinux docker-engin
+
+curl -fsSL https://get.docker.com -o get-docker.sh | sh
+
+2.2 docker 权限配置
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
+sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+sudo chmod g+rwx "$HOME/.docker" -R
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker.service
+sudo netstat -lntp | grep dockerd
+
+Configuring remote access with daemon.json
+/etc/docker/daemon.json
+{
+"hosts": ["unix:///var/run/docker.sock", "tcp://127.0.0.1:2375"],
+"dns": ["8.8.8.8", "8.8.4.4"],
+"graph":"/data/docker"
+}
+
+
+2.3 uninstall docker CE
+sudo yum remove docker-ce
+sudo rm -rf /var/lib/docker
+
+改变镜像文件路径:
+sudo vim /usr/lib/systemd/system/docker.service
+在 ExecStart=/usr/bin/dockerd 下面添加如下内容： (--graph /data/tools/docker[路径])
+修改完成后reload配置文件
+sudo systemctl daemon-reload
+重启docker服务
+sudo systemctl restart docker.service
+使用中国镜像:
+备注：如果docker是1.12或以上的版本，可以修改（或新建）daemon.json文件。
+修改后会立即生效，不需重启docker服务。
+sudo vim /etc/docker/daemon.json
+{"registry-mirrors":["https://registry.docker-cn.com"]}
+
+非root用户运行docker
+首先创建docker用户组，如果 docker 用户组存在可以忽略
+sudo groupadd docker
+把用户添加进 docker 组中
+sudo gpasswd -a ${USER} docker
+重启 docker
+sudo service docker restart
+如果普通用户执行docker命令，提示get unix /var/run/docker.sock权限不够，
+则修改/var/run/docker.sock权限
+sudo chmod a+rw /var/run/docker.sock
+
+3. 镜像加速
+网易的镜像地址 ： http://hub-mirror.c.163.com
+新版的 Docker 使用 /etc/docker/daemon.json（Linux）
+或者 %programdata%\docker\config\daemon.json（Windows） 来配置 Daemon
+请在该配置文件中加入（没有该文件的话，请先建一个）
+{"registry-mirrors":["http://hub-mirror.c.163.com"]}
+或者国内镜像加速
+{"registry-mirrors":["https://registry.docker-cn.com"]}

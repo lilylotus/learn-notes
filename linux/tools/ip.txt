@@ -1,0 +1,29 @@
+1. 设置 IP 地址
+sudo ip addr add 192.168.100.100/24 dev ens33
+2. 查看是否生效
+ip addr show ens33
+3. 删除 IP 地址
+sudo ip addr del 192.168.100.100/24 dev ens33
+
+4. 列出路由表
+ip show route
+ip route get 192.168.100.100
+
+ip route
+ip route add
+ip route del
+ip route show
+
+5. 更改默认路由
+ip route addr default via 192.168.100.1
+ip route add 0.0.0.0 via 192.168.100.1 dev ens37
+静态路由： /etc/sysconfig/network-scripts/route-interface
+
+6. 显示网络统计信息
+ip -s link
+7. 查看 ARP 条目
+ip neigh [neighbour]
+
+8. 激活/停用
+ip link set ens33 up
+ip line set ens33 down

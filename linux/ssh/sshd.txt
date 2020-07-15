@@ -1,0 +1,84 @@
+SSHD 服务
+SSH协议 (Secure Shell) - 安全外壳协议
+SSH 为建立在应用层和传输层基础上的安全协议。
+SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安全性的协议。
+利用 SSH 协议可以有效防止远程管理过程中的信息泄露问题。
+
+SSH之所以能够保证安全，原因在于它采用了公钥加密。
+整个过程是这样的：
+    1. 远程主机收到用户的登录请求，把自己的公钥发给用户。
+    2. 用户使用这个公钥，将登录密码加密后，发送回来。
+    3. 远程主机用自己的私钥，解密登录密码，如果密码正确，就同意用户登录。 
+
+实施的时候存在一个风险：如果有人截获了登录请求，然后冒充远程主机，
+将伪造的公钥发给用户，那么用户很难辨别真伪。
+因为不像https协议，SSH协议的公钥是没有证书中心（CA）公证的，也就是说，都是自己签发的。  
+
+SSH提供两种级别的安全验证
+1. 基于口令的安全验证
+    只要你知道自己帐号和口令，就可以登录到远程主机。所有传输的数据都会被加密，
+    但是不能保证你正在连接的服务器就是你想连接的服务器。可能会有别的服务器在冒充真正的服务器，
+    也就是受到“中间人”这种方式的攻击。
+2. 基于密匙的安全验证
+    需要依靠密匙，也就是你必须为自己创建一对密匙，并把公用密匙放在需要访问的服务器上
+    客户端软件就会向服务器发出请求，请求用你的密匙进行安全验证。服务器收到请求之后，
+    先在该服务器上你的主目录下寻找你的公用密匙，然后把它和你发送过来的公用密匙进行比较。
+    如果两个密匙一致，服务器就用公用密匙加密“质询”（challenge）并把它发送给客户端软件。
+    客户端软件收到“质询”之后就可以用你的私人密匙解密再把它发送给服务器。
+    你必须知道自己密匙的口令。但是，与第一种级别相比，第二种级别不需要在网络上传送口令
+
+层次 : (主要由三部分组成)
+1. 传输层协议 [SSH-TRANS]
+    提供了服务器认证，保密性及完整性。此外它有时还提供压缩功能。 
+    SSH-TRANS 通常运行在TCP/IP连接上，也可能用于其它可靠数据流上。 
+    SSH-TRANS 提供了强力的加密技术、密码主机认证及完整性保护。
+    该协议中的认证基于主机，并且该协议不执行用户认证。更高层的用户认证协议可以设计为在此协议之上。
+2. 用户认证协议 [SSH-USERAUTH]
+    用于向服务器提供客户端用户鉴别功能。它运行在传输层协议 SSH-TRANS 上面。
+    当SSH-USERAUTH 开始后，它从低层协议那里接收会话标识符（从第一次密钥交换中的交换哈希H ）。会话标识符唯一标识此会话并且适用于标记以证明私钥的所有权。 
+    SSH-USERAUTH 也需要知道低层协议是否提供保密性保护。
+3. 连接协议 [SSH-CONNECT]
+    将多个加密隧道分成逻辑通道。它运行在用户认证协议上。
+    它提供了交互式登录话路、远程命令执行、转发 TCP/IP 连接和转发 X11 连接。
+
+-----------------------------------------------------------------------------------
+安装包查询 : (rpm)
+参数 :
+    -a, --all                        query/verify all packages
+    -f, --file                       query/verify package(s) owning file
+    -g, --group                      query/verify package(s) in group
+    -p, --package                    query/verify a package file
+
+    -c, --configfiles                list all configuration files
+    -d, --docfiles                   list all documentation files
+    -l, --list                       list files in package
+
+-----------------------------------------------------------------------------------
+openssh 的配置文件
+    /etc/ssh/ssh_config -> 客户端配置文件
+    /etc/sshd_config    -> 服务器配置文件
+
+openssh 服务的开启或者关闭
+    centos 6.x :
+    1. service sshd stop (start|restart|status)
+    2. /etc/init.d/sshd (start|restart|status)
+    开机自动启动 ：
+    > chkconfig sshd on (off) 
+    查看开机自启项 :
+    > chkconfig --list (服务名)
+    centos 7.x :
+    1. systemctl (start|restart|status) sshd
+    开机自动启动 ：
+    > systemctl enable sshd
+    查看开机自启项 :
+    > systemctl list-unit-files | grep (服务名)
+
+-----------------------------------------------------------------------------------
+问题解决 ： The remote SSH server rejected X11 forwarding request.
+    1. 编辑 /etc/ssh/sshd_config -> 设置 X11Forwarding yes
+    2. 编辑 /etc/ssh2/sshd2_config -> 设置 AllowX11Forwarding yes
+    3. Connetion->SSH->Tunneling，关闭默认打开的Forward X11选项即可。
+openssh 远程登录
+    > openssh [远程登录用户名]@[远程登录主机名或者IP地址]
+
+    

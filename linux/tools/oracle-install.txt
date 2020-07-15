@@ -1,0 +1,123 @@
+https://docs.oracle.com/database/121/LTDQI/toc.htm
+
+1. 安装要求
+1.1 Server Storage Minimum Requirements
+Disk Space Requirements on Linux x86-64 : 6.4GB
+1 GB of space in the /tmp directory.
+1.2 Server Memory Minimum Requirements
+Minimum: 1 GB of RAM, Recommended: 2 GB of RAM or more
+
+1.3
+To determine the physical RAM size, enter the following command:
+# grep MemTotal /proc/meminfo
+
+To determine the size of the configured swap space, enter the following command:
+# grep SwapTotal /proc/meminfo
+
+To determine the amount of space available in the /tmp directory, enter the following command:
+# df -h /tmp
+To determine the amount of free disk space on the system, enter the following command:
+# df -
+To determine the amount of free RAM and disk swap space on the system, enter the following command:
+# free
+
+To determine if the system architecture can run the software, enter the following command:
+# uname -m
+you should see the following for a x86-64 bit system : x86_64
+
+==============================================
+install package
+yum install -y binutils.x86_64
+yum install -y compat-libcap1.x86_64
+yum install -y compat-libstdc++.i68
+yum install -y compat-libstdc++.x86_6
+yum install -y gcc.x86_64
+yum install -y gcc-c++.x86_64
+yum install -y glibc.i686
+yum install -y glibc.x86_64
+yum install -y glibc-devel.i686
+yum install -y glibc-devel.x86_64
+yum install -y ksh
+yum install -y libaio.i686
+yum install -y libaio.x86_64
+yum install -y libaio-devel.i686
+yum install -y libaio-devel.x86_64
+yum install -y libgcc.i686
+yum install -y libgcc.x86_64
+yum install -y libstdc++.i686
+yum install -y libstdc++.x86_64
+yum install -y libstdc++-devel.i686
+yum install -y libstdc++-devel.x86_64
+yum install -y libXi.i686
+yum install -y libXi.x86_64
+yum install -y libXtst.i686
+yum install -y libXtst.x86_64
+yum install -y make.x86_64
+yum install -y sysstat.x86_64
+yum install -y unixODBC.i686
+yum install -y unixODBC.x86_64
+
+rpm -qa --queryformat "%{NAME}-%{VERSION}-%{RELEASE} (%{ARCH})\n" | grep package_name
+binutils compat-libstdc++ gcc glibc libaio libgcc libstdc++ make sysstat unixodbc
+==============================================
+Creating Required Operating System Groups and Users
+
+The following local operating system groups and users are required if you are installing Oracle Database:
+
+The Oracle Inventory group (typically, oinstall)
+The OSDBA group (typically, dba)
+The Oracle software owner (typically, oracle)
+The OSOPER group (optional. Typically, oper)
+
+# /usr/sbin/groupadd oinstall
+# /usr/sbin/groupadd dba
+
+# /usr/sbin/usermod -g oinstall -G dba oracle
+# /usr/sbin/useradd -g oinstall -G dba oracle
+
+==============================================
+/etc/sysctl.conf
+
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+kernel.shmall = 2097152
+kernel.shmmax = 1039448064
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+net.ipv4.ip_local_port_range = 9000 65500
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048586
+net.ipv4.ip_forward = 1
+
+Enter the following command to change the current values of the kernel parameters:
+# /sbin/sysctl -p
+Enter the command /sbin/sysctl -a to confirm that the values are set correctly.
+
+update the resource limits in the /etc/security/limits.conf
+
+noproc - 进程的最大数目
+stack - 最大栈大小
+nofile - 打开文件的最大数目
+soft 指的是当前系统生效的设置值
+hard 表明系统中所能设定的最大值
+soft 的限制不能比har 限制高。用 - 就表明同时设置了 soft 和 hard 的值。
+oracle：被限制的用户名，组名前面加@和用户名区别
+
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+oracle soft stack 10240
+oracle hard stack 10240
+
+==============================================
+Configuring Oracle Software Owner Environment
+ORACLE_BASE=
+ORACLE_HOME=
+ORACLE_SID=
+TNS_ADMIN=
+
+ORACLE_OWNER= oracle
+ORACLE_HOME=  /data/oracle/app/oracle/product/12.2.0/dbhome_1

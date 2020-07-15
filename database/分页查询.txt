@@ -1,0 +1,83 @@
+1. Mysql 
+limit关键字的用法： LIMIT [offset,] rows
+offset指定要返回的第一行的偏移量，
+rows第二个指定返回行的最大数目。
+初始行的偏移量是0(不是1)。
+
+取前5条数据  select * from table_name limit 0,5 
+或者  select * from table_name limit 5 
+
+查询第11到第15条数据
+select * from table_name limit 10,5
+
+MySQL大数据量分页查询方法及其优化
+方法1: 直接使用数据库提供的SQL语句
+语句样式:   SELECT * FROM 表名称 LIMIT M,N
+适应场景: 适用于数据量较少的情况(元组百/千级)
+原因/缺点: 全表扫描,速度会很慢且有的数据库结果集返回不稳定
+    Limit限制的是从结果集的M位置处取出N条输出,其余抛弃.
+
+方法2: 建立主键或唯一索引, 利用索引(假设每页10条)
+语句样式: SELECT * FROM 表名称 WHERE id_pk > (pageNum*10) LIMIT M
+适应场景: 适用于数据量多的情况(元组数上万)
+原因: 索引扫描,速度会很快. 
+有朋友提出: 因为数据查询出来并不是按照pk_id排序的，所以会有漏掉数据的情况
+
+方法3: 基于索引再排序
+语句样式: SELECT * FROM 表名称 WHERE id_pk > (pageNum*10) ORDER BY id_pk ASC LIMIT M
+适应场景: 适用于数据量多的情况(元组数上万). 
+    最好ORDER BY后的列对象是主键或唯一索引,
+    使得ORDERBY操作能利用索引被消除但结果集是稳定的
+原因: 索引扫描,速度会很快. 但MySQL的排序操作,只有ASC没有DESC
+(DESC是假的,未来会做真正的DESC,期待...).
+
+方法4: 基于索引使用prepare（第一个问号表示pageNum，第二个？表示每页元组数）
+语句样式: PREPARE stmt_name FROM SELECT * FROM 表名称 
+        WHERE id_pk > (？* ？) ORDER BY id_pk ASC LIMIT M
+适应场景: 大数据量
+原因: 索引扫描,速度会很快. prepare语句又比一般的查询语句快一点。
+
+方法5: 利用MySQL支持ORDER操作可以利用索引快速定位部分元组,避免全表扫描
+比如: 读第1000到1019行元组(pk是主键/唯一键).
+SELECT * FROM your_table WHERE pk>=1000 ORDER BY pk ASC LIMIT 0,20
+
+方法6: 利用"子查询/连接+索引"快速定位元组的位置,然后再读取元组. 道理同方法5
+如(id是主键/唯一键,蓝色字体时变量):
+利用子查询示例:
+SELECT * FROM your_table WHERE id <= 
+(SELECT id FROM your_table ORDER BY id desc LIMIT ($page-1)*$pagesize ORDER BY id desc LIMIT $pagesize
+
+利用连接示例:
+SELECT * FROM your_table AS t1 
+JOIN (SELECT id FROM your_table ORDER BY id desc LIMIT ($page-1)*$pagesize AS t2 
+WHERE t1.id <= t2.id ORDER BY t1.id desc LIMIT $pagesize;
+
+mysql大数据量使用limit分页，随着页码的增大，查询效率越低下。
+
+--------------------------------------------------------------------
+2. ORACLE (ROWNUM 是从 1 开始的)
+
+无ORDER BY排序的写法。(效率最高)
+经过测试，此方法成本最低，只嵌套一层，速度最快！
+即使查询的数据量再大，也几乎不受影响，速度依然！
+SELECT *
+FROM (
+    SELECT ROWNUM AS rowno, t.*
+    FROM emp t
+    WHERE hire_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+        AND TO_DATE ('20060731', 'yyyymmdd')
+        AND ROWNUM <= 20) table_alias 
+WHERE table_alias.rowno >= 10;
+
+有ORDER BY排序的写法。(效率最高)
+经过测试，此方法随着查询范围的扩大，速度也会越来越慢哦！
+SELECT *
+FROM (
+    SELECT tt.*, ROWNUM AS rowno
+    FROM (  SELECT t.*
+            FROM emp t
+            WHERE hire_date BETWEEN TO_DATE ('20060501', 'yyyymmdd')
+                    AND TO_DATE ('20060731', 'yyyymmdd')
+                    ORDER BY create_time DESC, emp_no) tt
+    WHERE ROWNUM <= 20) table_alias
+WHERE table_alias.rowno >= 10;

@@ -1,0 +1,36 @@
+1. 常见样式 —文本设置
+font-size       文字大小（一般均为偶数）
+font-family     中文 SimSun (宋体) SimHei (黑体) Microsoft YaHei (微软雅黑) STKaiti 
+    (华文楷体) 英文 Arial Georgia Helvetica sans-Serif
+color           文字颜色（英文、rgb、十六位进制色彩值）
+line-height     行高 (具体的数值)
+text-align      文本对齐方式 （left center right）
+text-indent     首行缩进（em缩进字符或者是具体的数值）
+font-weight     文字着重 （normal bold bolder 100~900）
+font-style      文字倾斜  (normal italic oblique)
+text-decoration 文本修饰 (none underline overline line-through)
+letter-spacing  字母间距 (具体的数值)
+word-spacing    单词间距（以空格为解析单位）
+
+
+2. 常见复合属性
+background: background-color background-image background-position background-repeat;
+
+border border-width border-style border-color;
+
+padding (四种情况)
+margin （四种情况）
+
+font：font-style | font-weight | font-size/line-height | font-family;
+
+3. 常见样式 (17种)
+width 宽度                    height 高度
+background 背景               border 边框
+padding 内边距                margin 外边距
+font-size  文字大小           font-family 字体
+color 文字颜色                line-height 行高
+text-align 文本对齐方式       text-indent 首行缩进
+font-weight 文字着重          font-style 文字样式
+text-decoration 文本修饰      letter-spacing 字母间距
+word-spacing 单词间距  
+

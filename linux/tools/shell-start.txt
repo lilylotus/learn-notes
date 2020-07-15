@@ -1,0 +1,77 @@
+1. ~ 表示主目录,通常是 /home/usr 或者 /root
+2. 每个命令通过 ; 分隔. 如: cmd1 ; cmd2
+3. 终端打印 [echo]
+echo "cannot include exclamation - ! within double quotes." (会出错,双引号 ! 转义)
+正确:
+	echo "cannot use \!" 或 echo 'cannot use !' 或 echo cannot use !
+	echo 默认会将一个换行符号追加到输出文本末尾,使用 -n 来忽略结尾换行
+	设置输出文字颜色: "\e[1;31m" (红色) "\e[0m" (将颜色置回)
+副作用:
+在使用不带引号的 echo 时没法显示文本中的分号(;), 因为在 bash shell 中被用作命定界定符
+变量替换在单引号当中无效
+
+4. 终端输出 printf [printf "hello world"]
+printf "%-5s %-10s %-4s\n" No Name Mark
+printf "%-5s %-10s %-4.2f\n" 1 Sarath 80.345
+格式替换符号: %s %c %d %f
+
+5. 变量和环境变量
+注意: 在 Bash 当中所有的变量值都是字符串,无论给变量赋值的时候有没有使用引号
+环境变量: cat /proc/$PID/environ 查看进程环境
+每个环境变量值列表以 name=value 的形式描述,彼此之间由 null 字符 (\0) 分隔,可以用 tr '\0' '\n'来换行
+cat /proc/$PID/environ | tr '\0' '\n'
+
+6. 变量赋值 (key=value 注意中间不能有空格,不认就是相等操作)
+var="value" -> echo $var 或 echo ${var}
+环境变量未在当前进程当中定义,可以从父进程当中继承变量.
+export inherit="inherit value"  -> echo "Inherit value ${inserit}"
+众所周知的环境变量: HOME, PWD, USER, UID, SHELL
+注意: 使用单引号变量不会转义成值,会照原样打印从出来, 双引号才会转义.
+
+7. 拓展
+获取字符串长度: len=${#var}
+识别当前所用SHELL: echo $SHELL 或 echo $0
+
+8. shell 数学计算 (注意:普通变量赋值都会被存储为字符串)
+let 命令可以直接执行基本算术操作,使用 let 时,变量名前不用添加 $
+如: let result=no1+no2, let no1++, let no1--, let no1+=4
+[] 类似 let , result=$[ no1 + no2 ] 中间不能有空格
+也可以: result=$[ $no1 + 2 ]
+也可以使用 (()) 但是注意变量名前必须使用 $ : result=$(( no1 + no2 ))
+也可以使用 expr : result=`expr 3 + 4` , result=$(expr $no1 + 5)
+
+使用 bc 进行高级计算,浮点数计算
+echo "4 * 0.544" | bc
+result=`echo "$no1 * 3.45" | bc`
+设置精度和进制:
+echo "scale=2;3/8" | bc
+echo "obase=2;$no" | bc
+echo "obase=10;$no" | bc
+echo "sqrt(100)" | bc
+
+9. 文件描述符和重定向 (stdin-0, stdout-1, stderr-2)
+$? 获取命令的退出状态
+
+cmd > out.txt
+cmd 2> err.txt
+cmd 2&>1 outerr.txt 或者 cmd &> outerr.txt (错误和输出到同文件)
+cmd 2> err.txt 1> out.txt
+注意: 特殊文件 /etc/null
+> 等同 1>
+
+tee 命令,将上一个命令的输出放到文件中,在将副本送到下一个命令
+如: cat in.txt | tee [-a] out.txt | cat -n (但是 tee 只能从 stdin 读取)
+
+10. 数组
+定义数组:
+array_var=(1 2 3 4 5 6)
+或
+array_var[0]="test1"
+array_var[1]="test2"
+array_var[2]="test3"
+
+获取数组内容: echo ${array_var[0]}
+index=2
+echo ${array_var[$index]}
+列出所有值: echo ${array_var[*]} | echo ${array_var[@]}
+数组长度: echo ${#array_var[*]}

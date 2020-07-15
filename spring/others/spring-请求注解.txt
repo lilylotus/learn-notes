@@ -1,0 +1,16 @@
+A、处理requet uri 部分（这里指uri template中variable，不含queryString部分）的注解：   @PathVariable;
+B、处理request header部分的注解：   @RequestHeader, @CookieValue;
+C、处理request body部分的注解：@RequestParam,  @RequestBody;
+D、处理attribute类型是注解： @SessionAttributes, @ModelAttribute;
+
+------------------------------
+[plain] view plaincopy
+Host                    localhost:8080
+Accept                  text/html,application/xhtml+xml,application/xml;q=0.9
+Accept-Language         fr,en-gb;q=0.7,en;q=0.3
+Accept-Encoding         gzip,deflate
+Accept-Charset          ISO-8859-1,utf-8;q=0.7,*;q=0.7
+Keep-Alive              300
+
+1、采用@RequestParam或Request对象获取参数的方法
+注：contentType必须指定为：application/x-www-form-urlencoded

@@ -1,0 +1,56 @@
+
+1. 日志
+配置 logback(官方推荐使用)
+spring boot 默认会加载 classpath:logback-spring.xml 或者 classpath:logback-spring.groovy。
+如需要自定义文件名称，在 application.properties 中配置 logging.config 选项即可。
+
+# application.properties 配置logback
+logging.config=classpath:logback-spring.xml
+
+application-*.properties 中设置，日志相关的配置：
+logging.config                    # 日志配置文件路径，如 classpath:logback-spring.xml
+logging.exception-conversion-word # 记录异常时使用的转换词
+logging.file                      # 记录日志的文件名称，如：test.log
+logging.level.*                   # 日志映射，如：logging.level.root=WARN，logging.level.org.springframework.web=DEBUG
+logging.path                      # 记录日志的文件路径，如：d:/
+logging.pattern.console           # 向控制台输出的日志格式，只支持默认的 logback 设置。
+logging.pattern.file              # 向记录日志文件输出的日志格式，只支持默认的 logback 设置。
+logging.pattern.level             # 用于呈现日志级别的格式，只支持默认的 logback 设置。
+logging.register-shutdown-hook    # 初始化时为日志系统注册一个关闭钩子
+
+2. Spring Boot 开发中常用的注解
+@Configuration                 # 作用于类上，相当于一个 xml 配置文件
+@Bean                          # 作用于方法上，相当于 xml 配置中的 <bean>
+@SpringBootApplication         # Spring Boot的核心注解，是一个组合注解，用于启动类上
+@EnableAutoConfiguration       # 启用自动配置，允许加载第三方 Jar 包的配置
+@ComponentScan                 # 默认扫描 @SpringBootApplication 所在类的同级目录以及它的子目录
+@PropertySource                # 加载 properties 文件
+@Value                         # 将配置文件的属性注入到 Bean 中特定的成员变量
+@EnableConfigurationProperties # 开启一个特性，让配置文件的属性可以注入到 Bean 中，与 @ConfigurationProperties 结合使用
+@ConfigurationProperties       # 关联配置文件中的属性到 Bean 中
+@Import                        # 加载指定 Class 文件，其生命周期被 Spring 管理
+@ImportResource                # 加载 xml 文件
+
+3. 条件装配
+@ConditionalOnBean              # 当指定 Bean 存在时进行装配
+@ConditionalOnMissingBean       # 当指定 Bean 不存在时进行装配
+@ConditionalOnClass             # 当指定 Class 在 classpath 中时进行装配
+@ConditionalOnMissingClass      # 当指定 Class 不在 classpath 中时进行装配
+@ConditionalOnExpression        # 根据 SpEL 表达式进行装配
+@ConditionalOnJava              # 根据 JVM 版本进行装配
+@ConditionalOnJndi              # 根据 JNDI 进行装配
+@ConditionalOnWebApplication    # 当上下文是 WebApplication 时进行装配
+@ConditionalOnNotWebApplication # 当上下文不是 WebApplication 时进行装配
+@ConditionalOnProperty          # 当指定的属性名的值为指定的值时进行装配
+@ConditionalOnResource          # 当指定的资源在 classpath 中时进行装配
+@ConditionalOnCloudPlatform     #
+@ConditionalOnSingleCandidate   #
+
+4. 打包
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+        <skip>true</skip>
+    </configuration>
+</plugin>

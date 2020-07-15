@@ -1,0 +1,98 @@
+DHCP（Dynamic Host Configuration Protocol，动态主机配置协议）是一个局域网的网络协议，使用UDP协议工作.
+给内部网络或网络服务供应商自动分配IP地址，给用户或者内部网络管理员作为对所有计算机作中央管理的手段。
+DHCP有3个端口，其中 UDP67 和 UDP68 为正常的DHCP服务端口，
+分别作为DHCP Server和DHCP Client的服务端口；546号端口用于DHCPv6 Client
+
+DHCP的前身是BOOTP协议（Bootstrap Protocol）,BOOTP被创建出来为连接到网络中的设备自动分配地址
+DHCP的实现分为4步，分别是：
+第一步：Client端在局域网内发起一个DHCP Discover包，发现能够给它提供 IP 的 DHCP Server。
+第二步：可用的DHCP Server接收到Discover包之后，通过发送DHCP Offer包给予Client端应答，
+        意在告诉Client端它可以提供IP地址。
+第三步：Client端接收到Offer包之后，发送DHCP Request包请求分配IP。
+第四步：DHCP Server发送ACK数据包，确认信息。
+
+bootpc          68/tcp          dhcpc           # BOOTP client
+bootpc          68/udp          dhcpc
+
+
+------------------------------------------
+配置：(每一行结束一 ";" 结束)
+作用域：可以分配的 IP 地址范围 subnet
+地址池：可以分配给客户端的 IP， range 包括的 IP
+保留地址：指定某个客户端使用一个特定的 IP ， 通过 host 配置
+租约(时间)：客户端可以使用这个 IP 的时间
+
+option domain-name "example.org"; (为客户端指定所属的域)
+option domain-name-servers ns1.example.org, ns2.example.org; (指定客服端 DNS 服务器地址)
+
+default-lease-time 600; (秒，默认租约时间) [50% 时续约，85% 再次续约| 续约不超过就找其它]
+max-lease-time 7200; (秒，指的是DHCP保留IP时间) [超过租约时间，却可以使用 IP 的最大时间]
+
+og-facility local7; (日志类型)
+
+声明：[全局可局部都有配置时，局部生效]
+subnet 网络号 netmask 子网掩码 {
+    1. range 起始IP地址 结束IP地址;(可有多个 range，但每个range不能有包含)
+    2. option routers IP地址; (默认客户端网关)
+    3. option domain-name-serviers IP地址; (指定客户端 DNS 服务器地址)
+    (1,2,3 可以放在局部配置中)
+
+}
+
+subnet 10.152.187.0 netmask 255.255.255.0 {}
+
+# This is a very basic subnet declaration.
+subnet 10.254.239.0 netmask 255.255.255.224 {
+  range 10.254.239.10 10.254.239.20;
+  option routers rtr-239-0-1.example.org, rtr-239-0-2.example.org;
+}
+
+# A slightly different configuration for an internal subnet.
+subnet 10.5.5.0 netmask 255.255.255.224 {
+  range 10.5.5.26 10.5.5.30;
+  option domain-name-servers ns1.internal.example.org;
+  option domain-name "internal.example.org";
+  option routers 10.5.5.1;
+  option broadcast-address 10.5.5.31;
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+// 租约数据记录文件
+/var/lib/dhcpd/dhcpd.leases
+
+示例：
+60 台计算机， IP 地址为 192.168.0.1-192.168.0.154，子网掩码 255.255.255.0，网关 192.168.0.1,
+192.168.0.2-192.168.0.30 为服务器地址，客户端为 192.168.0.100-200, 余下的保留
+
+subnet 192.168.100.0 netmask 255.255.255.0 {
+  range 192.168.100.100 192.168.100.200;
+  option domain-name-servers 192.168.100.1; DNS
+  option domain-name "internal.example.org";
+  option routers 192.168.100.1;
+  option broadcast-address 192.168.100.255;
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+----------------------------------------
+IP 地址绑定 (MAC 和 IP 为指定的物理地址计算机分配固定IP)
+[host , hardware, fixed-address 参数]
+
+1. host 主机名 {}
+2. hardware 类型 硬件地址
+常 ： ethernet + mac
+3. fixed-address IP地址
+DHCP 客户端指定 IP 地址
+
+注意： 可以写在 subnet 中，与其配合使用
+host nihility(主机名，与真实分配不同) {
+  hardware ethernet 0:0:c0:5d:bd:95;
+  filename "vmunix.passacaglia";
+  server-name "toccata.fugue.com";
+}
+
+host nihility(主机名，与真实分配不同) {
+  hardware ethernet 08:00:07:26:c0:a5;
+  fixed-address 192.168.100.100;
+}

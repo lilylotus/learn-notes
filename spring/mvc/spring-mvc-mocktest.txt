@@ -1,0 +1,184 @@
+一. 集成Web环境方式
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("classpath:spring/spring-mvc.xml")
+@WebAppConfiguration
+
+1 @WebAppConfiguration：测试环境使用，用来表示测试环境使用的 ApplicationContext 将是 WebApplicationContext 类型的； value 指定 web 应用的根；
+2 通过 @Autowired WebApplicationContext wac：注入web环境的 ApplicationContext 容器；
+3 然后通过 MockMvcBuilders.webAppContextSetup(wac).build() 创建一个 MockMvc 进行测试；
+
+二. 独立测试方式
+MockMvcBuilders.standaloneSetup(Object... controllers)： 通过参数指定一组控制器，这样就不需要从上下文获取了；
+@Before
+public void setup() {
+    MockitoAnnotations.initMocks(this);
+    mockMvc = MockMvcBuilders.standaloneSetup(pricingExportResultsRestService).build();  //构造MockMvc
+}
+主要是两个步骤：
+1. 首先自己创建相应的控制器，注入相应的依赖
+2. 通过MockMvcBuilders.standaloneSetup模拟一个Mvc测试环境，通过build得到一个MockMvc
+
+=================================================
+MockMvc
+
+MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/hello").accept(MediaType.parseMediaType("application/json;charset=UTF-8")).contentType(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().contentType("application/json;charset=UTF-8"))
+                .andExpect(MockMvcResultMatchers.content().json("{\"hello\":\"Hello First Controller\"}"))
+                .andReturn();
+Assert.assertEquals("{\"hello\":\"Hello First Controller\"}", result.getResponse().getContentAsString());
+
+perform：执行一个RequestBuilder请求，会自动执行SpringMVC的流程并映射到相应的控制器执行处理
+andExpect：添加ResultMatcher验证规则，验证控制器执行完成后结果是否正确
+andDo：添加ResultHandler结果处理器，比如调试时打印结果到控制台
+andReturn：最后返回相应的MvcResult；然后进行自定义验证/进行下一步的异步处理
+
+=================================================
+RequestBuilder/MockMvcRequestBuilders
+RequestBuilder用来构建请求的，其提供了一个方法 buildRequest(ServletContext servletContext)用于构建MockHttpServletRequest；
+其主要有两个子类 MockHttpServletRequestBuilder 和 MockMultipartHttpServletRequestBuilder（如文件上传使用）
+用来Mock客户端请求需要的所有数据
+
+1. MockMvcRequestBuilders 主要API
+get(String urlTemplate, Object... urlVariables)
+根据uri模板和uri变量值得到一个GET请求方式的MockHttpServletRequestBuilder；如get(/user/{id}, 1L)
+
+post(String urlTemplate, Object... urlVariables)：同get类似，但是是POST方法
+put(String urlTemplate, Object... urlVariables)：同get类似，但是是PUT方法
+delete(String urlTemplate, Object... urlVariables) ：同get类似，但是是DELETE方法
+options(String urlTemplate, Object... urlVariables)：同get类似，但是是OPTIONS方法
+
+request(HttpMethod httpMethod, String urlTemplate, Object... urlVariables)
+提供自己的 Http 请求方法及 uri 模板和 uri 变量，如上 API 都是委托给这个 API
+
+fileUpload(String urlTemplate, Object... urlVariables)
+提供文件上传方式的请求，得到MockMultipartHttpServletRequestBuilder
+
+asyncDispatch(final MvcResult mvcResult)
+创建一个从启动异步处理的请求的 MvcResult 进行异步分派的 RequestBuilder
+
+--------------------------------------------
+2. MockHttpServletRequestBuilder 和 MockMultipartHttpServletRequestBuilder 的 API
+2.1 MockHttpServletRequestBuilder API
+
+header(String name, Object... values)/headers(HttpHeaders httpHeaders)： 添加头信息
+contentType(MediaType mediaType)：指定请求的contentType头信息
+accept(MediaType... mediaTypes)/accept(String... mediaTypes)：指定请求的Accept头信息
+content(byte[] content)/content(String content)：指定请求Body体内容
+cookie(Cookie... cookies)：指定请求的Cookie
+locale(Locale locale)：指定请求的Locale
+characterEncoding(String encoding)：指定请求字符编码
+requestAttr(String name, Object value) ：设置请求属性数据
+sessionAttr(String name, Object value)/sessionAttrs(Map<string, object=""> sessionAttributes)：设置请求session属性数据
+flashAttr(String name, Object value)/flashAttrs(Map<string, object=""> flashAttributes)：指定请求的flash信息，比如重定向后的属性信息
+session(MockHttpSession session) ：指定请求的Session
+principal(Principal principal) ：指定请求的Principal
+
+contextPath(String contextPath) ：指定请求的上下文路径，必须以“/”开头，且不能以“/”结尾
+pathInfo(String pathInfo) ：请求的路径信息，必须以“/”开头
+secure(boolean secure)：请求是否使用安全通道
+with(RequestPostProcessor postProcessor)：请求的后处理器，用于自定义一些请求处理的扩展点
+
+2.2 MockMultipartHttpServletRequestBuilder 继承自 MockHttpServletRequestBuilder
+file(String name, byte[] content)/file(MockMultipartFile file)：指定要上传的文件
+
+=================================================
+ResultActions
+调用 MockMvc.perform(RequestBuilder requestBuilder) 后将得到ResultActions，通过ResultActions完成如下三件事：
+andExpect(ResultMatcher matcher) ：添加验证断言来判断执行请求后的结果是否是预期的
+andDo(ResultHandler handler) ：添加结果处理器，用于对验证成功后执行的动作，如输出下请求/结果信息用于调试
+andReturn() ：返回验证成功后的MvcResult；用于自定义验证/下一步的异步处理
+
+=================================================
+ResultMatcher/MockMvcResultMatchers
+
+1. ResultMatcher用来匹配执行完请求后的结果验证，其就一个 match(MvcResult result) 断言方法，如果匹配失败将抛出相应的异常
+spring mvc测试框架提供了很多 ***ResultMatchers 来满足测试需求。
+注意这些 ***ResultMatchers 并不是 ResultMatcher 的子类，而是返回 ResultMatcher 实例
+Spring mvc测试框架为了测试方便提供了 MockMvcResultMatchers 静态工厂方法方便操作
+
+具体的API如下：
+handler()：请求的Handler验证器，比如验证处理器类型/方法名；此处的Handler其实就是处理请求的控制器
+request()：得到RequestResultMatchers验证器
+ModelResultMatchers model()：得到模型验证器
+ViewResultMatchers view()：得到视图验证器
+FlashAttributeResultMatchers flash()：得到Flash属性验证
+StatusResultMatchers status()：得到响应状态验证器
+HeaderResultMatchers header()：得到响应Header验证器
+CookieResultMatchers cookie()：得到响应Cookie验证器
+ContentResultMatchers content()：得到响应内容验证器
+JsonPathResultMatchers jsonPath(String expression, Object ... args)
+ResultMatcher jsonPath(String expression, Matcher matcher)：得到Json表达式验证器
+XpathResultMatchers xpath(String expression, Object... args)
+XpathResultMatchers xpath(String expression, Map<string, string=""> namespaces, Object... args)：得到Xpath表达式验证器
+ResultMatcher forwardedUrl(final String expectedUrl)：验证处理完请求后转发的url（绝对匹配）
+ResultMatcher forwardedUrlPattern(final String urlPattern)：验证处理完请求后转发的url（Ant风格模式匹配，@since spring4）
+ResultMatcher redirectedUrl(final String expectedUrl)：验证处理完请求后重定向的url（绝对匹配）
+ResultMatcher redirectedUrlPattern(final String expectedUrl)：验证处理完请求后重定向的url（Ant风格模式匹配，@since spring4）
+
+=================================================
+常用的测试
+
+1.测试普通控制器
+mockMvc.perform(get("/user/{id}", 1)) //执行请求
+            .andExpect(model().attributeExists("user")) //验证存储模型数据
+            .andExpect(view().name("user/view")) //验证viewName
+            .andExpect(forwardedUrl("/WEB-INF/jsp/user/view.jsp"))//验证视图渲染时forward到的jsp
+            .andExpect(status().isOk())//验证状态码
+            .andDo(print()); //输出MvcResult到控制台
+
+2.得到MvcResult自定义验证
+MvcResult result = mockMvc.perform(get("/user/{id}", 1))//执行请求
+        .andReturn(); //返回MvcResult
+Assert.assertNotNull(result.getModelAndView().getModel().get("user")); //自定义断言
+
+3.验证请求参数绑定到模型数据及Flash属性
+mockMvc.perform(post("/user").param("name", "zhang")) //执行传递参数的POST请求(也可以post("/user?name=zhang"))
+            .andExpect(handler().handlerType(UserController.class)) //验证执行的控制器类型
+            .andExpect(handler().methodName("create")) //验证执行的控制器方法名
+            .andExpect(model().hasNoErrors()) //验证页面没有错误
+            .andExpect(flash().attributeExists("success")) //验证存在flash属性
+            .andExpect(view().name("redirect:/user")); //验证视图
+
+4.文件上传
+byte[] bytes = new byte[] {1, 2};
+mockMvc.perform(fileUpload("/user/{id}/icon", 1L).file("icon", bytes)) //执行文件上传
+        .andExpect(model().attribute("icon", bytes)) //验证属性相等性
+        .andExpect(view().name("success")); //验证视图
+
+5.JSON请求/响应验证
+String requestBody = "{\"id\":1, \"name\":\"zhang\"}";
+    mockMvc.perform(post("/user")
+            .contentType(MediaType.APPLICATION_JSON).content(requestBody)
+            .accept(MediaType.APPLICATION_JSON)) //执行请求
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON)) //验证响应contentType
+            .andExpect(jsonPath("$.id").value(1)); //使用Json path验证JSON 请参考http://goessner.net/articles/JsonPath/
+
+    String errorBody = "{id:1, name:zhang}";
+    MvcResult result = mockMvc.perform(post("/user")
+            .contentType(MediaType.APPLICATION_JSON).content(errorBody)
+            .accept(MediaType.APPLICATION_JSON)) //执行请求
+            .andExpect(status().isBadRequest()) //400错误请求
+            .andReturn();
+    Assert.assertTrue(HttpMessageNotReadableException.class.isAssignableFrom(result.getResolvedException().getClass()));//错误的请求内容体
+
+6.异步测试
+　　//Callable
+    MvcResult result = mockMvc.perform(get("/user/async1?id=1&name=zhang")) //执行请求
+            .andExpect(request().asyncStarted())
+            .andExpect(request().asyncResult(CoreMatchers.instanceOf(User.class))) //默认会等10秒超时
+            .andReturn();
+    mockMvc.perform(asyncDispatch(result))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.id").value(1));
+
+7.全局配置
+mockMvc = webAppContextSetup(wac)
+            .defaultRequest(get("/user/1").requestAttr("default", true)) //默认请求 如果其是Mergeable类型的，会自动合并的哦mockMvc.perform中的RequestBuilder
+            .alwaysDo(print())  //默认每次执行请求后都做的动作
+            .alwaysExpect(request().attribute("default", true)) //默认每次执行后进行验证的断言
+            .build();
+    mockMvc.perform(get("/user/1"))
+            .andExpect(model().attributeExists("user"));
