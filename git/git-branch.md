@@ -22,6 +22,7 @@ git update --init
 #### 推送同时设置 upstream
 
 `git push -u origin master`
+`git push --set-upstream origin collections:collections`
 
 #### 删除分支
 

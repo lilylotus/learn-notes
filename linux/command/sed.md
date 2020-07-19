@@ -119,6 +119,11 @@ x  交换模式空间与保持空间的内容
    ```bash
    sed -rn 's/[0-9][0-9]/&.5/' config # & 表示在查找中匹配行所有内容
    sed -rn 's/SELINUX=(dis).*/\1-add/gp' config # \1 表示查找到的查找元内的内容 [dis]
+   
+   # 把 master 的地址修改
+   sed -ri '/master/s/^.*$/10.10.100.8\tmaster/' /etc/hosts
+   
+   sed -rn '/100/s/^(.*\t)(node.*|master.*)$/\1k8s-\2/p' /etc/hosts >> /etc/hosts
    ```
 
    **& 和 \1 替换查找数据内容**
@@ -188,6 +193,7 @@ sed -n '1,9d' (删除 1-9 行)
 sed -n '2~2d' (删除偶数行)
 
 sed -n '/^#/d;/^$/d' (删除 # 或者 $ 开头的行)
+sed -ri '/k8s-/d' /etc/hosts
 ```
 
 替换 (s///)
@@ -200,6 +206,8 @@ sed 's/root/&-add/g' (把所有的 root 后添加 -add [root-add])
 sed '1,2s/^/#/'
 
 sed -n '/swap/s/^/#/' (在含有 swap 行前加 #)
+# 替换整行数据，包含 SELINUX 的行 替换为  SELINUX=disabled
+sed -rn '/^SELINUX=/s/^.*$/SELINUX=disabled/p' /etc/selinux/config
 ```
 
 添加、追加、替换 (a/i/c)
