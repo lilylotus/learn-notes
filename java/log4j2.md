@@ -348,3 +348,15 @@ public class Log4j2EventListener implements GenericApplicationListener {
 </configuration>
 ```
 
+##### 获取 spring boot 参数
+
+注意：需要 ` log4j-spring-cloud-config-client` 依赖
+
+```xml
+<File name="Application" fileName="application-${spring:profiles.active[0]}.log">
+  <PatternLayout>
+    <pattern>%d %p %c{1.} [%t] $${spring:spring.application.name} %m%n</pattern>
+  </PatternLayout>
+</File>
+```
+

@@ -271,21 +271,55 @@ nginx 也是以一个 `NodePort` 方式部署。
 
 ![](../images/k8s-service-ingress02.png)
 
-## 安装 Ingress-Nginx
+### Ingress-Nginx 组成
 
-安装 ingress controller
+- `ingress controller` : 将新加入的 Ingress 转化成 Nginx 的配置文件并使之生效
+- `ingress service` : 将 Nginx 的配置抽象成一个 Ingress 对象，每添加一个新的服务只需写一个新的 Ingress 的 yaml 文件即可
+
+### 工作原理
+
+1. ingress controller 通过和 kubernetes api 交互，动态的去感知集群中 ingress 规则变化
+2. 读取它，按照自定义的规则，规则就是写明了哪个域名对应哪个 service，生成一段 nginx 配置
+3. 写到 nginx-ingress-control 的 pod 里，Ingress controller 的 pod 里运行着 Nginx 服务，控制器会把生成的 nginx 配置写入 /etc/nginx.conf 文件中
+4. 然后 reload 一下使配置生效，以此达到域名分配置和动态更新的问题
+
+## 安装 Ingress-Nginx (v0.30.0)
+
+## 下载/部署 ingress-nginx
 
 ```bash
-wget -O ingress-nginx-controller-v0.34.1-deploy.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/cloud/deploy.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/baremetal/deploy.yaml
+wget -O ingress-nginx-v0.34.1-baremetal-deploy.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/baremetal/deploy.yaml
 
-docker pull us.gcr.io/k8s-artifacts-prod/ingress-nginx/controller:v0.34.1@sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
-docker pull docker.io/jettech/kube-webhook-certgen:v1.2.2
+# 方式二
+wget -O ingress-nginx-v0.30.0-mandatory.yaml https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/deploy/static/mandatory.yaml
+wget -O ingress-nginx-v0.30.0-service-nodeport.yaml https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/deploy/baremetal/service-nodeport.yaml
 
-kubectl apply -f ingress-nginx-controller-v0.34.1-deploy.yaml
+# mandatory.yaml
+docker pull quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0
 
+# 部署
+kubectl apply -f ingress-nginx-v0.30.0-mandatory.yaml
+kubectl apply -f ingress-nginx-v0.30.0-service-nodeport.yaml
+```
+
+> - 部署环境为私有环境没有 lb 所有把 Deployment 改成 DaemonSet 同时网络模式使用 hostNetwork
+> - 同时配文件跟启动参数修改
+> - kubelet 参数 node-ip 为ipv6 模式记得修改 service ipFamily: IPv6 模式不然新版本 webhook 会报错
+
+```bash
+kubectl apply -f ingress-nginx-v0.34.1-baremetal-deploy.yaml
+
+kubectl get pod
 kubectl get pods -n ingress-nginx
 kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --watch
+
+# 等待 pod runing
+# 查看 endpoints 是否有数据如果 kubelet 参数 node-ip 为 ipv6 地址
+# service 没添加 ipFamily: IPv6
+$ kubectl describe endpoints ingress-nginx-controller
+
+# endpoints 为空 webhook 报错 service 添加ipFamily: IPv6
+$ kubectl -n ingress-nginx get endpoints
 
 # Detect installed version
 POD_NAMESPACE=ingress-nginx
@@ -349,17 +383,19 @@ spec:
   selector:
     name: nginx
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress-nginx-test
-  namespace: default    
+  namespace: default
 spec:
+  ingressClassName: nginx
   rules:
   - host: www1.nihility.com
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
           serviceName: ingress-svc
           servicePort: 80
