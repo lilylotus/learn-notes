@@ -287,24 +287,79 @@ nginx 也是以一个 `NodePort` 方式部署。
 
 ## 下载/部署 ingress-nginx
 
-```bash
-wget -O ingress-nginx-v0.34.1-baremetal-deploy.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/baremetal/deploy.yaml
+https://github.com/kubernetes/ingress-nginx/tree/nginx-0.30.0
 
-# 方式二
-wget -O ingress-nginx-v0.30.0-mandatory.yaml https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/deploy/static/mandatory.yaml
-wget -O ingress-nginx-v0.30.0-service-nodeport.yaml https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/deploy/baremetal/service-nodeport.yaml
+```bash
+wget -O ingress-nginx-v0.34.1-baremetal-deploy.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/deploy.yaml
+kubectl apply -f ingress-nginx-v0.34.1-baremetal-deploy.yaml
+
+# 方式二 kubectl apply -f [*.yaml]
+wget -O ingress-nginx-v0.30.0-mandatory.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/mandatory.yaml
+# Using NodePort
+wget -O ingress-nginx-v0.30.0-service-nodeport.yaml https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/baremetal/service-nodeport.yaml
 
 # mandatory.yaml
 docker pull quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0
+docker pull k8s.gcr.io/defaultbackend-amd64:1.5
 
-# 部署
+# 部署， 给节点打上标签
+kubectl label node k8s-node01 --overwrite=true isIngress="true"
+kubectl label node k8s-node02 isIngress="true"
+kubectl get node --show-labels
+
 kubectl apply -f ingress-nginx-v0.30.0-mandatory.yaml
 kubectl apply -f ingress-nginx-v0.30.0-service-nodeport.yaml
+
+kubectl get pods -n ingress-nginx -o wide
 ```
 
 > - 部署环境为私有环境没有 lb 所有把 Deployment 改成 DaemonSet 同时网络模式使用 hostNetwork
 > - 同时配文件跟启动参数修改
 > - kubelet 参数 node-ip 为ipv6 模式记得修改 service ipFamily: IPv6 模式不然新版本 webhook 会报错
+
+mandatory.yaml 文件修改, deployment 部分
+
+```yaml
+kind: DaemonSet
+spec:
+#  replicas: 1
+  template:
+    spec:
+      nodeSelector:
+        isIngress: "true"
+      # 使用 hostNetwork 暴露服务
+      hostNetwork: true
+```
+
+service-nodeport.yaml
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+      # 手动暴露指定端口
+      nodePort: 30080
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+      nodePort: 30443
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+```
 
 ```bash
 kubectl apply -f ingress-nginx-v0.34.1-baremetal-deploy.yaml
@@ -351,51 +406,51 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: deployment-ingress
-  namespace: default  
+  namespace: default
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
-      # 要和 metadata.labels 中的标签对应
-      name: nginx
+      app: deployment-ingress
   template:
     metadata:
       labels:
-        name: nginx
+        app: deployment-ingress
     spec:
       containers:
-      - name: nginx
+      - name: myapp
         image: harbor.nihility.cn/library/myapp:v1
         imagePullPolicy: IfNotPresent
         ports:
-          - containerPort: 80
+        - name: http
+          containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: ingress-svc
-  namespace: default    
+  namespace: default
 spec:
+  selector:
+    app: deployment-ingress
   ports:
   - port: 80
     targetPort: 80
     protocol: TCP
-  selector:
-    name: nginx
 ---
 apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress-nginx-test
   namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
 spec:
-  ingressClassName: nginx
   rules:
   - host: www1.nihility.com
     http:
       paths:
       - path: /
-        pathType: Prefix
         backend:
           serviceName: ingress-svc
           servicePort: 80

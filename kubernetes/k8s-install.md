@@ -792,3 +792,122 @@ kubectl describe pods/pod-myapp
 kubectl describe pod/pod-myapp
 ```
 
+#### 11. kubernetes dashboard 安装
+
+官方地址：https://github.com/kubernetes/dashboard
+
+##### 11.1 获取 dashboard
+
+```bash
+$ wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.3/aio/deploy/recommended.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.3/aio/deploy/recommended.yaml
+```
+
+创建用户
+
+```yaml
+# dashboard.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+```
+
+```bash
+$ kubectl create -f dashboard.yaml
+$ kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+```
+
+##### 11.2 helm 方式安装
+
+```bash
+# Add k8s-dashboard repository
+$ helm repo add k8s-dashboard https://kubernetes.github.io/dashboard
+
+# Install chart
+$ docker pull kubernetesui/dashboard:v2.0.3
+$ helm install k8s-dashboard/kubernetes-dashboard --version 2.3.0
+
+$ helm repo update
+$ helm search k8s-dashboard/kubernetes-dashboard
+$ helm fetch stable/kubernetes-dashboard
+
+# 安装
+$ tar zxvf kubernetes-dashboard-1.11.1.tgz
+$ helm install kubernetes-dashboard -n kubernetes-dashboard --namespace kube-system -f kubernetes-dashboard.yaml
+$ helm install . -n kubernetes-dashboard --namespace kube-system -f kubernetes-dashboard.yaml
+```
+
+创建证书，通过 https 进行访问必需要使用证书和密钥，在 Kubernetes 中可以通过配置一个加密凭证（TLS secret）来提供
+
+```bash
+$ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ./tls.key -out ./tls.crt -subj "/CN=10.100.10.8"
+
+$ kubectl -n kube-system  create secret tls nihility-com-tls-secret --key ./tls.key --cert ./tls.crt
+$ kubectl get secret -n kube-system | grep nihility
+```
+
+kubernetes-dashboard.yaml
+
+```yaml
+image:
+  repository: k8s.gcr.io/kubernetes-dashboard-amd64
+  tag: v1.10.1
+ingress:
+  enabled: true
+  hosts: 
+    - k8s.nihility.com
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  tls:
+    - secretName: kubernetes-dashboard-tls
+      hosts:
+      - k8s.nihility.com
+rbac:
+  clusterAdminRole: true
+serviceAccount:
+  name: dashboard-admin
+```
+
+校验安装
+
+```bash
+$ kubectl get pod -n kube-system -o wide
+$ kubectl get svc -n kube-system -o wide
+
+# 修改为 NodePort
+$ kubectl edit svc kubernetes-dashboard -n kube-system
+->  type: NodePort
+```
+
+登录界面
+
+https://master:30363/#!/login
+
+导入证书：/etc/kubernetes/pki/ca.crt
+
+获取 token
+
+```bash
+$ kubectl -n kube-system get secret | grep kubernetes-dashboard-token
+-> kubernetes-dashboard-token-zfs96
+$ kubectl describe secret kubernetes-dashboard-token-zfs96 -n kube-system
+
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep dashboard-admin | awk '{print $1}')
+```
+
