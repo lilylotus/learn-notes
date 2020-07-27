@@ -30,15 +30,18 @@
 <!-- 日志级别以及优先级排序: OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL -->
 <!-- Configuration 后面的 status，设置 log4j2 自身内部的信息输出，可以不设置，trace 时会看到 log4j2 内部各种详细输出 -->
 <!-- monitorInterval: Log4j 能够自动检测修改配置 文件和重新配置本身，设置间隔秒数 -->
-<configuration status="DEBUG" monitorInterval="300">
+<configuration status="DEBUG" monitorInterval="30">
 
     <!--变量配置-->
     <Properties>
         <!-- [%date]日期，[%thread] 线程名，[%-5level] 级别从左显示5个字符宽度，%msg 日志消息，-->
         <!-- %n 换行符，%logger{36} 表示 Logger 名字最长36个字符 -->
         <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%xEx%n" />
+        <!-- System.setProperty("appName", "urm"); -->
+        <Property name="APP_PROFILE" value="${sys:profileName}"/>
+        <Property name="APP_NAME" value="${sys:appName}"/>
         <!-- 定义日志存储的路径 /${ctx:spring.application.name} -->
-        <property name="FILE_PATH" value="D:/logger" />
+        <property name="FILE_PATH" value="D:/logger/${APP_NAME}/${APP_PROFILE}" />
         <property name="FILE_NAME" value="更换为你的项目名" />
     </Properties>
 
@@ -71,17 +74,49 @@
                 <!-- modulate=true， 则封存时间将以 0 点为边界进行偏移计算。如: modulate=true，interval=4hours，
                     那么假设上次封存日志的时间为03:00，则下次封存日志的时间为 04:00， 之后的封存时间依次为 08:00，12:00，16:00 -->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="10MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
                 <Delete basePath="${FILE_PATH}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="*/*all*.log.gz" />
-                    <!--IfLastModified: 匹配文件修改时间 -->
+                    <IfFileName glob="**/*all*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
                     <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="2D" />
+                    <IfLastModified age="1H" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- 打印出 trace 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
+        <RollingFile name="RollingFileTrace" fileName="${FILE_PATH}/rolling-file-trace.log"
+                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-trace-%d{yyyyMMddHH}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Filters>
+                <!-- 过滤条件有三个值：ACCEPT(接受)，DENY(拒绝)，NEUTRAL(中立)-->
+                <ThresholdFilter level="TRACE" onMatch="NEUTRAL" onMismatch="DENY"/>
+                <ThresholdFilter level="DEBUG" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <!-- interval, integer 型，指定两次封存动作之间的时间间隔 -->
+                <!-- 需要和 filePattern 结合使用，日期格式精确到哪一位，interval 也精确到哪一个单位 -->
+                <!-- %d{yyyy-MM-dd HH-mm-ss}-%i，最小的时间粒度是 ss，即秒钟 -->
+                <!-- modulate, boolean型，说明是否对封存时间进行调制 -->
+                <!-- modulate=true， 则封存时间将以 0 点为边界进行偏移计算。如: modulate=true，interval=4hours，
+                    那么假设上次封存日志的时间为03:00，则下次封存日志的时间为 04:00， 之后的封存时间依次为 08:00，12:00，16:00 -->
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                    <!-- IfFileName: 匹配文件名称 -->
+                    <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
+                    <IfFileName glob="**/*trace*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
+                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="1H" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
@@ -103,17 +138,17 @@
                 <!-- modulate=true， 则封存时间将以 0 点为边界进行偏移计算。如: modulate=true，interval=4hours，
                     那么假设上次封存日志的时间为03:00，则下次封存日志的时间为 04:00， 之后的封存时间依次为 08:00，12:00，16:00 -->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="10MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
                 <Delete basePath="${FILE_PATH}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="*/*debug*.log.gz" />
-                    <!--IfLastModified: 匹配文件修改时间 -->
+                    <IfFileName glob="**/*debug*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
                     <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="2D" />
+                    <IfLastModified age="1H" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
@@ -137,17 +172,17 @@
                 <!-- modulate=true， 则封存时间将以 0 点为边界进行偏移计算。如: modulate=true，interval=4hours，
                     那么假设上次封存日志的时间为03:00，则下次封存日志的时间为 04:00， 之后的封存时间依次为 08:00，12:00，16:00 -->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="10MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
                 <Delete basePath="${FILE_PATH}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="*/*info*.log.gz" />
-                    <!--IfLastModified: 匹配文件修改时间 -->
+                    <IfFileName glob="**/*info*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
                     <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="2D" />
+                    <IfLastModified age="1H" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
@@ -164,17 +199,17 @@
             <Policies>
                 <!-- interval属性用来指定多久滚动一次，默认是 1 hour -->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件，这里设置了 20 -->
             <DefaultRolloverStrategy max="20">
                 <Delete basePath="${FILE_PATH}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="*/*warn*.log.gz" />
-                    <!--IfLastModified: 匹配文件修改时间 -->
+                    <IfFileName glob="**/*warn*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
                     <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="2D" />
+                    <IfLastModified age="1H" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
@@ -188,20 +223,24 @@
             <Policies>
                 <!-- interval 属性用来指定多久滚动一次，默认是 1 hour-->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="10MB"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件开始覆盖-->
             <DefaultRolloverStrategy max="20">
                 <Delete basePath="${FILE_PATH}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="*/*error*.log.gz" />
-                    <!--IfLastModified: 匹配文件修改时间 -->
+                    <IfFileName glob="**/*error*.gz" />
+                    <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
                     <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="2D" />
+                    <IfLastModified age="1H" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
+
+        <Async name="Async">
+            <AppenderRef ref="RollingFileTrace"/>
+        </Async>
 
     </appenders>
 
@@ -219,15 +258,23 @@
         </Logger>
 
         <Logger name="kl.iam" level="DEBUG"/>
+        <Logger name="org.casbin" level="WARN"/>
+        <Logger name="springfox.documentation" level="WARN"/>
+        <Logger name="com.alibaba.nacos" level="INFO"/>
+        <Logger name="com.alibaba.nacos.client.naming" level="WARN"/>
+        <Logger name="com.netflix.loadbalancer" level="INFO"/>
 
         <Root level="ALL">
             <appender-ref ref="Console"/>
             <AppenderRef ref="FileLog"/>
             <AppenderRef ref="RollingFileAll"/>
+            <AppenderRef ref="RollingFileTrace"/>
             <AppenderRef ref="RollingFileDebug"/>
             <AppenderRef ref="RollingFileInfo"/>
             <AppenderRef ref="RollingFileWarn"/>
             <AppenderRef ref="RollingFileError"/>
+            <!-- Async implementation 'com.lmax:disruptor:3.4.2' -->
+            <!--<AppenderRef ref="Async"/>-->
         </Root>
     </Loggers>
 
