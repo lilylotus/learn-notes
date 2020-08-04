@@ -166,3 +166,150 @@ jar {
 }
 ```
 
+#### 3. gradle 可执行 jar 包
+
+##### 3.1 所有所需依赖放到一个可执行 jar 包中
+
+生成的 jar 包过大，所有的依赖包都打包到了一起。
+
+```groovy
+plugins {
+    id 'java'
+}
+
+group 'cn.nihility.exec'
+version '1.0-SNAPSHOT'
+
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'utf-8'
+[compileJava, compileTestJava]*.sourceCompatibility = "1.8"
+[compileJava, compileTestJava]*.targetCompatibility = "1.8"
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+ext {
+    jarName = project.name
+    mainClassName = 'cn.nihility.exec.HelloWorld'
+    junitVersion = '4.12'
+}
+
+repositories {
+    mavenLocal()
+    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "junit:junit:$junitVersion"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
+}
+
+jar {
+    /* configurations.runtime 使用 compile 引入的依赖
+    *  implementation 引入的依赖，要使用 configurations.runtimeClasspath
+    *  configurations.runtimeClasspath 可以打包 compile/implementation 的依赖
+    *  testImplementation 引入的依赖，则使用 configurations.testRuntimeClasspath
+    * */
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes "Manifest-Version": 1.0
+        attributes 'Built-By': System.getProperty("user.name")
+        attributes 'Main-Class':"$mainClassName"
+    }
+    exclude('LICENSE.txt', 'NOTICE.txt', 'rootdoc.txt')
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'
+    exclude 'META-INF/LICENSE', 'META-INF/LICENSE.txt'
+    exclude 'META-INF/DEPENDENCIES'
+}
+
+sourceSets {
+    main { java { srcDirs = ['src/main/java', 'src/main/resources'] } }
+    test { java { srcDirs = ['src/test/java', 'src/test/resources'] } }
+}
+
+task mkdirs() {
+    sourceSets*.java.srcDirs*.each { it.mkdirs() }
+    sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+}
+```
+
+##### 3.2 所需依赖 jar 放到一个 lib 目录
+
+```groovy
+plugins {
+    id 'java'
+}
+
+group 'cn.nihility.exec'
+version '1.0-SNAPSHOT'
+
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'utf-8'
+[compileJava, compileTestJava]*.sourceCompatibility = "1.8"
+[compileJava, compileTestJava]*.targetCompatibility = "1.8"
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+ext {
+    jarName = project.name
+    mainClassName = 'cn.nihility.exec.HelloWorld'
+    junitVersion = '4.12'
+}
+
+repositories {
+    mavenLocal()
+    maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "junit:junit:$junitVersion"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
+}
+
+task clearJar(type: Delete) {
+    delete "$buildDir\\libs"
+}
+
+task copyJar(type: Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir\\libs\\lib"
+}
+
+jar {
+    /* configurations.runtime 使用 compile 引入的依赖
+    *  implementation 引入的依赖，要使用 configurations.runtimeClasspath
+    *  configurations.runtimeClasspath 可以打包 compile/implementation 的依赖
+    *  testImplementation 引入的依赖，则使用 configurations.testRuntimeClasspath
+    * */
+    /*from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }*/
+    dependsOn clearJar
+    dependsOn copyJar
+    if (!configurations.runtimeClasspath.isEmpty()) {
+        //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' '))
+    }
+    manifest {
+        attributes "Manifest-Version": 1.0
+        attributes 'Built-By': System.getProperty("user.name")
+        attributes 'Main-Class':"$mainClassName"
+    }
+    exclude('LICENSE.txt', 'NOTICE.txt', 'rootdoc.txt')
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'
+    exclude 'META-INF/LICENSE', 'META-INF/LICENSE.txt'
+    exclude 'META-INF/DEPENDENCIES'
+}
+
+sourceSets {
+    main { java { srcDirs = ['src/main/java', 'src/main/resources'] } }
+    test { java { srcDirs = ['src/test/java', 'src/test/resources'] } }
+}
+
+task mkdirs() {
+    sourceSets*.java.srcDirs*.each { it.mkdirs() }
+    sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+}
+```
+
