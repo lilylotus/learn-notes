@@ -7,14 +7,12 @@ curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compos
 chmod +x /usr/local/bin/docker-compose
 ```
 
-
-
 #### 二. 命令使用
 
 > 通常使用步骤
 >
 > 1. 定义好 *Dockerfile* 稍后可以在任意地方复制
-> 2. 定义 *docker-compose.yml* 文件，配置好容器运行的步骤
+> 2. 定义 *docker-compose.yaml* 文件，配置好容器运行的步骤
 > 3. 运行 `docker-compose up` 运行
 
 ```yaml
@@ -81,7 +79,15 @@ volumes:
 	networks:
 	  - some-network
 	  - other-network
-	
+7.1 使用已有的网络
+networks:
+  backend:
+    external:
+      name: exist-network
+7.2 使用自定义网络
+networks:
+  backend:
+    driver: bridge
 ```
 
 #### 五. 命令帮助
@@ -113,8 +119,6 @@ volumes:
   up                 Create and start containers
   version            Show the Docker-Compose version information
 ```
-
-
 
 ---
 

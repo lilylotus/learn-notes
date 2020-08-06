@@ -250,7 +250,6 @@ version '1.0-SNAPSHOT'
 tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
 
 ext {
-    jarName = project.name
     mainClassName = 'cn.nihility.exec.HelloWorld'
     junitVersion = '4.12'
 }
@@ -286,9 +285,11 @@ jar {
     }*/
     dependsOn clearJar
     dependsOn copyJar
+    def dateStr = new Date().format('yyyyMMdd')
+    archiveBaseName = "$project.name-$dateStr"
     if (!configurations.runtimeClasspath.isEmpty()) {
         //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
-        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' '))
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
     }
     manifest {
         attributes "Manifest-Version": 1.0
@@ -302,6 +303,19 @@ jar {
     exclude 'META-INF/DEPENDENCIES'
 }
 
+task zip(type: Zip, dependsOn: [jar]) {
+    archiveFileName = "exec.zip"
+    destinationDirectory = file("$buildDir/dist")
+
+    from("$buildDir/libs") {
+        /*into("lib")*/
+    }
+
+    /*from("$buildDir/libs") {
+        into("")
+    }*/
+}
+
 sourceSets {
     main { java { srcDirs = ['src/main/java', 'src/main/resources'] } }
     test { java { srcDirs = ['src/test/java', 'src/test/resources'] } }
@@ -311,5 +325,6 @@ task mkdirs() {
     sourceSets*.java.srcDirs*.each { it.mkdirs() }
     sourceSets*.resources.srcDirs*.each { it.mkdirs() }
 }
+
 ```
 
