@@ -16,6 +16,16 @@ make PREFIX=/usr/local/redis install
 make MALLOC=libc
 ```
 
+配置内核参数
+
+```bash
+# 添加到 /etc/sysctl.conf
+net.core.somaxconn = 1024
+vm.overcommit_memory = 1
+# 执行
+sysctl -p
+```
+
 可执行文件
 
 ```bash

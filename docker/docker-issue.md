@@ -42,3 +42,15 @@ gypark 指出可以通过在 /etc/firewalld/zones/public.xml 中添加防火墙�
 # systemctl restart firewalld
 ```
 
+#### 2. docker 下载初始化镜像列表
+
+```bash
+#!/bin/bash
+IMAGES=(mysql:5.7.30 redis:4.0.14-alpine3.11 redis:4.0.14 redis:5.0.9 redis:5.0.9-alpine3.12 redis:6.0.6 redis:6.0.6-alpine3.12 busybox:1.32.0 busybox:1.32.0-glibc alpine:3.12.0 centos:centos7.7.1908 centos:centos7.8.2003 ubuntu:18.04)
+for image in "${IMAGES[@]}"
+do
+	echo "pull image $image"
+	docker pull $image
+done
+```
+

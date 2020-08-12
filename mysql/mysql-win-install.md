@@ -46,8 +46,6 @@ tmp_table_size = 16M
 default-character-set = utf8mb4
 ```
 
-
-
 collation_connection 、collation_database 、collation_server 是什么没关系
 
 | 系统变量                 | 描述                       |
@@ -57,8 +55,6 @@ collation_connection 、collation_database 、collation_server 是什么没关�
 | character_set_database   | 当前选中数据库的默认字符集 |
 | character_set_server     | 默认的内部操作字符集       |
 | character_set_results    | 查询结果字符集             |
-
-
 
 ### 4. 初始化数据库
 
@@ -90,8 +86,6 @@ create table test (
     -> primary key(id))ENGINE=InnoDB default charset=utf8mb4;
 ```
 
-
-
 ### 7. 备份脚本
 
 ```
@@ -105,4 +99,3 @@ set "Ymd=%date:~0,4%%date:~5,2%%date:~8,2%0%time:~1,1%%time:~3,2%%time:~6,2%"
 @echo on
 rem ******MySQL backup end********
 ```
-

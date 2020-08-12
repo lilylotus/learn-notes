@@ -61,6 +61,7 @@ slow_query_log_file=/var/lib/mysql/slow.log
 log_queries_not_using_indexes=OFF
 
 #insertoptimize
+innodb_buffer_pool_size=128M
 bulk_insert_buffer_size=64M
 max_allowed_packet=16M
 read_buffer_size=1M
