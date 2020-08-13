@@ -38,3 +38,14 @@ grant all privileges on test.* to 'remote'@'%' with grant option;
 
 字符除了需要存储，还需要排序或比较大小，涉及到与编码字符集对应的 排序字符集（collation）。ut8mb4 对应的排序字符集常用的有 `utf8mb4_unicode_ci`、`utf8mb4_general_ci`
 总结：`utf8mb4_general_ci` 更快，`utf8mb4_unicode_ci` 更准确。推荐是 `utf8mb4_unicode_ci`
+
+#### 4. mysql 区分大小写
+
+```properties
+[mysqld]
+# OFF 文件名区分大小写，ON 不区分大小写
+lower_case_file_system=OFF
+# 0 大小写敏感， 1 大小写不敏感
+lower_case_table_names=0
+```
+

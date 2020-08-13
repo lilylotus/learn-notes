@@ -40,6 +40,7 @@ init_connect='set names utf8mb4'
 character_set_client_handshake=FALSE
 default_storage_engine=INNODB
 max_connections=300
+lower_case_table_names=0
 skip_name_resolve
 
 #log_output=FILE
@@ -88,6 +89,7 @@ init_connect='set names utf8mb4'
 character_set_client_handshake=FALSE
 default_storage_engine=INNODB
 max_connections=300
+lower_case_table_names=0
 skip_name_resolve
 
 log_output=FILE
@@ -134,7 +136,7 @@ default_character_set=utf8mb4
 use mysql;
 
 create user 'remote'@'%' identified by '123456';
-CREATE DATABASE test DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE DATABASE test DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 grant all privileges on test.* to 'remote'@'%' with grant option;
 
 # mysql master
