@@ -49,3 +49,17 @@ lower_case_file_system=OFF
 lower_case_table_names=0
 ```
 
+#### 5. 时间操作
+
+查询一小时内的数据
+
+```sql
+SELECT now() - INTERVAL 2 HOUR;
+SELECT DATE_SUB(NOW(),INTERVAL  1 HOUR) ;
+
+-- 查询 1 小时内的数据
+SELECT * FROM tb_log WHERE ADD_TIME > (now() - Interval 1 HOUR);
+-- 查询 10 分钟内的数据
+SELECT * FROM tb_log WHERE ADD_TIME > (now() - Interval 10 MINUTE);
+```
+
