@@ -83,8 +83,6 @@ public class MyServletContainerInitializer implements ServletContainerInitialize
 正确写法 `@RequestMapping(path = {"/app/hei"}, method = RequestMethod.GET)`
 `org.springframework.web.util.UrlPathHelper#getPathWithinServletMapping`
 
-
-
 ###### MVC 配置
 
 ```java
@@ -106,6 +104,70 @@ public class WebConfig implements WebMvcConfigurer {
         viewResolver.setSuffix(".jsp");
 
         return viewResolver;
+    }
+}
+```
+
+#### 统一 controller 请求/返回
+
+##### 统一请求
+
+实现 `org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice` 接口
+`controller` 层中调用方法上加入 `@RequstMapping` 和 `@ResponseBody`, 后者若没有，则 `ResponseBodyAdvice` 实现方法不执行
+
+```java
+@RestControllerAdvice(basePackages = {"cn.nihility.controller"})
+public class MyRequestBodyAdvice implements RequestBodyAdvice {
+
+    private static final Logger log = LoggerFactory.getLogger(MyRequestBodyAdvice.class);
+
+    @Override
+    public boolean supports(MethodParameter methodParameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        log.info("MyRequestBodyAdvice -> supports");
+        return true;
+    }
+
+    @Override
+    public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
+        log.info("MyRequestBodyAdvice -> beforeBodyRead");
+        return new MyHttpInputMessage(inputMessage.getHeaders(), inputMessage.getBody());
+    }
+
+    @Override
+    public Object afterBodyRead(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        log.info("MyRequestBodyAdvice -> afterBodyRead");
+        return body;
+    }
+
+    @Override
+    public Object handleEmptyBody(Object body, HttpInputMessage inputMessage, MethodParameter parameter, Type targetType, Class<? extends HttpMessageConverter<?>> converterType) {
+        log.info("MyRequestBodyAdvice -> handleEmptyBody");
+        return body;
+    }
+}
+```
+
+##### 统一返回
+
+实现 `org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice` 接口
+`controller` 层中调用方法上加入 `@RequstMapping` 和 `@ResponseBody`, 后者若没有，则 `ResponseBodyAdvice` 实现方法不执行
+
+```java
+@RestControllerAdvice(basePackages = {"cn.nihility.controller"})
+public class MyResponseBodyAdvice implements ResponseBodyAdvice {
+    @Override
+    public boolean supports(MethodParameter returnType, Class converterType) {
+        return true;
+    }
+
+    @Override
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+        Map<String, Object> unify = new HashMap<>();
+        unify.put("apiVersion", "1.0.1");
+        unify.put("data", body);
+        unify.put("message", "统一请求");
+
+        return unify;
     }
 }
 ```
