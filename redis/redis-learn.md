@@ -18,8 +18,6 @@
 
 `Sorted Sets`：和 sets 类型类似，每个　String 元素都有一个浮点数值，叫做 score。这些元素按照该 score 排序，所以同 set 不同的是可以检索一定范围内的元素。如： top 10，bottom 10
 
-
-
 ---
 
 ###### Keys 命令
@@ -146,3 +144,93 @@ Transaction 事务处理
 
 `MULTI` 开始事务
 `EXEC` 原子执行队列操作 <font color="blue">MULTI 和 EXEC 中间不能有错误出现</font>
+
+
+
+---
+
+#### redis 持久化
+
+`redis` 支持两种方式的持久化：**快照持久化（RDB）** 和 **AOF持久化**
+
+##### 快照方式（RDB）
+
+快照持久化，是将某一时刻的所有数据写入到硬盘中持久化。显然，这存在一个“何时”写入硬盘的问题。如果相隔时间过长，那么恰好在没有持久化前宕机，这部分数据就会丢失。也就是说，无论如何配置持久化的时机，都有可能存在丢失数据的风险。所以，**快照持久化适用于即使丢失一部分数据也不会造成问题的场景**。
+配置快照持久化，既可以直接通过**命令**，也可以通过**配置文件**的方式。
+
+```properties
+######## SNAPSHOTTING ########
+# save [seconds] [changes] 表示在 [seconds] 秒内有 [changes] 个键值的变化则进行持久化
+# 可同时配置多个，满足一个条件则触发
+save 10 1               # 在 10 秒内有 1 次键值改变
+save 900 1				# 在 900 秒内有 1 次键值变化则进行持久化。
+save 300 10				# 在 300 秒内有 10 次键值变化则进行持久化。
+save 60 10000			# 在 60  秒内有 10000 次键值变化则进行持久化。
+
+# 当持久化出现错误时，是否停止数据写入，默认停止数据写入
+# 可配置为 no，当持久化出现错误时，仍然能继续写入缓存数据。
+stop-writes-on-bgsave-error yes
+# 是否压缩数据，默认压缩,no 不压缩
+rdbcompression yes
+#对持久化rdb文件是否进行校验，默认校验。no 不校验
+rdbchecksum yes
+# 指定 rdb 保存到本地的文件名
+dbfilename dump.rdb
+# 指定 rdb 保存的目录，默认在本目录下，即 redis 的安装目录。
+dir ./
+```
+
+`redis` 持久化默认使用**快照持久化**方式，如果想要开启 `AOF` 持久化 `appendonly yes`
+通过命令方式快照持久化，有两个命令可供使用：`bgsave` 和 `save`。`bgsave`，redis 会创建一个子进程，通过子进程将快照写入硬盘，父进程则继续处理命令请求。`save` 则是 redis 在快照创建完成前不会响应其他命令，也就是阻塞式的，并不常用。
+
+命令 `save` 或 `bgsave` 可以生成 dump.rdb 文件。
+每次执行命令都会将所有 redis 内存快照保存到一个 rdb 文件里，并覆盖原有的 rdb 快照文件。
+save 是同步命令，bgsave 是异步命令，bgsave 会从 redis 主进程 fork 出一个子进程专门生成 rdb 二进制文件
+
+```bash
+> bgsave
+1201:C 25 Aug 2020 10:25:35.668 * RDB: 0 MB of memory used by copy-on-write
+1172:M 25 Aug 2020 10:25:35.684 * Background saving terminated with success
+
+> save
+1172:M 25 Aug 2020 10:25:57.423 # User requested shutdown...
+1172:M 25 Aug 2020 10:25:57.423 * Saving the final RDB snapshot before exiting.
+1172:M 25 Aug 2020 10:25:57.424 * DB saved on disk
+1172:M 25 Aug 2020 10:25:57.424 * Removing the pid file.
+1172:M 25 Aug 2020 10:25:57.424 # Redis is now ready to exit, bye bye...
+```
+
+注意：配置文件中的 save 配置底层调用的是 `bgsave` 命令，在调用 `shutdown` 命令时，会调用 `save` 命令阻塞其它命令，将数据写入磁盘。
+
+##### AOF 持久化
+
+记录的是**执行的命令**，将被执行的写命令写入到 AOF 文件的末尾。它同样有持久化时机的问题，通常我们会配置“每秒执行一次同步”。
+
+```properties
+############################## APPEND ONLY MODE ###############################
+# 是否开起 AOF 持久化，默认关闭，yes 打开。
+# 在 redis4.0 以前不允许混合使用 RDB 和 AOF，但此后允许使用混合模式，通过最后两个参数配置。
+appendonly no
+appendfilename "appendonly.aof"
+appendfsync everysec
+
+# 默认不重写 AOF 文件。
+no-appendfsync-on-rewrite no
+# 下面这两个配置是用于AOF“重写”触发条件。
+# 当AOF文件的体积大于 64m，且 AOF 文件的体积比上一次重写之后的体积至少大了一倍（100%）则执行重新命令。
+auto-aof-rewrite-percentage 100		
+auto-aof-rewrite-min-size 64mb	
+# 指 redis 在恢复时，会忽略最后一条可能存在问题的指令，默认值yes。
+aof-load-truncated yes
+# 是否打开 RDB 和 AOF 混合模式，默认yes打开。
+aof-use-rdb-preamble yes
+```
+
+##### 混合持久化
+
+```properties
+aof-use-rdb-preamble yes
+```
+
+如果开启了混合持久化，aof 在重写时，不再是单纯将内存数据转换为 RESP 命令写入 aof 文件，而是将重写这一刻之前的内存做 rdb 快照处理，并且将 rdb 快照内容和增量的 aof 修改内存数据的命令存在一起，都写入新的 aof 文件，新的 aof 文件一开始不叫 appendonly.aof，等到重写完成后，新的 aof 文件才会进行改名，原子的覆盖原有的 aof 文件，完成新旧两个 aof 文件的替换。
+于是在 redis 重启的时候，可以先加载 rdb 文件，然后再重放增量的 aof 日志就可以完全替代之前的 aof 全量文件重放，因此重启效率大幅得到提高。

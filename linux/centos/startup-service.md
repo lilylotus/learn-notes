@@ -82,5 +82,20 @@ ExecStop=/usr/local/nginx/sbin/nginx -s stop
 WantedBy=multi-user.target
 ```
 
+##### redis 服务
 
+```bash
+[Unit]
+Description=nginx - high performance web server
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+ExecReload=/usr/local/nginx/sbin/nginx -s reload
+ExecStop=/usr/local/nginx/sbin/nginx -s stop
+
+[Install]
+WantedBy=multi-user.target
+```
 

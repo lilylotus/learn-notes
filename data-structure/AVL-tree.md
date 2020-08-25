@@ -9,3 +9,19 @@
 平衡因子可以直接存储在每个节点中，或从可能存储在节点中的子树高度计算出来。
 
 ![balance](../images/Tree_Rebalancing.png)
+
+##### 左旋
+
+![](../images/avl-left-roation.png)
+
+##### 右旋
+
+![](../images/avl-right-roation.png)
+
+##### 左右旋
+
+![](../images/avl-left-right-roation.png)
+
+##### 右左旋
+
+![](../images/avl-right-left-roation.png)

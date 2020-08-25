@@ -24,3 +24,48 @@ DNS1="8.8.8.8"
 DNS2="114.114.114.114"
 ```
 
+#### 2. nmcli 网络配置
+
+nmcli 是 redhat7 或者 centos7 之后的命令，可完成网卡所有的配置工作，并可写入配置文件，永久生效
+
+##### 2.1 查看网卡信息
+
+```bash
+# 所有网络
+nmcli connection [c/conn] show
+# 活动网络
+nmcli connection show -active
+# 指定网卡详细信息
+nmcli connection show ens32
+```
+
+##### 2.2 设备信息
+
+```bash
+# 设备连接状态
+nmcli device [d] status
+# 网络设备详细信息
+nmcli device [d] show
+# 指定网络设备详细信息
+nmcli d show ens32
+```
+
+##### 2.3 网络状态修改
+
+```bash
+# 启用网络
+nmcli c up ens32
+# 禁用网卡
+nmcli c down ens32
+# 断开设备
+mncli d disconnect ens32
+# 删除连接
+nmcli c delete ens32
+# 重新加载
+nmcli c reload
+```
+
+
+
+
+

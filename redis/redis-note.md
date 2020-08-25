@@ -26,5 +26,8 @@ port 6379
 #bind 127.0.0.1
 protected-mode no (yes)
 requirepass redis
+
+# 后台运行
+daemonize yes (no)
 ```
 
