@@ -65,6 +65,11 @@ WantedBy=multi-user.target
 
 #### 启动脚本示例
 
+> `$MAINPID` is a systemd variable for your service that points to the PID of the main application.
+> 常用信号：
+> `HUP` : kill -s HUP pid
+> 让 Linux 缓和的执行进程关闭，然后重启。在对配置文件修改后需要重启进程时可发送此信号。
+
 ##### nginx 启动
 
 ```bash
@@ -77,6 +82,32 @@ Type=forking
 ExecStart=/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
 ExecReload=/usr/local/nginx/sbin/nginx -s reload
 ExecStop=/usr/local/nginx/sbin/nginx -s stop
+
+[Install]
+WantedBy=multi-user.target
+
+#-------------------------------
+$MAINPID is a systemd variable for your service that points to the PID of the main application.
+常用信号：
+HUP : kill -s HUP pid
+ExecReload=/bin/kill -s HUP $PID
+让 Linux 缓和的执行进程关闭，然后重启。在对配置文件修改后需要重启进程时可发送此信号。
+
+TERM : kill -s TERM pid
+友好告诉进程退出，进程先保存好数据，再正常退出。给父进程发送一个 TERM 信号，试图杀死它和它的子进程。请求彻底终止某项执行操作.它期望接收进程清除自给的状态并退出
+#-------------------------------
+[Unit]
+Description=nginx - high performance web server
+Documentation=http://nginx.org/en/docs/
+After=network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/nginx.pid
+ExecStart=/usr/sbin/nginx -c /etc/nginx/nginx.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
 
 [Install]
 WantedBy=multi-user.target

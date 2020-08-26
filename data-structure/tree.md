@@ -33,4 +33,6 @@ AVL 树，本质上是带了平衡功能的二叉查找树（二叉排序树，�
 
 #### B Trees
 
+![](../images/b-tree.png)
+
 #### B+ Trees

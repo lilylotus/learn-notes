@@ -41,3 +41,50 @@
 搜索属性还使我们能够限制在搜索 bean 时应考虑的 ApplicationContext 层次结构。
 
 ###### 6.2 `@ConditionalOnClass` and `@ConditionalOnMissingClass`
+
+##### 7. springboot 加载 application.properties 顺序
+
+注意： 可以用 YAML (.yml) 文件替代 application.properties 文件
+
+`SpringApplication` loads properties from `application.properties` files in the following locations and adds them to the Spring `Environment`:
+
+1. A `/config` subdirectory of the current directory
+2. The current directory
+3. A classpath `/config` package
+4. The classpath root
+
+The list is ordered by precedence (properties defined in locations higher in the list override those defined in lower locations).
+
+If you do not like `application.properties` as the configuration file name, you can switch to another file name by specifying a `spring.config.name` environment property. You can also refer to an explicit location by using the `spring.config.location` environment property (which is a comma-separated list of directory locations or file paths)
+
+```
+$ java -jar myproject.jar --spring.config.name=myproject
+
+$ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
+```
+
+如果  `spring.config.location`  包含的是目录（不是文件），必须以 `/` 结尾。
+<font color="red">配置路径以相反的顺序搜索</font>，默认的配置路径 `classpath:/,classpath:/config/,file:./,file:./config/`. 
+查询顺序为：1. `file:./config/`, 2. `file:./`, 3. `classpath:/config/`, 4. `classpath:/`
+
+##### 8. 日志记录
+
+```properties
+logging.file.name=my.log
+logging.file.path=/var/log
+# -> /var/log/my.log
+
+logging.level.root=warn
+logging.level.org.springframework.web=debug
+logging.level.org.hibernate=error
+```
+
+Depending on your logging system, the following files are loaded:
+
+| Logging System          | Customization                                                |
+| :---------------------- | :----------------------------------------------------------- |
+| Logback                 | `logback-spring.xml`, `logback-spring.groovy`, `logback.xml`, or `logback.groovy` |
+| Log4j2                  | `log4j2-spring.xml` or `log4j2.xml`                          |
+| JDK (Java Util Logging) | `logging.properties`                                         |
+
+注意： 推荐使用 `-spring` 变体的日志配置，(`logback-spring.xml` 而不是 `logback.xml`)，使用标准的日志配置，spring 可能不能完全的控制日志的初始化。
