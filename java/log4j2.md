@@ -20,9 +20,67 @@
 </Configuration>
 ```
 
+#### slf4j - log4j2 依赖
+
+```groovy
+/* build.gradle 排除 logback/SLF4J 多个实现 */
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+    all*.exclude module: 'logback-classic'
+    all*.exclude module: 'log4j-over-slf4j'
+    all*.exclude module: 'slf4j-log4j12'
+}
+
+/* 包含了 log4j-api:2.13.2 */
+implementation "org.apache.logging.log4j:log4j-core:2.13.2"
+/* web 项目需要 */
+implementation "org.apache.logging.log4j:log4j-web:2.13.2"
+/* 包含了 slf4j-api:1.7.25 */
+implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.13.2"
+/* log4j2 异步日志所需 */
+implementation "com.lmax:disruptor:3.4.2"
+```
+
+#### log4j2 配置
+
 注意：当和 `spring boot` 结合时，文件命名为 `log4j2-spring.xml`, 就不用在 `application.yml` 中配置
 或者在 `application.yml` 中配置 `logging.config=classpath:log4j2-spring.xml`
 引入 `spring boot` 依赖 `spring-boot-starter-log4j2`
+
+##### Log4j2 触发滚动策略
+
+###### Cron Triggering Policy
+
+```xml
+<!-- Seconds(0-59)[, - * /] Minutes(0-59)[, - * /] Hours(0-23)[, - * /] 
+Day-of-mouth(1-31)[, - * ? /] Mount(1-11)[, - * /] Day-of-week(1-7)[, - * ? /] Year(Optional) -->
+<CronTriggeringPolicy schedule="* * * * * ?"/>
+
+*       表示 每一分钟
+10-12   表示 10,11,12 时
+9,11,13 表示 9,11,13 时
+0/15    表示 0,15,30,45 分钟
+
+每 10 秒触发
+<CronTriggeringPolicy schedule="0/10 * * * * ?"/>
+```
+
+###### SizeBased Triggering Policy
+
+```xml
+<!-- 后缀 KB, MB or GB, for example 20MB -->
+<SizeBasedTriggeringPolicy size="2MB"/>
+```
+
+###### TimeBased Triggering Policy
+
+```xml
+<TimeBasedTriggeringPolicy interval="1" modulate="true" maxRandomDelay="0"/>
+<!-- 每小时触发一次，modulate=true 表示按照整点推进 0，1，2，3 -->
+<TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+```
+
+##### log4j2 示例配置
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -38,11 +96,10 @@
         <!-- %n 换行符，%logger{36} 表示 Logger 名字最长36个字符 -->
         <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} - %msg%xEx%n" />
         <!-- System.setProperty("appName", "urm"); -->
-        <Property name="APP_PROFILE" value="${sys:profileName}"/>
-        <Property name="APP_NAME" value="${sys:appName}"/>
+        <Property name="APP_PROFILE" value="${sys:profileName:default}"/>
+        <Property name="APP_NAME" value="${sys:appName:default}"/>
         <!-- 定义日志存储的路径 /${ctx:spring.application.name} -->
-        <property name="FILE_PATH" value="D:/logger/${APP_NAME}/${APP_PROFILE}" />
-        <property name="FILE_NAME" value="更换为你的项目名" />
+        <property name="BASE_DIR" value="D:/logger/${APP_NAME}/${APP_PROFILE}" />
     </Properties>
 
     <!--先定义所有的appender-->
@@ -57,15 +114,17 @@
 
         <!-- 文件会打印出所有信息，这个 log 每次运行程序会自动清空，由 append 属性决定，适合临时测试用 -->
         <!-- append false 每次清空， true 附加到文件末尾 -->
-        <File name="FileLog" fileName="${FILE_PATH}/file-log.log" append="false">
+        <File name="FileLog" fileName="${BASE_DIR}/file-log.log" append="false">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </File>
 
         <!-- 打印出 >= DEBUG 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
-        <RollingFile name="RollingFileAll" fileName="${FILE_PATH}/rolling-file-all.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-all-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileAll" fileName="${BASE_DIR}/rolling-file-all.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-all-%d{yyyyMMddHH}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
-            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Filters>
+                <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
             <Policies>
                 <!-- interval, integer 型，指定两次封存动作之间的时间间隔 -->
                 <!-- 需要和 filePattern 结合使用，日期格式精确到哪一位，interval 也精确到哪一个单位 -->
@@ -76,22 +135,25 @@
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
                 <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
+            <!-- Seconds(0-59) Minutes(0-59) Hours(0-23) Day-of-mouth(1-31) Mount(1-11) Day-of-week(1-7) Year(Optional) -->
+            <!--<CronTriggeringPolicy schedule="0/10 * * * * ?"/>-->
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                <!-- testMode=true，实际的文件不会被删除，打印删除日志 -->
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*all*.gz" />
+                    <IfFileName glob="*/rolling-file-all*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 打印出 trace 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
-        <RollingFile name="RollingFileTrace" fileName="${FILE_PATH}/rolling-file-trace.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-trace-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileTrace" fileName="${BASE_DIR}/rolling-file-trace.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-trace-%d{yyyyMMddHH}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Filters>
                 <!-- 过滤条件有三个值：ACCEPT(接受)，DENY(拒绝)，NEUTRAL(中立)-->
@@ -106,24 +168,24 @@
                 <!-- modulate=true， 则封存时间将以 0 点为边界进行偏移计算。如: modulate=true，interval=4hours，
                     那么假设上次封存日志的时间为03:00，则下次封存日志的时间为 04:00， 之后的封存时间依次为 08:00，12:00，16:00 -->
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
-                <SizeBasedTriggeringPolicy size="50 MB"/>
+                <SizeBasedTriggeringPolicy size="30 MB"/>
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
-            <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
-                    <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*trace*.gz" />
+                    <!-- glob: 匹配 2 级目录深度下的以 .log.gz 结尾的备份文件 -->
+                    <IfFileName glob="*/rolling-file-trace*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 打印出 debug 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
-        <RollingFile name="RollingFileDebug" fileName="${FILE_PATH}/rolling-file-debug.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-debug-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileDebug" fileName="${BASE_DIR}/rolling-file-debug.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-debug-%d{yyyyMMddHH}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Filters>
                 <!-- 过滤条件有三个值：ACCEPT(接受)，DENY(拒绝)，NEUTRAL(中立)-->
@@ -142,20 +204,20 @@
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*debug*.gz" />
+                    <IfFileName glob="*/rolling-file-debug*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 打印出 info 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
-        <RollingFile name="RollingFileInfo" fileName="${FILE_PATH}/rolling-file-info.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-info-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileInfo" fileName="${BASE_DIR}/rolling-file-info.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-info-%d{yyyyMMddHH}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Filters>
                 <!-- 过滤条件有三个值：ACCEPT(接受)，DENY(拒绝)，NEUTRAL(中立)-->
@@ -176,20 +238,20 @@
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件开始覆盖 -->
             <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*info*.gz" />
+                    <IfFileName glob="*/rolling-file-info*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 打印 warn 级别的信息，每次大小超过 size，则这 size 大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
-        <RollingFile name="RollingFileWarn" fileName="${FILE_PATH}/rolling-file-warn.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-warn-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileWarn" fileName="${BASE_DIR}/rolling-file-warn.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-warn-%d{yyyyMMddHH}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Filters>
                 <!-- 过滤条件有三个值：ACCEPT(接受)，DENY(拒绝)，NEUTRAL(中立) -->
@@ -203,20 +265,20 @@
             </Policies>
             <!-- DefaultRolloverStrategy 属性如不设置，则默认为最多同一文件夹下 7 个文件，这里设置了 20 -->
             <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*warn*.gz" />
+                    <IfFileName glob="*/rolling-file-warn*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
         <!-- 打印 error 级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
-        <RollingFile name="RollingFileError" fileName="${FILE_PATH}/rolling-file-error.log"
-                     filePattern="${FILE_PATH}/$${date:yyyyMMdd}/rolling-file-error-%d{yyyyMMddHH}-%i.log.gz">
+        <RollingFile name="RollingFileError" fileName="${BASE_DIR}/rolling-file-error.log"
+                     filePattern="${BASE_DIR}/$${date:yyyyMMdd}/rolling-file-error-%d{yyyyMMddHH}-%i.log.gz">
             <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
@@ -227,21 +289,21 @@
             </Policies>
             <!-- DefaultRolloverStrategy属性如不设置，则默认为最多同一文件夹下7个文件开始覆盖-->
             <DefaultRolloverStrategy max="20">
-                <Delete basePath="${FILE_PATH}" maxDepth="2">
+                <Delete basePath="${BASE_DIR}" maxDepth="2">
                     <!-- IfFileName: 匹配文件名称 -->
                     <!-- glob: 匹配2级目录深度下的以 .log.gz 结尾的备份文件 -->
-                    <IfFileName glob="**/*error*.gz" />
+                    <IfFileName glob="*/rolling-file-error*.gz" />
                     <!-- IfLastModified: 匹配文件修改时间，精度要和日期滚动最小精度一致 -->
-                    <!--age: 匹配超过 180 天的文件，单位D、H、M、S分别表示天、小时、分钟、秒-->
-                    <IfLastModified age="1H" />
+                    <!--age: 匹配超过 180 天的文件，单位d、h、m、s分别表示天、小时、分钟、秒-->
+                    <IfLastModified age="2h" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
 
+        <!-- 异步日志配置 -->
         <Async name="Async">
             <AppenderRef ref="RollingFileTrace"/>
         </Async>
-
     </appenders>
 
     <!-- Logger 节点用来单独指定日志的形式，比如要为指定包下的 class 指定不同的日志级别等 -->
@@ -252,32 +314,28 @@
         <!-- 过滤掉 spring 和 hibernate 的一些无用的 DEBUG 信息 -->
         <Logger name="org.springframework" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFileAll"/>
+            <AppenderRef ref="RollingFileInfo"/>
+            <AppenderRef ref="RollingFileWarn"/>
+            <AppenderRef ref="RollingFileError"/>
         </Logger>
         <Logger name="org.mybatis" level="INFO" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
 
-        <Logger name="kl.iam" level="DEBUG"/>
-        <Logger name="org.casbin" level="WARN"/>
-        <Logger name="springfox.documentation" level="WARN"/>
-        <Logger name="com.alibaba.nacos" level="INFO"/>
-        <Logger name="com.alibaba.nacos.client.naming" level="WARN"/>
-        <Logger name="com.netflix.loadbalancer" level="INFO"/>
-
         <Root level="ALL">
             <appender-ref ref="Console"/>
-            <AppenderRef ref="FileLog"/>
+            <!--<AppenderRef ref="FileLog"/>-->
             <AppenderRef ref="RollingFileAll"/>
-            <AppenderRef ref="RollingFileTrace"/>
+            <!--<AppenderRef ref="RollingFileTrace"/>-->
             <AppenderRef ref="RollingFileDebug"/>
             <AppenderRef ref="RollingFileInfo"/>
             <AppenderRef ref="RollingFileWarn"/>
             <AppenderRef ref="RollingFileError"/>
-            <!-- Async implementation 'com.lmax:disruptor:3.4.2' -->
-            <!--<AppenderRef ref="Async"/>-->
+            <!-- 异步日志配置 -->
+            <AppenderRef ref="Async"/>
         </Root>
     </Loggers>
-
 </configuration>
 ```
 
@@ -377,16 +435,17 @@ public class Log4j2EventListener implements GenericApplicationListener {
 }
 ```
 
-`log4j2-spring.xml` 配置
+`log4j2-spring.xml` 配置，获取 `System.setProperty("appName", "urm");` 属性
+<font color="red">注意：</font> 默认值写法为 `:-`  <font color="blue">`${sys:app:-defaultValue}`</font>
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration status="warn" monitorInterval="1000">
     <Properties>
-        <Property name="APP_NAME" value="${ctx:appName}"/>
-        <Property name="IP" value="${ctx:ip}"/>
-        <Property name="PORT" value="${ctx:port}"/>
+        <Property name="APP_NAME" value="${sys:appName:-default}"/>
+        <Property name="IP" value="${sys:ip:-default}"/>
+        <Property name="PORT" value="${sys:port}"/>
         
         <!-- 配置日志文件输出目录 -->
         <Property name="LOG_HOME">/data/logs/${APP_NAME}</Property>
@@ -405,5 +464,48 @@ public class Log4j2EventListener implements GenericApplicationListener {
     <pattern>%d %p %c{1.} [%t] $${spring:spring.application.name} %m%n</pattern>
   </PatternLayout>
 </File>
+```
+
+#### 异步日志配置
+
+##### 全异步模式
+
+其它日志配置均不需要改动，仅需在主程序头添加属性
+
+```java
+System.setProperty("Log4jContextSelector", "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector");
+```
+
+##### 异步和非异步混合输出模式 
+
+在配置文件 `Logger` 中使用 `<asyncRoot>` 或者 `<asyncLogger>`
+
+```xml
+<appenders>
+    <Async name="Async">
+        <AppenderRef ref="Console"/>
+    </Async>
+</appenders>
+<Loggers>
+    <Root level="ALL">
+        <AppenderRef ref="Async"/>
+    </Root>
+</Loggers>
+```
+
+或者
+
+```xml
+<loggers>
+     <AsyncLogger name="AsyncLogger" level="trace" includeLocation="true">
+        <appender-ref ref="Console" />
+        <appender-ref ref="debugLog" />
+        <appender-ref ref="errorLog" />
+    </AsyncLogger>
+ 	<!-- 两者选一 -->
+    <asyncRoot level="trace" includeLocation="true">
+        <appender-ref ref="Console" />
+    </asyncRoot>
+</loggers>
 ```
 

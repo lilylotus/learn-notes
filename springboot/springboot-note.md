@@ -63,9 +63,12 @@ $ java -jar myproject.jar --spring.config.name=myproject
 $ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
 ```
 
-如果  `spring.config.location`  包含的是目录（不是文件），必须以 `/` 结尾。
-<font color="red">配置路径以相反的顺序搜索</font>，默认的配置路径 `classpath:/,classpath:/config/,file:./,file:./config/`. 
+<font color="red">注意：</font>如果  `spring.config.location`  包含的是目录（不是文件），必须以 `/` 结尾。
+<font color="red">配置路径以相反的顺序搜索</font>
+默认的配置路径 `classpath:/,classpath:/config/,file:./,file:./config/`. 
 查询顺序为：1. `file:./config/`, 2. `file:./`, 3. `classpath:/config/`, 4. `classpath:/`
+
+自定义配置路径使用 `spring.config.additional-location`  时，会添加到默认的配置路径前面，例如：配置了  `classpath:/custom-config/,file:./custom-config/` ，此时搜索路径顺序为 1. `file:./custom-config/`，2. `classpath:/custom-config/`，3. `file:./config/`, 4. `file:./`, 5. `classpath:/config/`, 6. `classpath:/`
 
 ##### 8. 日志记录
 
