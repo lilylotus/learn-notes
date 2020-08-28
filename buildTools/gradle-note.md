@@ -199,6 +199,7 @@ repositories {
 
 dependencies {
     testImplementation "junit:junit:$junitVersion"
+    implementation fileTree(dir: 'D:\\coding\\jars', includes: ["*.jar"])
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
 }
 
@@ -262,6 +263,7 @@ repositories {
 
 dependencies {
     testImplementation "junit:junit:$junitVersion"
+    implementation fileTree(dir: 'D:\\coding\\jars', includes: ["*.jar"])
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.2'
 }
 
@@ -326,5 +328,77 @@ task mkdirs() {
     sourceSets*.resources.srcDirs*.each { it.mkdirs() }
 }
 
+```
+
+##### 3.3 springboot2.x gradle 单独打包
+
+```groovy
+def branchName = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+def branchCommitId = "git rev-parse HEAD".execute().text.trim()
+
+task clearJar(type: Delete) {
+    delete "$buildDir\\libs\\lib"
+}
+
+def branchName = "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+def branchCommitId = "git rev-parse HEAD".execute().text.trim()
+
+task clearJar(type: Delete) {
+    delete "$buildDir\\libs\\lib"
+}
+
+task copyJar(type: Copy, dependsOn: 'clearJar') {
+    from configurations.runtimeClasspath
+    into "$buildDir\\libs\\lib"
+}
+
+jar {
+    excludes = ["*.jar"]
+    dependsOn clearJar
+    dependsOn copyJar
+
+    manifest {
+        attributes "branchName": "$branchName"
+        attributes "commitId": "$branchCommitId"
+        attributes("Main-Class": "cn.nihility.SpringbootStarterApplication")
+        /*attributes("branchName": "$branchName",
+                "commitId": "$branchCommitId")*/
+    }
+    if (!configurations.runtimeClasspath.isEmpty()) {
+        //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
+    }
+}
+
+bootJar {
+    excludes = ["*.jar"]
+    dependsOn clearJar
+    dependsOn copyJar
+
+    manifest {
+        attributes "branchName": "$branchName"
+        attributes "commitId": "$branchCommitId"
+        attributes("Main-Class": "org.springframework.boot.loader.PropertiesLauncher")
+        /*attributes("branchName": "$branchName",
+                "commitId": "$branchCommitId")*/
+    }
+    if (!configurations.runtimeClasspath.isEmpty()) {
+        //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
+    }
+}
+
+task zip(type: Zip, dependsOn: [bootJar]) {
+    archiveFileName = "springboot.zip"
+    destinationDirectory = file("$buildDir/dist")
+
+    from("$buildDir/libs") {
+        /*into("lib")*/
+    }
+
+    /*from("$buildDir/libs") {
+        into("")
+    }*/
+}
 ```
 
