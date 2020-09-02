@@ -66,6 +66,7 @@ collation_connection 、collation_database 、collation_server 是什么没关�
 注册服务： `mysqld -install MySQL57`
 
 启动服务： `net start MySQL57`
+删除服务：`sc delete mysql57`
 
 ### 6. 修改密码和创建用户
 
