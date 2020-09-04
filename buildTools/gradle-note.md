@@ -166,6 +166,35 @@ jar {
 }
 ```
 
+##### 2.1 gradle 仅打包源码包
+
+```groovy
+task clearJar(type: Delete) {
+    delete "$buildDir\\libs"
+}
+
+task copyJar(type: Copy, dependsOn: 'clearJar') {
+    from configurations.runtimeClasspath
+    into "$buildDir\\libs\\lib"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    dependsOn copyJar
+
+    manifest {
+        attributes "branchName": "$branchName"
+        attributes "commitId": "$branchCommitId"
+        attributes("Main-Class": "cn.nihility.SpringbootStarterApplication")
+    }
+    if (!configurations.runtimeClasspath.isEmpty()) {
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' '))
+    }
+
+    from("$buildDir\\classes\\java\\main")
+    from("$buildDir\\resources\\main")
+}
+```
+
 #### 3. gradle 可执行 jar 包
 
 ##### 3.1 所有所需依赖放到一个可执行 jar 包中

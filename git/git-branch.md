@@ -26,9 +26,12 @@ git update --init
 
 #### 删除分支
 
-```
+```bash
 git branch -d branchName
 git branch -D branchName
+
+git branch -d -r origin/origin/dev
+git push -v origin :refs/heads/origin/dev
 ```
 
 #### 2. git rebase
