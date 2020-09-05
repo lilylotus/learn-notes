@@ -35,13 +35,15 @@ default_character_set=utf8mb4
 [mysqld]
 server_id=100
 character_set_server=utf8mb4
-collation_server=utf8mb4_unicode_ci
+collation_server=utf8mb4_general_ci
 init_connect='set names utf8mb4'
 character_set_client_handshake=FALSE
 default_storage_engine=INNODB
 max_connections=300
+# 0 都区分大小写， 1 存储在磁盘是小写的，但是比较的时候是不区分大小写
 lower_case_table_names=0
 skip_name_resolve
+sql-mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
 
 #log_output=FILE
 log_bin=mysql-bin
