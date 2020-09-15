@@ -3,7 +3,7 @@
 *Spring boot* 主要是关于自动配置。然后自动配置是由 *component scanning* 类操作的，查找所有类路径下有 `@Component` 注解的类。还设计扫描 `@Configuration` 注解然后初始化一些额外的 *beans*。
 `@SpringBootApplication` 实则是包含了三个功能在一个步骤中：
 
-	1. `@EnableAutoConfiguration` 允许 自动配置 机制
+ 	1. `@EnableAutoConfiguration` 允许 自动配置 机制
  	2. `@ComponentScan` 允许扫描 `@Component`
  	3. `@SpringBootConfiguration` 注册额外的 *beans* 在上下文中
 
@@ -61,14 +61,24 @@ If you do not like `application.properties` as the configuration file name, you 
 $ java -jar myproject.jar --spring.config.name=myproject
 
 $ java -jar myproject.jar --spring.config.location=classpath:/default.properties,classpath:/override.properties
+# 以 classpath:/default.properties 文件为运行配置文件
+
+$ java -jar boot.jar --spring.config.additional-location=classpath:/config/,file:./custom.yml
+# 以 classpath:/config/ 目录中的 application.yml 文件为运行配置文件
+
+$ java -jar boot.jar --spring.config.additional-location=file:./custom.yml,classpath:/config/
+# 以 file:./custom.yml 文件为运行配置文件
+
+$java -jar spring-boot.jar --spring.config.additional-location=classpath:/custom/,file:./custom.yml
 ```
 
 <font color="red">注意：</font>如果  `spring.config.location`  包含的是目录（不是文件），必须以 `/` 结尾。
-<font color="red">配置路径以相反的顺序搜索</font>
+<font color="red">配置路径以相反的顺序搜索，以第一个找的到的 `application.yml` 文件为此次运行的配置文件，若是直接指定配置文件 [`file:./custom.yml`] 那么以该指定的配置文件来运行</font>
 默认的配置路径 `classpath:/,classpath:/config/,file:./,file:./config/`. 
 查询顺序为：1. `file:./config/`, 2. `file:./`, 3. `classpath:/config/`, 4. `classpath:/`
 
 自定义配置路径使用 `spring.config.additional-location`  时，会添加到默认的配置路径前面，例如：配置了  `classpath:/custom-config/,file:./custom-config/` ，此时搜索路径顺序为 1. `file:./custom-config/`，2. `classpath:/custom-config/`，3. `file:./config/`, 4. `file:./`, 5. `classpath:/config/`, 6. `classpath:/`
+<font color="red">注意：</font> `spring:profiles:active` 配置的 `biz` 也为按照搜索路径顺序查找 `application-biz.yml` 文件
 
 ##### 8. 日志记录
 
