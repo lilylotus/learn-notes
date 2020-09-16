@@ -34,7 +34,19 @@ git branch -d -r origin/origin/dev
 git push -v origin :refs/heads/origin/dev
 ```
 
-#### 2. git rebase
+#### 创建一个空分支
+
+空分支该分支没有父亲节点，不继承任何提交，是一个完全干净的节点。
+
+```bash
+git checkout --orphan <new-branch-name>
+
+$ git checkout -porphan all-new-branch
+$ git rm -rf .
+$ git commit -m "new branch for learn"
+```
+
+#### git rebase
 
 `log --pretty=format:'%Cred%h %C(yellow)%ad%Creset %Cred%s%Creset %Cblue[%an] %C(yellow)%d' --graph --date=short --topo-order`
 

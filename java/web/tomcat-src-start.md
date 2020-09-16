@@ -9,7 +9,7 @@ pom.xml -> 参照 pom 文件配置
 Main Class： org.apache.catalina.startup.Bootstrap
 
 VM Options：
--Dcatalina.home=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src -Dcatalina.base=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src -Djava.endorsed.dirs=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/endorsed -Djava.io.tmpdir=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/temp -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/conf/logging.properties
+-Dcatalina.home=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src -Dcatalina.base=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src -Djava.endorsed.dirs=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/endorsed -Djava.io.tmpdir=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/temp -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djava.util.logging.config.file=/home/dandelion/dandelion/programming/source/apache-tomcat-8.5.51-src/conf/logging.properties -Duser.language=en -Duser.region=US -Dfile.encoding=UTF-8
 
 -----
 org.apache.catalina.startup.ContextConfig 类添加：
