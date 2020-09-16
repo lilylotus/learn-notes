@@ -4,6 +4,39 @@
 2. 线程资源必须通过线程池提供，不允许在应用中自行显式创建线程
 3. 线程池不允许使用 `Executors` 去创建，而是通过 `ThreadPoolExecutor` 去创建，这样的处理方式让写同学更加明确线程池运行规则，避资源耗尽风险
 
+`FixedThreadPool` 和 `SingleThreadPoolPool` : 允许的请求队列长度为 `Integer.MAX_VALUE`，可能会堆积大量的请求，从而导致 `OOM`。
+`CachedThreadPool` 和 `ScheduledThreadPool` : 允许的创建线程数量为 `Integer.MAX_VALUE`，可能会创建大量的线程，从而导致 `OOM`。
+
+##### 推荐的线程池的数量大小
+
+```
+/**
+ * Ncpu = CPU 数量
+ * Ucpu = 目标 CPU 的使用率，0<=Ucpu<=1
+ * W/C  = 任务等待时间与任务计算时间的比率
+ */
+Nthreads = Ncpu * Ucpu * (1 + W/C)
+4 * 0.1 * (1 + 100/200) = 0.4 * (1 + 0.5) = 1
+```
+
+##### ThreadPoolExecutor 执行流程
+
+**Core and maximum pool sizes**
+当正在运行的线程小于 corePoolSize，当 execute() 提交一个请求后会创建一个新的线程去处理，即使其他工作线程处于空闲状态。当正在运行的线程大于 corePoolSize 但小于 maximumPoolSize 线程数量，仅当队列已满时才会创建一个新线程。
+**Keep-alive times**
+如果当前池中有超过 corePoolSize 的线程，则多余的线程将在空闲时间超过 keepAliveTime 时终止。默认情况下，仅当线程树大于 corePoolSize 线程数时，保持活动策略才适用。
+
+<font color="red">注意：</font> 线程池并没有标记哪个线程是核心线程，哪个是非核心线程，线程池只关心核心线程的数量。
+
+> corePoolSize：线程池中核心线程数的最大值
+> maximumPoolSize：线程池中能拥有最多线程数
+> workQueue：用于缓存任务的阻塞队列
+
+1. 如果没有空闲的线程执行该任务且当前运行的线程数少于 corePoolSize，则添加新的线程执行该任务。
+2. 如果没有空闲的线程执行该任务且当前的线程数等于 corePoolSize 同时阻塞队列未满，则将任务入队列，而不添加新的线程。
+3. 如果没有空闲的线程执行该任务且阻塞队列已满同时池中的线程数小于 maximumPoolSize，则创建新的线程执行任务。
+4. 如果没有空闲的线程执行该任务且阻塞队列已满同时池中的线程数等于 maximumPoolSize，则根据构造函数中的 handler 指定的策略来拒绝新的任务。
+
 ##### ThreadPoolExecutor 参数任务队列，workQueue
 
 任务队列，被添加到线程池中，但尚未被执行的任务；它一般分为直接提交队列、有界任务队列、无界任务队列、优先任务队列几种。
@@ -65,6 +98,8 @@ ThreadPoolExecutor executor =
 4. `DiscardPolicy` 策略：该策略会默默丢弃无法处理的任务，不予任何处理。当然使用此策略，业务场景中需允许任务的丢失；
 
 以上内置的策略均实现了 `RejectedExecutionHandler` 接口，当然你也可以自己扩展 `RejectedExecutionHandler` 接口，定义自己的拒绝策略。
+
+---
 
 ##### 线程复用，线程池
 
