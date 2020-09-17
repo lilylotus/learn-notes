@@ -1,4 +1,4 @@
-###### docker redis 运行
+##### docker redis 运行
 
 ```bash
 docker run -v /redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
@@ -6,6 +6,32 @@ docker run -v /redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
 -p 6379:6379 \
 --name redis01 \
 redis:alpine redis-server /usr/local/etc/redis/redis.conf
+
+#!/bin/bash
+DIR=$(pwd)
+CN=redis
+echo "redis base dir [$DIR], container name [$CN]"
+docker run -d --name $CN \
+-v $DIR/data:/data \
+-v $DIR/conf/redis.conf:/etc/redis/redis.conf \
+-p 46379:6379 \
+redis:5.0.9 \
+redis-server /etc/redis/redis.conf
+
+cat <<EOF > /etc/apt/source.list
+deb http://mirrors.aliyun.com/debian/ buster main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ buster main non-free contrib
+deb http://mirrors.aliyun.com/debian-security buster/updates main
+deb-src http://mirrors.aliyun.com/debian-security buster/updates main
+deb http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ buster-updates main non-free contrib
+deb http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ buster-backports main non-free contrib
+EOF
+
+apt-get update
+apt-get install net-tools
+apt-get install iputils-ping
 ```
 
 ##### redis 版本

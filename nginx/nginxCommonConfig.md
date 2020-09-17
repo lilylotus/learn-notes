@@ -9,6 +9,9 @@ nginx -c filename   # 为 Nginx 指定一个配置文件，来代替缺省的。
 nginx -t            # 检查配置文件的语法的正确性，并尝试打开配置文件中所引用到的文件
 nginx -v            # 显示 nginx 的版本。
 nginx -V            # 显示 nginx 的版本，编译器版本和配置参数。
+
+# 校验配置文件
+$ nginx -t -c nginx.conf
 ```
 
 #### 2. 基本配置

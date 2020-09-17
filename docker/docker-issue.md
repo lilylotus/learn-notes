@@ -54,3 +54,14 @@ do
 done
 ```
 
+#### 3. docker 非 root 用户权限问题
+
+把用户加到 docker 组
+
+```bash
+sudo groupadd docker
+sudo gpasswd -a $USER docker
+------
+$ newgrp docker
+```
+
