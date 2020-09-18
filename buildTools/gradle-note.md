@@ -221,7 +221,6 @@ ext {
 }
 
 repositories {
-    mavenLocal()
     maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
     mavenCentral()
 }
@@ -264,7 +263,7 @@ task mkdirs() {
 }
 ```
 
-##### 3.2 所需依赖 jar 放到一个 lib 目录
+##### 3.2 所需依赖 jar 放到外部 lib 目录
 
 ```groovy
 plugins {
@@ -314,19 +313,24 @@ jar {
     /*from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }*/
+    /* 把依赖的 Jar 包放到外面 lib/ 目录下 */
     dependsOn clearJar
     dependsOn copyJar
+
     def dateStr = new Date().format('yyyyMMdd')
     archiveBaseName = "$project.name-$dateStr"
+    /* 指定运行时的 Class-Path: 路径 */
     if (!configurations.runtimeClasspath.isEmpty()) {
         //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
         manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
     }
+    
     manifest {
         attributes "Manifest-Version": 1.0
         attributes 'Built-By': System.getProperty("user.name")
         attributes 'Main-Class':"$mainClassName"
     }
+    
     exclude('LICENSE.txt', 'NOTICE.txt', 'rootdoc.txt')
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     exclude 'META-INF/NOTICE', 'META-INF/NOTICE.txt'
@@ -382,8 +386,8 @@ task copyJar(type: Copy, dependsOn: 'clearJar') {
 }
 
 jar {
+
     excludes = ["*.jar"]
-    dependsOn clearJar
     dependsOn copyJar
 
     manifest {
@@ -393,15 +397,33 @@ jar {
         /*attributes("branchName": "$branchName",
                 "commitId": "$branchCommitId")*/
     }
+    /* 指定 Class-Path: 路径  */
     if (!configurations.runtimeClasspath.isEmpty()) {
-        //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
-        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { /*println it.name;*/ "lib/$it.name" }.join(' '))
     }
 }
 
-bootJar {
+/* 构建源码包 */
+task sourcesJar(type: Jar, dependsOn: classes) {
     excludes = ["*.jar"]
-    dependsOn clearJar
+    dependsOn copyJar
+
+    manifest {
+        attributes "branchName": "$branchName"
+        attributes "commitId": "$branchCommitId"
+        attributes("Main-Class": "cn.nihility.SpringbootStarterApplication")
+    }
+    if (!configurations.runtimeClasspath.isEmpty()) {
+        manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' '))
+    }
+
+    from("$buildDir\\classes\\java\\main")
+    from("$buildDir\\resources\\main")
+}
+
+bootJar {
+    /* 排除 Spring-Boot-Lib: BOOT-INF/lib/ 中的 jar 包 */
+    excludes = ["*.jar"]
     dependsOn copyJar
 
     manifest {
@@ -411,8 +433,8 @@ bootJar {
         /*attributes("branchName": "$branchName",
                 "commitId": "$branchCommitId")*/
     }
+    /* 指定 Class-Path: 路径  */
     if (!configurations.runtimeClasspath.isEmpty()) {
-        //manifest.attributes('Class-Path': '. lib/' + configurations.runtimeClasspath.collect { println it.name ; it.name }.join(' lib/'))
         manifest.attributes('Class-Path': '. ' + configurations.runtimeClasspath.files.collect { println it.name; "lib/$it.name" }.join(' '))
     }
 }

@@ -8,22 +8,6 @@ hostnamectl set-hostname --static k8s-master01
 
 ```bash
 yum install -y conntrack ntpdate ntp ipvsadm ipset jq iptables iptables-services curl sysstat libseccomp wget vim net-tools git
-
-yum install -y conntrack
-yum install -y ntpdate
-yum install -y ntp
-yum install -y ipvsadm
-yum install -y ipset
-yum install -y jq
-yum install -y iptables
-yum install -y iptables-services
-yum install -y curl
-yum install -y sysstat
-yum install -y libseccomp
-yum install -y wget
-yum install -y vim
-yum install -y net-tools
-yum install -y git
 ```
 
 #### 设置防火墙为 Iptables 并设置空规则
@@ -64,8 +48,8 @@ sysctl -p /etc/sysctl.d/kubernetes.conf
 ```bash
 # 设置系统时区为 中国/上海
 timedatectl set-timezone Asia/Shanghai
-# 将当前的 UTC 时间写入硬件时钟
-timedatectl set-local-rtc 0
+# 将当前的 UTC 时间写入硬件时钟 [-r show]
+hwclock -w
 # 重启依赖于系统时间的服务
 systemctl restart rsyslog && systemctl restart crond
 ```
@@ -123,21 +107,7 @@ else
 fi
 
 # 2. 
-#yum install -y conntrack ntpdate ntp ipvsadm ipset jq iptables iptables-services curl sysstat libseccomp wget vim net-tools git
-yum install -y conntrack
-yum install -y ntpdate
-yum install -y ntp
-yum install -y ipvsadm
-yum install -y ipset
-yum install -y iptables
-yum install -y iptables-services
-yum install -y curl
-yum install -y sysstat
-yum install -y libseccomp
-yum install -y wget
-yum install -y vim
-yum install -y net-tools
-yum install -y git
+yum install -y conntrack ntpdate ntp ipvsadm ipset jq iptables iptables-services curl sysstat libseccomp wget vim net-tools git
 yum install -y epel-release && yum install -y htop
 yum install -y jq
 

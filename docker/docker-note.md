@@ -67,3 +67,11 @@ $ ping b1 / $ ping box
 # --network-alias box 指定网络别名，可以通过这个别名访问
 ```
 
+#### 创建容器时指定 IP
+
+```bash
+yum install -y iproute net-tools
+
+docker run --rm -it --network br --ip 172.18.0.200 busybox /bin/sh
+```
+

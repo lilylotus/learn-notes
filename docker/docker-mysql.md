@@ -1,5 +1,7 @@
 ##### 1. docker mysql 容器启动配置
 
+<font color="red">注意：</font> mysql 的配置文件名称 <font color="red">my.cnf</font>
+
 ```bash
 #!/bin/bash
 DIR=$(pwd)

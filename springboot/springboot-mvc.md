@@ -86,3 +86,28 @@ public class ResponseResultBodyAdvice implements ResponseBodyAdvice<Object>, Ord
 }
 ```
 
+#### 获取请求 headers
+
+使用 `org.springframework.web.bind.annotation.RequestHeader` 方法参数注解获取所有 *headers*，该情况每个 header 中仅有一个值。
+
+```java
+@RequestMapping("/headers")
+public Map<String, String> headers(@RequestHeader Map<String, String> headers) { }
+```
+
+若是一个请求有多个值，`org.springframework.util.MultiValueMap` map 来接收，获取的 value 是 List。
+
+```java
+@RequestMapping("/headers")
+public Map<String, String> headers(@RequestHeader MultiValueMap<String, String> headers) { }
+```
+
+直接使用 `org.springframework.http.HttpHeaders` 接收所有的 Header 参数。
+
+```java
+@GetMapping("/httpHeaders")
+public Map<String, String> httpHeaders(@RequestHeader HttpHeaders headers) { }
+```
+
+
+

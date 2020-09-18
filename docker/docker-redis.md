@@ -1,19 +1,17 @@
 ##### docker redis 运行
 
 ```bash
-docker run -v /redis/conf/redis.conf:/usr/local/etc/redis/redis.conf \
--v /redis/data:/data \
+# redis alpine
+$ docker run --name redis \
+-v `pwd`/conf/redis.conf:/usr/local/etc/redis/redis.conf \
+-v `pwd`/data:/data \
 -p 6379:6379 \
---name redis01 \
 redis:alpine redis-server /usr/local/etc/redis/redis.conf
 
-#!/bin/bash
-DIR=$(pwd)
-CN=redis
-echo "redis base dir [$DIR], container name [$CN]"
-docker run -d --name $CN \
--v $DIR/data:/data \
--v $DIR/conf/redis.conf:/etc/redis/redis.conf \
+# redis debian
+$ docker run -d --name redis \
+-v `pwd`/data:/data \
+-v `pwd`/conf/redis.conf:/etc/redis/redis.conf \
 -p 46379:6379 \
 redis:5.0.9 \
 redis-server /etc/redis/redis.conf
