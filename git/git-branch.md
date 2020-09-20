@@ -41,7 +41,7 @@ git push -v origin :refs/heads/origin/dev
 ```bash
 git checkout --orphan <new-branch-name>
 
-$ git checkout -porphan all-new-branch
+$ git checkout --orphan all-new-branch
 $ git rm -rf .
 $ git commit -m "new branch for learn"
 ```

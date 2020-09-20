@@ -57,3 +57,39 @@ mybatis:
 > *@MapperScan(basePackages = {"cn.nihility.mybatis.dao"})*
 > 需要在 *springboot* 启动类上添加此注解来让 *mybatis* 自动扫描 dao 或者在每个 dao 接口上添加 Mybatis 的 *@Mapper*  注解
 
+---
+
+#### tomcat libtcnative-1.so 库
+
+[Apache Tomcat Native Library](http://tomcat.apache.org/native-doc/) 下载库文件，下载地址 http://tomcat.apache.org/download-native.cgi
+
+基于 debian 的 linux `apt-get install libapr1.0-dev libssl-dev`
+基于 rpm 的 Linux `yum install apr-devel openssl-devel`
+
+安装 apr，[Apr 网站](http://www.linuxfromscratch.org/blfs/view/svn/general/apr.html)，[下载地址](https://archive.apache.org/dist/apr/apr-1.7.0.tar.bz2)
+
+```
+./configure --prefix=/usr --disable-static --with-installbuilddir=/usr/share/apr-1/build
+make && make install [make test]
+
+# 文件位置 /usr/bin/apr-1-config
+```
+
+安装 native
+
+```bash
+./configure
+make && make install
+
+# 安装在 /usr/local/apr/lib 目录下
+sudo ln -s /usr/local/apr/lib/libtcnative-1.so /usr/lib/libtcnative-1.so
+```
+
+##### centos
+
+```
+yum install apr-devel openssl-devel
+
+ln -sf /opt/apache-tomcat/lib/libtcnative-1.so /root/ella/bin/libtcnative-1.so
+```
+
