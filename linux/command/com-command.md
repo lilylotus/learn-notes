@@ -70,6 +70,16 @@ curl [options...] <url>
 >
 > rsync的消耗更少的**带宽** ，因为它使用压缩和解压缩方法在发送和接收数据两端。
 
+<font color="red">注意：</font>源路径如果是一个目录的话，带上尾随斜线和不带尾随斜线是不一样的，不带尾随斜线表示的是整个目录包括目录本身，带上尾随斜线表示的是目录中的文件，不包括目录本身
+
+```bash
+# 会在 backup 备份目录创建 etc 目录，同步 etc 目录及其下面的文件
+$ rsync -a /etc backup/
+
+# 不会在 backup 备份目录创建 etc 目录，仅同步 etc 目录下的文件
+$ rsync -a /etc/ backup/
+```
+
 ```bash
 # rsync options source destination
  -v 详细信息
@@ -79,6 +89,21 @@ curl [options...] <url>
  -z 压缩文件中的数据
  -h 友好的提示
  -d 传输目录而不会递归
+ -p, --perms 保留权限信息
+ -o, --owner 保留所有者信息
+ -g, --group 保留组信息
+ 
+ # 同步方式
+ -c, --checksum 	依据校验码同步数据
+ -b, --backup		相同文件备份，依据添加后缀 --suffix & --backup-dir
+ -u, --update		仅同步比目标目录中新的文件
+ --delete           删除目标目录中不同步目录多的文件
+ 
+-n, --dry-run perform a trial run with no changes made
+
+$ rsync -ab --backup-dir $(pwd)/backup --suffix backup src/ dist/
+$ rsync -nvruc src/ dist/
+$ rsync -av --delete src/ dist/
 
 1. 本地复制
 $ rsync -zvh sFile sFile.bak # 压缩的方式复制/同步
@@ -93,5 +118,18 @@ $ rsync -azvh user@remote:/source dest
 4. 使用协议 [-e]
 $ rsync -azvh -e ssh root@remote:/source dest
 $ rsync -avz -e 'ssh -p22' ./rsync ad@u:/home/ad/rsync
+
+5. 仅显示要同步的文件，不去做 [-nav]
+$ rsync -nav src/ dist/
+```
+
+默认 `rsync` 只同步文件， `rsync src/a.log dist/`
+
+```bash
+# 仅同步当前目录下所有文件和目录结构，不包含当前目录下目录里的内容
+$ rsync -d src/ dist/
+
+# 递归同步当前目录及其所有子目录的内容
+$ rsync -r src/ dist/
 ```
 

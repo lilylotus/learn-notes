@@ -360,5 +360,8 @@ nihility.cn.            86400   IN      SOA     dns-primary.nihility.cn. lily.ni
 
 #### 获取 IP 库
 
+亚太互联网络信息中心 (**A**sia-**P**acific **N**etwork **I**nformation **C**enter，APNIC)，是全球五大区域性因特网注册管理机构之一，负责亚太地区IP地址、ASN（自治域系统号）的分配并管理一部分根域名服务器镜像的国际组织。
+
 `http://ftp.apnic.net/apnic/stats/apnic/delegated-apnic-latest`
 
+`delegated-apnic-latest.txt`
