@@ -140,6 +140,7 @@ public class SpringServletContainerInitializer implements ServletContainerInitia
 接口被实现在 *Servlet 3.0+* 的环境目的为了编程化的配置 `ServletContext`，相对于传统的 *web.xml* 配置方式。
 
 实现了 *SPI* 的会被 `SpringServletContainerInitializer` 自动检测到，它自己会被任意的 *servlet 3.0* 容器启动。
+<font color="red">关联接口</font> `org.springframework.boot.web.servlet.ServletContextInitializer#onStartup`， 加载 *servlet context*  内容，注册 `ServletRegistrationBean`, `ServletListenerRegistrationBean`, `DispatcherServletRegistrationBean`, `FilterRegistrationBean`， `DelegatingFilterProxyRegistrationBean`。由 `ServletWebServerApplicationContext#selfInitialize` 类或其子类调用。
 
 ```java
 // org.springframework.web.WebApplicationInitializer#onStartup 中的实现
@@ -178,7 +179,7 @@ public void onStartup(ServletContext servletContext) throws ServletException {
 
 创建一个 `SpringApplication` 实例，在执行 *run* 方法。
 
-创建实例步骤：
+创建 `SpringApplication` 实例步骤：
 
 1. 判断当前运行环境，NONE, SERVLET, REACTIVE
 2. 加载初始化 spring boot 预定义的所有 `ApplicationContextInitializer` 实现
@@ -189,33 +190,68 @@ public void onStartup(ServletContext servletContext) throws ServletException {
 
 `org.springframework.boot.SpringApplication#getSpringFactoriesInstances(java.lang.Class<T>)`
 
-运行 *run* 步骤：
+运行 *run* 步骤：`org.springframework.boot.SpringApplication#run(java.lang.String...)`
 
-1. 加载初始化 spring boot 预定义的所有 `SpringApplicationRunListener` 实现
-2. 依据当前运行环境创建标准运行环境 `StandardEnvironment`/`StandardServletEnvironment`/`StandardReactiveWebEnvironment`
+1. 加载初始化 spring boot 预定义的所有 `SpringApplicationRunListener` 实现，运行时监听器
+
+2. 依据当前运行环境创建标准运行环境
+   方法：`org.springframework.boot.SpringApplication#prepareEnvironment`  `StandardEnvironment`/`StandardServletEnvironment`/`StandardReactiveWebEnvironment`
    按照 *profiles* 处理环境变量。
+   
 3. 加载 `Banner` 标识，默认位置在资源根 `banner.txt` 文件定义
+   方法：`org.springframework.boot.SpringApplication#printBanner`
+
 4. 依据运行的环境创建对应的 `ApplicationContext`
+   
+   方法：`org.springframework.boot.SpringApplication#createApplicationContext`
    `SERVLET` -> `AnnotationConfigServletWebServerApplicationContext`
    `REACTIVE` -> `AnnotationConfigReactiveWebServerApplicationContext`
    默认 -> `AnnotationConfigApplicationContext`
-5. 加载初始化 spring boot 预定义的所有 `SpringBootExceptionReporter`
+   
+5. 加载初始化 spring boot 预定义的所有 `SpringBootExceptionReporter`，异常报告回调
+
 6. 准备 *Context* 环境，联合 Context/Environment/Listener
+   方法: `org.springframework.boot.SpringApplication#prepareContext`
+
 7. 调用 `org.springframework.context.support.AbstractApplicationContext#refresh` 更新和初始化环境 <font color="red">重点</font>
+   方法: `org.springframework.boot.SpringApplication#refreshContext`
+   *web + tomcat* 环境使用 `ServletWebServerApplicationContext`，在调用 `ServletWebServerApplicationContext#onRefresh` 方法启动 *servlet* 容器。在处理 `ServletWebServerApplicationContext#createWebServer`
 8. 启动所有 *Listener*  和按配置环境 (environment) 和 参数 运行环境
 
 #### web server 容器加载
+
+都是在 `org.springframework.context.support.AbstractApplicationContext#refresh` 方法中调用 `org.springframework.context.support.AbstractApplicationContext#onRefresh` 处理 *context* 环境。
+
+<font color="red">关键类/接口</font> `WebServer`, `ServletContext`, `ServletWebServerFactory`, `WebApplicationContext`, `AnnotationConfigServletWebServerApplicationContext`
 
 `ServletWebServerApplicationContext#onRefresh`
 `ServletWebServerApplicationContext#createWebServer`
 
 1. 向 spring boot 容器中获取 `ServletWebServerFactory`  实例，不同的环境 *servlet* 容器不同
-   *tomcat* -> `org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory`
+   *tomcat* -> `TomcatServletWebServerFactory`
    *undertow* -> `UndertowServletWebServerFactory`
+   *jetty* -> `JettyServletWebServerFactory`
 2. *ServletContext* 上下文初始化
+   方法：`ServletWebServerApplicationContext#selfInitialize`
    检查是否有 *WebApplicationContext.ROOT* context 上下文环境变量，决定是否采用内嵌的 tomcat
    准备 *web* 应用的 context
    注册 context 到 spring 容器 *application* 的 `scope`
    注册环境
    *servlet* 容器启动调用 `ServletContextInitializer`  接口的 `onStartup` 方法
+   `beans.onStartup(servletContext);`
 
+#### tomcat 容器运行
+
+`org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory#getWebServer`
+创建 *Tomcat* 服务并配置。
+`org.springframework.boot.web.embedded.tomcat.TomcatWebServer#initialize` 启动 *tomcat server*
+
+#### 内嵌的 servlet 容器
+
+接口： `org.springframework.boot.web.servlet.ServletContextInitializer`  用来接管配置 *servlet 3.0* 的 `ServletContext`。
+
+`org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory#getTomcatWebServer` 方法中创建了一个 `TomcatWebServer` 实例后调用 `TomcatWebServer#initialize` 初始化，然后 `this.tomcat.start();` -> `Tomcat#start` -> `StandardServer#start` -> ``StandardServer#startInternal`  -> `StandardService#start` -> `StandardService#startInternal`  -> `StandardEngine#start`  -> `StandardEngine#startInternal` -> `TomcatStarter#onStartup` 启动 *servlet 3.0* 规范的容器，自动加载 `ServletContainerInitializer`
+
+`TomcatStarter` 实现了 `ServletContainerInitializer`  接口。
+
+`TomcatStarter#onStartup`加载了 `ServletWebServerApplicationContext`，`TomcatServletWebServerFactory`， `SessionConfiguringInitializer`

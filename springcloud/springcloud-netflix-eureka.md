@@ -1,4 +1,4 @@
-##### Spring Cloud Netfix 组成
+#### Spring Cloud Netfix 组成
 
 服务发现 *(Service Discovery)* `[Eureka]`
 
@@ -27,7 +27,7 @@
 
 ---
 
-###### 服务发现：Eureka Client
+#### 服务发现：Eureka Client
 
 ```xml
 <dependency>
@@ -37,31 +37,21 @@
 ```
 
 客户端向 Eureka 注册时，它将提供有关自身的元数据，例如主机，端口，运行状况指示器URL，主页和其他详细信息。
-Eureka从属于服务的每个实例接收心跳消息。 *(heartbeat messages)*
-如果心跳在可配置的时间表上进行故障转移，则通常会将实例从注册表中删除。
+Eureka 从属于服务的每个实例接收心跳消息。 *(heartbeat messages)*，如果心跳在可配置的时间表上进行故障转移，则通常会将实例从注册表中删除。
 
-最简单的 *Eureka Client* 应用：
-
-```java
-@SpringBootApplication
-@RestController
-public class Application {
-    @RequestMapping("/")
-    public String home() {
-        return "Hello world";
-    }
-    public static void main(String[] args) {
-        new SpringApplicationBuilder(Application.class).web(true).run(args);
-    }
-}
-```
-
-通过在类路径上使用 `spring-cloud-starter-netflix-eureka-client`，您的应用程序将自动向 *Eureka Server* 注册。需要进行配置才能找到 *Eureka* 服务器
+添加依赖 `spring-cloud-starter-netflix-eureka-client`，在 *Spring Boot* 启动类上添加注解 `@EnableEurekaClient`， 应用程序将自动向 *Eureka Server* 注册，还需要进行配置才能找到 *Eureka* 服务器
 
 ```yaml
 eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
   client:
-    serviceUrl:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
       defaultZone: http://localhost:8761/eureka/
 ```
 
@@ -84,11 +74,8 @@ eureka:
 ```
 
 **Eureka 的健康检查**
-默认 *Eureka* 使用客户端心跳来确定客户端是否启动。
-除非另有说明，否则按照 *Spring Boot Actuator* 的规定，*Discovery Client* 不会传播应用程序的当前运行状况检查状态。
-因此，在成功注册后，Eureka 始终宣布该应用程序处于“启动”状态。
-可以通过启用 Eureka 运行状况检查来更改此行为，这会导致应用程序状态传播到 Eureka。
-结果，所有其他应用程序都不会将流量发送到处于 *"UP"* 状态以外的其他状态的应用程序。
+默认 *Eureka* 使用客户端心跳来确定客户端是否启动。除非另有说明，否则按照 *Spring Boot Actuator* 的规定，*Discovery Client* 不会传播应用程序的当前运行状况检查状态。
+因此，在成功注册后，Eureka 始终宣布该应用程序处于“启动”状态。可以通过启用 Eureka Client 运行状况检查来更改此行为，把应用程序状态传播到 Eureka Server。结果，所有其他应用程序都不会将流量发送到处于 *"UP"* 状态以外的其他状态的应用程序。
 *配置 Client 允许健康检查*
 
 ```yaml
@@ -96,7 +83,6 @@ eureka:
   client:
     healthcheck:
       enabled: true
-
 # 注意： eureka.client.healthcheck.enabled=true 应该配置在 application.yml 当中
 # 设置值在 bootstrap.yml 当中会导致不良副作用，如：在 Eureka 中以 UNKONWN 状态注册
 ```
@@ -132,18 +118,6 @@ eureka:
       fetchRegistry: false
 server:
    port: 8761
-```
-
-**运行 server 服务**
-
-```java
-@SpringBootApplication
-@EnableEurekaServer
-public class Application {
-    public static void main(String[] args) {
-        new SpringApplicationBuilder(Application.class).web(true).run(args);
-    }
-}
 ```
 
 服务器在 `/eureka/ *` 下有一个主页，其中包含 UI 和 HTTP API 端点，用于 Eureka 的正常功能。
@@ -275,8 +249,6 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     <artifactId>jaxb-runtime</artifactId>
 </dependency>
 ```
-
-
 
 ##### Eureka 常用配置
 
