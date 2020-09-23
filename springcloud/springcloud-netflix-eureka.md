@@ -1,3 +1,28 @@
+#### 提示
+
+##### 服务请求时优先获取 IP 地址
+
+```properties
+eureka.instance.preferIpAddress=true
+eureka.instance.hostname=localhost
+
+# 在 preferIpAddress=false 时，别的服务获取到的就是配置 eureka.instance.hostname 值
+# 该值默认为 OS 原始值
+# preferIpAddress=true 时，获取到的就是该配置服务的 IP 地址
+```
+
+`org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean#getHostName`
+
+使用
+
+```java
+LoadBalancerClient loadBalancerClient;
+
+ServiceInstance instance = loadBalancerClient.choose(EUREKA_REGISTRY_SERVICE);
+instance.getHost(); // 在此处获取的就为要请求服务的 IP 地址
+// 当 preferIpAddress=false 时，获取就为服务的注册 host (注册的名称)
+```
+
 #### Spring Cloud Netfix 组成
 
 服务发现 *(Service Discovery)* `[Eureka]`
@@ -149,7 +174,8 @@ Eureka 服务器没有后端存储，但是注册表中的所有服务实例都�
 
 *Ribbon* 支持对于客户端的 Zones 和 Regions。
 
-**Standalone Mode (单机模式)**
+###### **Standalone Mode (单机模式)**
+
 只要有某种监视器或弹性运行时（例如 *Cloud Foundry*），这两个缓存（客户端和服务器）以及心跳的组合就可以使独立的 Eureka 服务器对故障具有相当的恢复能力。
 在独立模式下，您可能希望关闭客户端行为，以使其不会继续尝试并无法到达其对等对象。
 

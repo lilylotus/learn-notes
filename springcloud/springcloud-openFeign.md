@@ -1,5 +1,8 @@
-Feign 是声明性 Web 服务客户端
-Spring Cloud 集成了 Ribbon 和 Eureka 以及 Spring Cloud LoadBalancer，以在使用 Feign 时提供负载平衡的 http 客户端。
+#### Spring Cloud OpenFeign
+
+OpenFeign 是声明式 web 服务客户端，它使编写 *web service clients* 更加简单。为了使用 *Feign* 创建一个接口然后添加注解。Feign 支持插件化的编码器和解码器。*Spring Cloud* 添加了对 *Spring MVC* 注解的支持，为了使用相同的 `HttpMessageConverters` （在 *Spring WEB* 中默认使用）。
+
+Spring Cloud 集成了 `Ribbon` 和 `Eureka` 以及 `Spring Cloud LoadBalancer`，以在使用 Feign 时提供负载平衡的 http 客户端。
 
 **Ribbon** 是基于 HTTP 和 TCP *客户端* 的负载均衡工具。它可以在客户端配置 *RibbonServerList* (服务端列表)，使用 HttpClient 或者 RestTemplate 模拟 HTTP 请求，步骤想到繁琐。
 
@@ -20,6 +23,10 @@ Spring Cloud 集成了 Ribbon 和 Eureka 以及 Spring Cloud LoadBalancer，以�
 </dependency>
 ```
 
+```groovy
+implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+```
+
 ##### 1.2 Feign 的使用
 
 写一个要调用对方服务的接口
@@ -38,7 +45,7 @@ public interface EmployeeFeignClient {
 
 ```java
 @SpringBootApplication
-@EnableFeignClients // 启动 Feign
+@EnableFeignClients // 启用 Feign 支持
 public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -56,34 +63,82 @@ private EmployeeFeignClient employeeFeignClient;
 String tag = employeeFeignClient.getTag();
 ```
 
-`@FeignClient` 注解中的 *名称* (stores) 是任意的客户端名称，用来创建 `Ribbon` 负载平衡器，或者 `Spring Cloud LoadBalancer`。
-上面的负载平衡器客户端将希望发现 *stores* 服务的物理地址。
-如果您的应用程序是 Eureka 客户端，则它将在 Eureka 服务注册表中解析该服务。
-如果您不想使用 Eureka，则只需在外部配置中配置服务器列表即可
+`@FeignClient` 注解中的 *名称* (stores) 是任意的客户端名称，用来创建 `Ribbon` 负载平衡器，或者 `Spring Cloud LoadBalancer`。也可以指定 URL 使用 `url` 属性 （绝对值或者 hostname）。这个 bean 的名称在 *application context* 中是接口的全限定名称，指定自己的别名使用 `qualifier` 属性在 `@FeignClient` 注解上。
+上面的负载平衡器客户端将希望发现 *stores* 服务的物理地址。如果应用程序是 Eureka 客户端，则它将在 Eureka 服务注册表中解析该服务。
+如果您不想使用 Eureka，则只需在外部配置中配置服务器列表即可，通过拓展配置 `simplediscoveryclient`
 
 > 为了保持向后兼容性，被用作默认的负载均衡器实现。但是，`Spring Cloud Netflix Ribbon` 现在处于维护模式，因此我们建议改用 `Spring Cloud LoadBalancer`。
 > set the value of `spring.cloud.loadbalancer.ribbon.enabled` to `false`.
 
 Spring Cloud 的 Feign 支持的中心概念是指定客户的概念。
 
-##### 1.3 Feign 常用配置
+##### 1.3 Feign 常用配置属性
 
 ```yaml
 feign:
   client:
     config:
-      feignName: # 定义 Feign 的名称
-      connectTimeout: 5000 # 相当于 Request.Options
-      readTimeout: 5000 # 相当于 Request.Options
-      loggerLevel: full # 日志级别
-      # Feign 错误解码器
-      errorDecoder: cn.nihility.feign.SimpleErrorDecoder
-      retryer: cn.nihility.feign.SimpleRetryer
-      requestInterceptors:
-        - cn.nihility.feign.FooRequestInterceptor
-        - cn.nihility.feign.BarRequestInterceptor
-      decode404: false
+      feignName:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: full
+        # Feign 错误解码器
+        errorDecoder: com.example.SimpleErrorDecoder
+        retryer: com.example.SimpleRetryer
+        requestInterceptors:
+          - com.example.FooRequestInterceptor
+          - com.example.BarRequestInterceptor
+        decode404: false
+        encoder: com.example.SimpleEncoder
+        decoder: com.example.SimpleDecoder
+        contract: com.example.SimpleContract
+
+---
+feign:
+  client:
+    config:
+      # default 配置会在所有的 @FeignClient 中使用
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
 ```
+
+##### Feign 默认复写
+
+*Spring Cloud* 的 Feign 支持的中心概念是指定客户的概念。每个 *Feign* 客户端都是组件装配的一部分，它们协同工作以按需联系远程服务器，组件有一个应用开发者给在 `@FeignClient` 注解中的名称。*Spring Cloud* 创建一个新的配件作为一个 `ApplicationContext` 按需给每个命名客户端使用 `FeignClientsConfiguration`。
+
+*Spring Cloud* 允许完全控制 *feign client*，通过使用添加额外的配置 （在 `FeignClientsConfiguration` 之上），使用注解 `@FeignClient`
+
+```java
+@FeignClient(name = "stores", configuration = FooConfiguration.class)
+public interface StoreClient { }
+```
+
+> `FooConfiguration` 不必添加注解 `@Configuration`，若是有，那么需要注意从所有的 `@ComponentScna` 中排除掉，否则包含该配置将会变为默认的源  `feign.Decoder`, `feign.Encoder`, `feign.Contract` 等。
+
+> `serviceId` 现在已经被弃用，推荐使用 `name`  属性。
+
+`@FeignClient` 注解中 `name` 和 `url` 属性支持占位符。
+
+```java
+@FeignClient(name = "${feign.name}", url = "${feign.url}")
+public interface StoreClient {}
+```
+
+Spring Cloud OpenFeign 默认为 *Feign* 提供以下 bean，（`BeanType` beanName: `ClassName`)
+
+- `Decoder` feignDecoder: `ResponseEntityDecoder` (which wraps a `SpringDecoder`)
+- `Encoder` feignEncoder: `SpringEncoder`
+- `Logger` feignLogger: `Slf4jLogger`
+- `Contract` feignContract: `SpringMvcContract`
+- `Feign.Builder` feignBuilder: `HystrixFeign.Builder`
+- `Client` feignClient: if Ribbon is in the classpath and is enabled it is a `LoadBalancerFeignClient`, otherwise if Spring Cloud LoadBalancer is in the classpath, `FeignBlockingLoadBalancerClient` is used. If none of them is in the classpath, the default feign client is used. <font color="red">注意</font>
+  - `spring-cloud-starter-netflix-ribbon`
+  - `spring-cloud-starter-loadbalancer`
+  - `spring-cloud-starter-openfeign`
+
+*OkHttpClient* and *ApacheHttpClient* feign clients 都可以使用，具体使用通过配置 `feign.okhttp.enabled` 或者 `feign.httpclient.enabled` 设置为 `true`，需要包含它们在 *classpath*。当然，可以自定义一个 *HTTP Client* 来使用通过提供一个 bean ，任意实现了 `org.apache.http.impl.client.CloseableHttpClient` 当使用 *Apache* 或者 `okhttp3.OkHttpClient` 当使用 *OK HTTP*。
 
 #### 2. 高并发处理
 

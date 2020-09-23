@@ -1,24 +1,33 @@
-##### 客户端的负载均衡 (Client Side Load Balancer) -- Ribbon
+#### 1. Netflix Ribbon
+
+客户端的负载均衡 (Client Side Load Balancer) -- Ribbon
 
 *Ribbon* 是客户端负载平衡器，可让您对 *HTTP* 和 *TCP* 客户端的行为进行大量控制。
 *Feign* 已经使用了 *Ribbon*，因此，如果您使用 `@FeignClient`，也适用。
 
-Ribbon 中的中心概念是指定客户端的概念。
+Ribbon 的中心概念是指定客户端的概念。
 
-每个负载均衡器都是组件的一部分，这些组件可以一起工作以按需联系远程服务器，并且该组件具有您作为应用程序开发人员提供的名称（例如，使用 `@FeignClient` 批注）。
-根据需要，*Spring Cloud* 通过使用 *RibbonClientConfiguration* 为每个命名客户端创建一个新的集合作为 *ApplicationContext*。
-它包含（除其他事项外）一个 `ILoadBalancer`，一个 `RestClient` 和一个 `ServerListFilter`。
+每个负载均衡器都是组件装配（集合）的一部分，为了按需联系远程服务器一起协同工作，并且该组件具有您作为应用程序开发人员提供的名称（例如，使用 `@FeignClient` 批注）。
+根据需要，*Spring Cloud* 通过使用 `RibbonClientConfiguration` 为每个命名客户端创建一个新的集合作为 `ApplicationContext`。
+它包含（除其他事项外） `ILoadBalancer`， `RestClient` 和 `ServerListFilter`。
 
-**使用 Ribbon**
+##### **使用 Ribbon**
 
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
 </dependency>
+
+<!-- gradle -->
+implement 'org.springframework.cloud:spring-cloud-starter-netflix-ribbon'
 ```
 
-**自定义 Ribbon 客户端**
+##### **自定义 Ribbon 客户端**
+
+[参考配置文件](https://github.com/Netflix/ribbon/blob/master/ribbon-core/src/main/java/com/netflix/client/config/CommonClientConfigKey.java) - `CommonClientConfigKey`。使用 *Spring Boot* 配置文件，`<client>.ribbon.*`
+
+*Spring Cloud* 允许完全控制客户端通过自定义声明额外补充的配置（`RibbonClientConfiguration`）使用注解 `@RibbonClient`
 
 ```java
 @Configuration
@@ -26,10 +35,24 @@ Ribbon 中的中心概念是指定客户端的概念。
 public class TestConfiguration {}
 ```
 
-`@RibbonClient` 注解类配置 *Ribbon Client*，该组件自动放入 `RbiionClientConfiguraiont` 当中。
-*注意：* 自定义的配置必须声明 `@Configuration` 注解
+在此案例中，客户端由已经存在的 `RibbonClientConfiguration` 配置，和任意在 `CustomConfiguration` 中的配置组成，（后者配置会覆盖前者配置）
 
-自定义 *Bean*
+> `@RibbonClient` 注解类配置 *Ribbon Client*，该组件自动放入 `RbiionClientConfiguraiont` 当中。
+> *注意：* 自定义的配置必须声明 `@Configuration` 注解，但是要注意的是，该配置不在 `@ComponentScan` 的主 *application conetxt* 中。否则，该配置会被所有的 `@RibbonClients` 共享。应该分开一个单独的包来放置该配置文件。
+
+由 *Spring Cloud Netflix* 为 *Ribbon* 默认提供的 *Beans* ：
+
+|      Bean Type      |         Bean Name         |            Class Name            |
+| :-----------------: | :-----------------------: | :------------------------------: |
+|   `IClientConfig`   |   `ribbonClientConfig`    |    `DefaultClientConfigImpl`     |
+|       `IRule`       |       `ribbonRule`        |       `ZoneAvoidanceRule`        |
+|       `IPing`       |       `ribbonPing`        |           `DummyPing`            |
+|    `ServerList`     |    `ribbonServerList`     |  `ConfigurationBasedServerList`  |
+| `ServerListFilter`  | `ribbonServerListFilter`  | `ZonePreferenceServerListFilter` |
+|   `ILoadBalancer`   |   `ribbonLoadBalancer`    |     `ZoneAwareLoadBalancer`      |
+| `ServerListUpdater` | `ribbonServerListUpdater` |    `PollingServerListUpdater`    |
+
+自定义这些类型的一个 *Bean*，它将会替换在一个 `@RibbonClient` 中的配置
 
 ```java
 @Configuration(proxyBeanMethods = false)
@@ -45,6 +68,78 @@ protected static class FooConfiguration {
         return new PingUrl();
     }
 }
+// 使用 PingUrl 替换了 NoOpPing，提供了自定义的 serverListFilter
+```
+
+##### 为所有的 Ribbon 客户但自定义默认配置
+
+一个默认的配置可以提供给所有的 *Ribbon Clients* 使用，通过配置注解 `@RibbonClients` 然后注册一个默认的配置
+
+```java
+@RibbonClients(defaultConfiguration = DefaultRibbonConfig.class)
+public class RibbonClientDefaultConfigurationTestsConfig {
+    public static class BazServiceList extends ConfigurationBasedServerList {
+        public BazServiceList(IClientConfig config) {
+            super.initWithNiwsConfig(config);
+        }
+    }
+}
+
+@Configuration(proxyBeanMethods = false)
+class DefaultRibbonConfig {
+    @Bean public IRule ribbonRule() { return new BestAvailableRule(); }
+    @Bean public IPing ribbonPing() { return new PingUrl(); }
+    @Bean
+    public ServerList<Server> ribbonServerList(IClientConfig config) {
+        return new RibbonClientDefaultConfigurationTestsConfig.BazServiceList(config);
+    }
+    @Bean
+    public ServerListSubsetFilter serverListFilter() {
+        return new ServerListSubsetFilter();
+   }
+}
+```
+
+##### 使用配置属性自定义 Ribbon
+
+从 1.2.0 版本开始，*Spring Cloud Netflix* 支持自定义 *Ribbon Clients* 参考兼容 *Ribbon* 的配置 [Ribbon Configuration](https://github.com/Netflix/ribbon/wiki/Working-with-load-balancers#components-of-load-balancer)
+
+这就允许在不同环境启动时间改变行为。
+
+支持的配置属性：
+
+- `<clientName>.ribbon.NFLoadBalancerClassName`: Should implement `ILoadBalancer`
+- `<clientName>.ribbon.NFLoadBalancerRuleClassName`: Should implement `IRule`
+- `<clientName>.ribbon.NFLoadBalancerPingClassName`: Should implement `IPing`
+- `<clientName>.ribbon.NIWSServerListClassName`: Should implement `ServerList`
+- `<clientName>.ribbon.NIWSServerListFilterClassName`: Should implement `ServerListFilter`
+
+> 这些属性中定义的类要优先于定义的 Beans 通过使用注解 `@RibbonClient(configuration=MyRibbonConfig.class)` ，和默认由 *Spring Cloud Netflix* 提供的。
+
+示例：为名称为 `users` 的服务配置 `IRule`
+
+```yml
+users:
+  ribbon:
+    NIWSServerListClassName: com.netflix.loadbalancer.ConfigurationBasedServerList
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.WeightedResponseTimeRule
+```
+
+##### 负载均衡器的组件
+
+- Rule - a logic component to determine which server to return from a list
+- Ping - a component running in background to ensure liveness of servers
+- ServerList - this can be static or dynamic. If it is dynamic (as used by `DynamicServerListLoadBalancer`), a background thread will refresh and filter the list at certain interval
+
+这些组件要么以编码的方式配置或者作为客户端配置属性的一部分作为反射实现。
+属性应该加上前缀 `<clientName>.<nameSpace>`
+
+```
+NFLoadBalancerClassName
+NFLoadBalancerRuleClassName
+NFLoadBalancerPingClassName
+NIWSServerListClassName
+NIWSServerListFilterClassName
 ```
 
 #### 2. 常用配置
@@ -57,6 +152,26 @@ ribbon:
   MaxAutoRetriesNextServer: 1 #切换重试实例的最大个数
   MaxAutoRetries: 1 # 切换实例后重试最大次数
   NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule #修改负载均衡算法
+```
+
+##### 在 Ribbon 中禁用 Eureka
+
+```properties
+ribbon.eureka.enabled=false
+```
+
+##### 显示使用 Ribbon API
+
+```java
+public class MyClass {
+    @Autowired
+    private LoadBalancerClient loadBalancer;
+    public void doStuff() {
+        ServiceInstance instance = loadBalancer.choose("stores");
+        URI storesUri = URI.create(String.format("https://%s:%s", instance.getHost(), instance.getPort()));
+        // ... do something with the URI
+    }
+}
 ```
 
 #### 3. 负载算法
