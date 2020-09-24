@@ -134,12 +134,26 @@ users:
 这些组件要么以编码的方式配置或者作为客户端配置属性的一部分作为反射实现。
 属性应该加上前缀 `<clientName>.<nameSpace>`
 
-```
+```yaml
 NFLoadBalancerClassName
 NFLoadBalancerRuleClassName
 NFLoadBalancerPingClassName
 NIWSServerListClassName
 NIWSServerListFilterClassName
+
+# 针对要访问的 eureka 注册服务名称的 ribbon 配置
+cloud-service-provider:
+  ribbon:
+    # Implement ILoadBalancer default: com.netflix.loadbalancer.ZoneAwareLoadBalancer
+    NFLoadBalancerClassName: com.netflix.loadbalancer.DynamicServerListLoadBalancer
+    # IRule
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.ZoneAvoidanceRule
+    # IPing
+    NFLoadBalancerPingClassName: com.netflix.loadbalancer.DummyPing
+    # ServerList
+    NIWSServerListClassName: com.netflix.loadbalancer.ConfigurationBasedServerList
+    # ServerListFilter
+    NIWSServerListFilterClassName: org.springframework.cloud.netflix.ribbon.ZonePreferenceServerListFilter
 ```
 
 #### 2. 常用配置

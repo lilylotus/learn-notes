@@ -235,7 +235,7 @@ feign:
     enabled: true
 ```
 
-##### 4.2 同一降级方式
+##### 4.2  统一降级方式
 
 ```java
 // 在类上配置统一的公共熔断设置
@@ -301,6 +301,9 @@ public class EmployeeClientFallBack implements EmployeeClient {
 
 // 在 Hystrix 监控中添加 @EnableHystrixDashboard 到启动类
 @EnableHystrixDashboard
+
+# application.yml 配置允许访问的列表
+hystrix.dashboard.proxy-stream-allow-list="*"
 ```
 
 监控信息

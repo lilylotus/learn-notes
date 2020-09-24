@@ -104,7 +104,7 @@ feign:
         loggerLevel: basic
 ```
 
-##### Feign 默认复写
+##### 1.4 Feign 默认复写
 
 *Spring Cloud* 的 Feign 支持的中心概念是指定客户的概念。每个 *Feign* 客户端都是组件装配的一部分，它们协同工作以按需联系远程服务器，组件有一个应用开发者给在 `@FeignClient` 注解中的名称。*Spring Cloud* 创建一个新的配件作为一个 `ApplicationContext` 按需给每个命名客户端使用 `FeignClientsConfiguration`。
 
@@ -139,6 +139,90 @@ Spring Cloud OpenFeign 默认为 *Feign* 提供以下 bean，（`BeanType` beanN
   - `spring-cloud-starter-openfeign`
 
 *OkHttpClient* and *ApacheHttpClient* feign clients 都可以使用，具体使用通过配置 `feign.okhttp.enabled` 或者 `feign.httpclient.enabled` 设置为 `true`，需要包含它们在 *classpath*。当然，可以自定义一个 *HTTP Client* 来使用通过提供一个 bean ，任意实现了 `org.apache.http.impl.client.CloseableHttpClient` 当使用 *Apache* 或者 `okhttp3.OkHttpClient` 当使用 *OK HTTP*。
+
+##### 1.5 Feign Hystrix 支持
+
+若是 *Hystrix* 在 *classpath* 和 `feign.hystrix.enabled=true` ，*Feign* 将会把所有的方法用一个断路器（circuit breaker）包装。返回一个 `com.netflix.hystrix.HystrixCommand` 任然是可以的。这使您可以使用反应性模式（通过调用 `.toObservable()` 或 `.observe()` 或异步使用（通过调用 `.queue()` ）。
+
+禁用 *Hystrix*
+
+```java
+@Configuration
+public class FooConfiguration {
+    @Bean
+    @Scope("prototype")
+    public Feign.Builder feignBuilder() { return Feign.builder(); }
+}
+```
+
+##### 1.6 Feign Hystrix 回调
+
+Hystrix 支持回退的概念，它们的电路断开或出现错误时执行的默认代码路径。为了允许在给定的 `@FeignClient` 使用回调需配置 `fallback` 属性为实现了 *fallback* 的类名称。你任然需要将声明的实现注册为 *Spirng Bean*。
+
+```java
+@FeignClient(name = "hello", fallback = HystrixClientFallback.class)
+protected interface HystrixClient {
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello iFailSometimes();
+}
+
+static class HystrixClientFallback implements HystrixClient {
+    @Override
+    public Hello iFailSometimes() { return new Hello("fallback"); }
+}
+```
+
+如果需要访问引起回退触发器的原因，可以使用  `@FeignClient` 的属性 `fallbackFactory` 。
+
+```java
+@FeignClient(name = "hello", fallbackFactory = HystrixClientFallbackFactory.class)
+protected interface HystrixClient {
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello iFailSometimes();
+}
+
+@Component
+static class HystrixClientFallbackFactory implements FallbackFactory<HystrixClient> {
+    @Override
+    public HystrixClient create(Throwable cause) {
+        return new HystrixClient() {
+            @Override
+            public Hello iFailSometimes() {
+                return new Hello("fallback; reason was: " + cause.getMessage());
+            }
+        };
+    }
+}
+```
+
+##### 1.7 feign 接口继承支持
+
+```java
+public interface UserService {
+    @RequestMapping(method = RequestMethod.GET, value ="/users/{id}")
+    User getUser(@PathVariable("id") long id);
+}
+
+@RestController
+public class UserResource implements UserService {}
+
+@FeignClient("users")
+public interface UserClient extends UserService {}
+```
+
+##### 1.8 feign request/response 压缩
+
+```properties
+feign.compression.request.enabled=true
+feign.compression.response.enabled=true
+-------
+feign.compression.request.enabled=true
+feign.compression.request.mime-types=text/xml,application/xml,application/json
+feign.compression.request.min-request-size=2048
+-------
+feign.compression.response.enabled=true
+feign.compression.response.useGzipDecoder=true
+```
 
 #### 2. 高并发处理
 
