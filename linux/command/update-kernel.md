@@ -33,6 +33,20 @@ yum --enablerepo=elrepo-kernel install kernel-lt
 
 ```
 
+##### 下载 rpm 内核安装
+
+```bash
+#!/bin/bash
+kernels=(https://elrepo.org/linux/kernel/el7/x86_64/RPMS/kernel-lt-4.4.237-1.el7.elrepo.x86_64.rpm https://elrepo.org/linux/kernel/el7/x86_64/RPMS/kernel-lt-devel-4.4.237-1.el7.elrepo.x86_64.rpm)
+
+for kernel in ${kernels[@]};
+do
+	echo "down kernel ${kernel}"
+done
+
+# header 可以在内核更新完成后在安装
+```
+
 #### 3. 设置 grub2
 
 > 内核安装好后，需要设置为默认启动选项并重启后才会生效
@@ -52,7 +66,8 @@ yum --enablerepo=elrepo-kernel install kernel-lt
    ```bash
    # 其中 0 来自上一步的 awk 命令
    # 设置 GRUB_DEFAULT=0，通过上面查询显示的编号为 0 的内核作为默认内核
-   sudo grub2-set-default 0
+   sudo grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
+   sudo grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
    # 或者
    sudo grub2-set-default 'CentOS Linux (4.4.230-1.el7.elrepo.x86_64) 7 (Core)'
    ```
