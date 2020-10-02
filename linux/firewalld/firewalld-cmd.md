@@ -56,8 +56,7 @@ Any incoming network connections are rejected with an icmp-host-prohibited messa
 
  永久允許 192.168.0.0/24 使用 http 服務
 firewall-cmd --zone=public \
-  --add-rich-rule 'rule family="ipv4" source address="192.168.0.0/24" service name="http" accept' \
-  --permanent
+  --add-rich-rule 'rule family="ipv4" source address="192.168.0.0/24" service name="http" accept' \ --permanent
 
 列出: firewall-cmd --list-rich-rules
 删除: firewall-cmd --remove-rich-rule='rule'

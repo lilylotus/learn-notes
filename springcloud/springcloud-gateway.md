@@ -14,7 +14,48 @@
 spring cloud Gateway 是通过 netty 和 webflux 实现， 但是 webflux 和 web mvc 冲突
 <font color="red">spring cloud gateway 与 spring boot mvc 不兼容</font>
 
-#### 1. 路由配置
+#### Route Predicate Factories 和 Gateway Filter Factories 配置
+
+有两种方式配置 *predicates* 和 *filters*：shortcuts（简写）和 fully expanded arguments （全拓展参数）。大多数使用的是简写的方式。
+
+名称和参数名称将作为 `code` 在每个部分的第一个或两个句子中列出。参数通常按快捷方式配置所需的顺序列出。
+
+##### 简短配置 [Shortcut Configuration]
+
+简写配置 (Shortcut configuration) 由 *filter name* 识别。跟随着等号符号 （`=`），跟随着参数值由逗号（`,`）分隔。
+
+**application.yml**
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: after_route
+        uri: https://example.org
+        predicates:
+        - Cookie=mycookie,mycookievalue
+```
+
+#### 全扩展的参数 [Fully Expanded Arguments]
+
+Fully expanded arguments 的展示更像是标准的 yaml 使用 name/value 对的配置。通常，有 `name` 键值和 `args` 键值。`args` 键是用于配置谓词 (predicate) 或过滤器 (filter) 的键值对的映射。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: after_route
+        uri: https://example.org
+        predicates:
+        - name: Cookie
+          args:
+            name: mycookie
+            regexp: mycookievalue
+```
+
+#### 1. API GATEWAY 使用
 
 ##### 1.1 引入依赖
 
@@ -184,4 +225,3 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
    令牌桶算法是对漏桶算法的一种改进，漏桶算法能够限制请求的调用速率，而令牌桶算法能够限制调用的平均速率的同时还允许一定程度的突发调用。
    ![rate](../images/api-gateway-rate2.png)
 
-#### 5. 网关高可用

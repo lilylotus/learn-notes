@@ -42,3 +42,59 @@ classpath:	/
 
 手动指定位置：`java -jar xxxx.jar --spring.config.location=app/application.yml`
 多个配置中间用空格分开
+
+---
+
+Spring Cloud Config 提供了 *server-side* 和 *client-side* 的支持为分布式系统中的外部配置。使用 Config Server，您可以在中心地方管理所有环境中应用程序的外部属性。客户端和服务端的概念映射与 *spring*  的 `Environment` 和 `PropertySource` 抽象完全相同，如此它们非常适合 *spring* 应用，但是可以使用在运行任意语言的应用程序。作为一个应用程序经过从 dev 到 test 到 production 的开发流程，你可以管理这些环境之间的配置，然后确保应用程序在迁移后需要运行时有所需要的所有配置。服务存储后端默认实现使用  git，那么就十分容易的支持配置环境的标记版本，并且可以通过各种工具来访问这些内容来管理内容。添加替代实现并将其插入Spring配置很容易。
+
+查找顺序，`label` 对应的是 git 的分支，默认 *master*
+
+```
+/{application}/{profile}[/{label}]
+/{application}-{profile}.yml
+/{label}/{application}-{profile}.yml
+/{application}-{profile}.properties
+/{label}/{application}-{profile}.properties
+```
+
+```yaml
+# spring cloud server configuration
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/spring-cloud-samples/config-repo
+```
+
+查看配置环境 `curl localhost:8080/env`
+
+#### Config Server
+
+配置文件地址查找配置
+
+```properties
+server.port: 8888
+spring.cloud.config.server.git.uri: file://${user.home}/config-repo
+```
+
+> Windows 上需要配置为 `file:///${user.home}/config-repo`
+
+```bash
+	
+# The following listing shows a recipe for creating the git repository in the preceding example:
+$ mkdir config-repo
+$ cd config-repo
+$ git init .
+$ echo info.foo: bar > application.properties
+$ git add -A .
+$ git commit -m "Add application.properties"
+```
+
+##### Environment Repository
+
+您应该在哪里存储配置服务器的配置数据？控制此行为的策略是为 `Environment` 对象提供服务的`EnvironmentRepository`。
+
+- `{application}`, which maps to `spring.application.name` on the client side.
+- `{profile}`, which maps to `spring.profiles.active` on the client (comma-separated list).
+- `{label}`, which is a server side feature labelling a "versioned" set of config files.
