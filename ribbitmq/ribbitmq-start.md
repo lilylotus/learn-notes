@@ -118,3 +118,23 @@ rabbitmqctl list_permissions [-p <vhostpath>]
 rabbitmqctl list_user_permissions <username>
 ```
 
+#### ISSUE
+
+##### User can only log in via localhost
+
+```bash
+# 找到这个文件 rabbit.app
+/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.7/ebin/rabbit.app
+
+将：{loopback_users, [<<”guest”>>]}，
+改为：{loopback_users, []}，
+原因：rabbitmq 从 3.3.0 开始禁止使用 guest/guest 权限通过除 localhost 外的访问
+
+##############
+vi /etc/rabbitmq/rabbitmq.config
+#保存以下配置（）
+[
+{rabbit, [{tcp_listeners, [5672]}, {loopback_users, ["guest"]}]}
+].
+```
+
