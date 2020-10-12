@@ -187,5 +187,16 @@ mvn install:install-file
 -Dpackaging=jar
 
 mvn clean deploy -Dmaven.test.skip=true
+
+mvn deploy:deploy-file 
+-Dfile=D:\coding\jars\kl_wof-2.0.0-SNAPSHOT.jar 
+-DgroupId=kl.kiam.pms 
+-DartifactId=kl_wof 
+-Dversion=2.0.0-SNAPSHOT 
+-Dpackaging=jar 
+-DrepositoryId=nexus-repository 
+-Durl=http://nexus3.koal.com:8081/repository/maven-public/
+
+repositoryId 对应的是 setting.xml 中配置的 server id
 ```
 
