@@ -101,3 +101,55 @@ Depending on your logging system, the following files are loaded:
 | JDK (Java Util Logging) | `logging.properties`                                         |
 
 注意： 推荐使用 `-spring` 变体的日志配置，(`logback-spring.xml` 而不是 `logback.xml`)，使用标准的日志配置，spring 可能不能完全的控制日志的初始化。
+
+---
+
+##### spring boot 文件资源加载
+
+*spring boot* 默认加载`org.springframework.boot.context.config.ConfigFileApplicationListener`
+
+```java
+String DEFAULT_SEARCH_LOCATIONS = 
+    "classpath:/,classpath:/config/,file:./,file:./config/";
+```
+
+`org.springframework.boot.context.config.ConfigFileApplicationListener.Loader#getSearchNames` 加载 *bootstrap* 
+
+```java
+if (this.environment.containsProperty(CONFIG_NAME_PROPERTY)) {
+    // 得到 bootstrap
+    String property = this.environment.getProperty(CONFIG_NAME_PROPERTY);
+    return asResolvedSet(property, null);
+}
+
+file:./config/bootstrap.properties
+```
+
+方式一：
+
+```java
+ClassPathResource classPathResource = 
+    new ClassPathResource("excleTemplate/test.xlsx");
+InputStream inputStream =classPathResource.getInputStream();
+```
+
+方式二：
+
+```java
+InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("excleTemplate/test.xlsx");
+```
+
+方式三：
+
+```java
+InputStream inputStream = this.getClass().getResourceAsStream("/excleTemplate/test.xlsx");
+```
+
+方式四：
+
+```java
+File file = ResourceUtils.getFile("classpath:excleTemplate/test.xlsx");
+InputStream inputStream = new FileInputStream(file);
+```
+
+前三种方法在开发环境(IDE中)和生产环境(linux部署成jar包)都可以读取到，第四种只有开发环境 时可以读取到，生产环境读取失败。
