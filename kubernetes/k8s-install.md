@@ -48,7 +48,8 @@ yum install -y https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
 yum --enablerepo=elrepo-kernel install -y kernel-lt
 
 # 设置新的内核为 grub2 的默认版本
-grub2-set-default 0
+grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
+grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
 
 # 重建 kernel 配置
 grub2-mkconfig -o /boot/grub2/grub.cfg

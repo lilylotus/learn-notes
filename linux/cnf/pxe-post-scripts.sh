@@ -16,7 +16,10 @@ fs.inotify.max_user_instances = 8192
 fs.inotify.max_user_watches = 89100
 fs.file-max = 52706963
 fs.nr_open = 52706963
-fs.may_detach_mounts = 1
+
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
 
 net.ipv4.ip_forward = 1
 net.ipv4.ip_local_port_range = 10000 65000

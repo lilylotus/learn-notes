@@ -7,6 +7,153 @@ curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compos
 chmod +x /usr/local/bin/docker-compose
 ```
 
+#### Networking In Compose
+
+`docker-compose` 使用的 `version` 版本号。[docker-compose 官方文档](https://docs.docker.com/compose/compose-file/)  [docker-compose 网络配置文档](https://docs.docker.com/compose/networking/)
+
+| **Compose file format** | **Docker Engine release** |
+| :---------------------- | :------------------------ |
+| 3.8                     | 19.03.0+                  |
+| 3.7                     | 18.06.0+                  |
+| 3.6                     | 18.02.0+                  |
+| 3.5                     | 17.12.0+                  |
+
+默认情况下，Compose 会为应用设置单个网络。服务的每个容器都加入默认网络，并且都可以被该网络上的其他容器访问，并且可以在与容器名称相同的主机名下被发现。
+
+> 注意：您的应用程序网络指定一个基于“项目名称”的名称，该名称基于其所在目录的名称。您可以使用 `--project-name` 标志或 `COMPOSE_PROJECT_NAME` 环境变量来覆盖项目名称。
+
+示例：
+
+```yaml
+# 该文件在 myapp 的目录中
+version: "3.8"
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+  db:
+    image: postgres
+    ports:
+      - "8001:5432"
+```
+
+当运行命令 `docker-compose up` ，将会发生如下事情：
+1. 一个叫 `myapp_default` 网络被创建
+2. 一个容器使用 `web` 的配置被创建，它使用 `web` 名称加入 `myapp_default` 网络。
+3. 一个容器使用 `db` 的配置被创建，它使用 `db` 名称加入 `myapp_default` 网络。
+
+> 注意： In v2.1+, overlay networks are always attachable
+> 从 Compose 文件格式 2.1 开始，overlay networks （覆盖网络） are always created as attachable（可连接的），and this is not configurable. This means that standalone containers can connect to overlay networks.
+> 从 Compose 文件格式 3.x 开始，可以选择配置 attachable 属性为 false
+
+现在每个 容器都可以查找主机名 `web` / `db` 然后得到恰当的容器的 IP 地址。例如： `web` 的应用代码可以通过 URL `postgres://db:5432` 连接然后开始使用 Postgres 数据库。
+十分要注意的是在 `HOST_PORT` 和 `CONTAINER_PORT` 之间的区别。在上面的示例中，`HOST_PORT` 是 `8001`，容器的 `CONTAINER_PORT` 是 `5432` （postgres 默认的）。网络的服务到服务的通信使用 `CONTAINER_PORT`。当 `HOST_PORT` 被定义，服务也可以在群（swarm）外访问。
+如 `web` 容器，使用连接字符串连接 `db` 可能像 `postgres://db:5432`，在物理主机连接字符串就如 `postgres://{DOCKER_IP}:8001`
+
+#####  Update containers
+
+如果对服务（service）的配置作了改变，运行 `docker-compose up` 去更新它，老的容器会被移除掉，新的一个会使用不同的 IP 地址但是相同的名称加入网络。运行中的容器可以查找主机名来连接到新的地址，但是旧的地址停止工作。
+
+如果有任何容器打开了到旧容器的连接，则它们将被关闭。容器有责任检测这种情况，再次查找名称并重新连接。
+
+##### Link
+
+```yaml
+version: "3.8"
+services:
+  web:
+    build: .
+    links:
+      - "db:database"
+  db:
+    image: postgres
+```
+
+链接 （Link）允许您定义额外的别名，通过该别名可以从另一个服务访问服务。不需要它们就可以使服务进行通信-默认情况下，任何服务都可以以该服务的名称访问任何其他服务。上面示例，`web` 可以使用主机名 `db` 和 `database` 访问  `db` 容器。
+
+##### Multi-host networking （多主机联网）
+
+将 Compose 应用程序部署到 Swarm 集群时，可以使用内置的覆盖 (`overlay`) 驱动程序来启用容器之间的多主机通信，而无需更改Compose文件或应用程序代码。
+
+###### Specify custom networks (指定自定义网络)
+
+代替使用默认的应用网络，可以自定属于自己的网络使用顶级的 `network` 关键字。这使您可以创建更复杂的拓扑 (topologies) 并指定自定义网络驱动程序和选项。还可以使用它将服务连接到不受 Compose 管理的外部创建的网络。
+
+每个服务都可以使用服务级 `network` 关键字指定要连接的网络，该网络是在顶级 `network` 关键字下引用条目的名称的列表。
+
+这是一个定义两个自定义网络的示例 Compose 文件。 `proxy` 服务与 `db` 服务是隔离的，因为它们不共享公共网络 - 只有 `app` 可以与两者通信。
+
+```yaml
+version: "3.8"
+services:
+
+  proxy:
+    build: ./proxy
+    networks:
+      - frontend
+  app:
+    build: ./app
+    networks:
+      - frontend
+      - backend
+  db:
+    image: postgres
+    networks:
+      - backend
+
+networwks:
+  frontend:
+    # Use a  custom driver
+    driver: custom-driver-1
+  backend:
+    # Use a custom driver which takes special option
+    driver: custom-driver-2
+    driver_opts:
+      foo: "1"
+      bar: "2"
+
+```
+
+通过为每个连接的网络设置 `ipv4_address` 或 `ipv6_address`，可以为网络配置静态IP地址。也可以为网络指定一个自定义名称（从 3.5 版开始）
+
+```yaml
+version: "3.5"
+networks:
+  frontend:
+    name: custom_frontend
+    driver: custom-driver-1
+```
+
+##### Configure the default network
+
+除了（或同时）指定自己的网络，您还可以通过在 `networks` 关键字以下的 `default` 命名的位置定义一个条目来更改应用程序范围默认网络的设置
+
+```yaml
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+  db:
+    image: postgres
+networks:
+  default:
+    driver: custom-driver-1
+```
+
+##### Use a pre-existing network
+
+```yaml
+networks:
+  default:
+    external:
+      name: my-pre-existing-network
+```
+
+Compose 不会尝试创建名为 `[projectname] _default` 的网络，而是查找名为 `my-pre-existing-network` 的网络并将您的应用程序的容器连接到该网络。
+
 #### 二. 命令使用
 
 > 通常使用步骤
