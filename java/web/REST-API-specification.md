@@ -1,5 +1,8 @@
 ## REST API 规范
 
+[参考 opensource 规范](https://opensource.zalando.com/restful-api-guidelines)
+[示例](https://github.com/godruoyi/restful-api-specification)
+
 ### 协议
 
 通过 `API` 于后端服务通信的过程中，`应该` 使用 `HTTPS` 协议。
@@ -218,15 +221,15 @@ Server: example.com
    ```
 2. 直接放入响应实体中 
    ```bash
-     HTTP/1.1 401 Unauthorized
-     Server: nginx/1.11.9
-    Content-Type: application/json
-     Transfer-Encoding: chunked
-     Cache-Control: no-cache, private
-     Date: Sun, 24 Jun 2018 10:02:59 GMT
-     Connection: keep-alive
-     
-     {"error_code":40100,"message":"Unauthorized"}
+   HTTP/1.1 401 Unauthorized
+   Server: nginx/1.11.9
+   Content-Type: application/json
+   Transfer-Encoding: chunked
+   Cache-Control: no-cache, private
+   Date: Sun, 24 Jun 2018 10:02:59 GMT
+   Connection: keep-alive
+   
+   {"error_code":40100,"message":"Unauthorized"}
    ```
 
 考虑到易读性和客户端的易处理性，我们 `必须` 把错误信息直接放到响应实体中，并且错误格式 `应该` 满足如下格式：

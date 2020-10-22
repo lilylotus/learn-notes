@@ -63,3 +63,33 @@ SELECT * FROM tb_log WHERE ADD_TIME > (now() - Interval 1 HOUR);
 SELECT * FROM tb_log WHERE ADD_TIME > (now() - Interval 10 MINUTE);
 ```
 
+#### mysql 唯一性约束是否可以有多个 null 值
+
+##### 创建唯一性约束
+
+```sql
+CREATE TABLE `t_test` (
+    `Id` int(11) NOT NULL AUTO_INCREMENT, 
+    `username` varchar(18) NOT NULL unique, 
+    `password` varchar(18) NOT NULL, 
+    UNIQUE KEY(password),
+    PRIMARY KEY (`Id`) 
+) ENGINE=InnoDB ;
+---
+ALTER TABLE `t_test` ADD unique(`username`);
+或者
+create unique index UserNameIndex on 't_test' ('username');
+```
+
+<font color="red">注意：</font> `NULL` 在 *mysql* 当中存储是要占用空间的。
+
+清楚理解 **空字符串** 和 **NULL** 的不同。空字符串 `('')` 是不占用空间的。注意：空字符串 `''` 之间是无空格。
+`NULL columns require additional space in the row to record whether their values are NULL. For MyISAM tables, each NULL column takes one bit extra, rounded up to the nearest byte.`
+
+唯一性约束下是可以有重复的空值 `NULL`，但是不能有重复的空字符串 `''`。
+
+`主键` 和 `唯一键约束` 是通过参考索引实现的，如果插入的值均为 `NULL`，则根据索引的原理， `NULL` 值不被记录在索引上，所以插入 `NULL` 值时，可以有重复的，而其它的则不能插入重复值。
+
+- `NULL` 其实并不是空值，是要占用空间，所以 MySQL 在进行比较的时候，`NULL` 会参与字段比较，所以对效率有一部分影响。
+而对表索引时不会存储 `NULL` 值的，所以如果索引的字段可以为 `NULL`，索引的效率会下降很多。
+- 空值不一定为空，对于 MySQL 特殊的注意事项，对于 timestamp 数据类型，如果往这个数据类型插入的列插入 NULL 值，则出现的值是当前系统时间。插入空值，则会出现  `0000-00-00 00:00:00`
