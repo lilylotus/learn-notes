@@ -65,3 +65,16 @@ sudo gpasswd -a $USER docker
 $ newgrp docker
 ```
 
+#### docker info [WARNING: No swap limit support]
+
+edit `/etc/default/grub` file, add `cgroup_enable=memory swapaccount=1` append to `GRUB_CMDLINE_LINUX`
+
+```bash
+# /etc/default/grub
+GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
+
+# execute command
+sudo update-grub
+
+# reboot system
+```
