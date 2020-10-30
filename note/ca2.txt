@@ -1,0 +1,48 @@
+生成私钥（key文件）
+# -genra    生成RSA私钥
+# -des3 des3算法
+# -out server.key 生成的私钥文件名
+# -2048 私钥长度
+
+openssl genrsa -des3 -out server.pass.key 2048
+
+
+-------------
+去除私钥中的密码
+openssl rsa -in server.pass.key -out server.key
+
+-------------
+生成CSR(证书签名请求)
+
+# -req 生成证书签名请求
+# -new 新生成
+# -key 私钥文件
+# -out 生成的CSR文件
+# -subj 生成CSR证书的参数
+
+openssl req -new -key server.key -out server.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck1/OU=luck1/CN=luck1.cn"
+
+------------
+生成自签名SSL证书
+
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+X.509证书包含三个文件：key，csr，crt。
+key 是服务器上的私钥文件，用于对发送给客户端数据的加密，以及对从客户端接收到数据的解密
+csr 是证书签名请求文件，用于提交给证书颁发机构（CA）对证书签名
+crt 是由证书颁发机构（CA）签名后的证书，或者是开发者自签名的证书，包含证书持有人的信息，持有的公钥，以及签署者的签名等信息
+备注：在密码学中，X.509 是一个标准，规范了公开秘钥认证、证书吊销列表、授权凭证、凭证路径验证算法等。
+
+----------------
+将 .key 和 .crt 文件转换成 .jks 文件
+
+openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt
+其中： server.pfx （转后的 pfx）mycert.key，mycert.crt（ crt 和 key 格式的证书）
+
+
+查看证书别名
+keytool -list -v -keystore server.pfx
+
+在使用 jdk 自带的 keytool 将 pfx 格式文件转为 jks
+
+keytool -importkeystore -srckeystore server.pfx -srcstoretype pkcs12 -destkeystore mycert.jks -deststoretype PKCS12  -alias 1

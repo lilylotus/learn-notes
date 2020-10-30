@@ -3,6 +3,8 @@
 ```mysql
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'mysql' PASSWORD EXPIRE NEVER;
 flush privileges;
+
+update mysql.user set authentication_string=password("新密码") where User="test" and Host="localhost";
 ```
 
 policy requirements，密码策略。

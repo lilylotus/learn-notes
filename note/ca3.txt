@@ -1,0 +1,43 @@
+一：生成CA证书
+CA
+1. 创建私钥 ：
+openssl genrsa -des3 -out ca-key.pem 2048 -sha256
+2.创建证书请求 ：
+openssl req -new -out ca-req.csr -key ca-key.pem -sha256 -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ca.cn/emailAddress=luck@drill.cn"
+
+3.自签署证书 ：
+openssl x509 -req -in ca-req.csr -out ca-cert.pem -signkey ca-key.pem -days 1000 -sha256
+
+(2-3 可以一起：
+openssl req -x509 -new -out ca-cert.pem -key ca-key.prm -days 1000 -sha256)
+
+4.将证书导出成浏览器支持的.p12格式 ：
+
+openssl pkcs12 -export -clcerts -in ca-cert.pem -inkey ca-key.pem -out ca.p12 
+     
+三.生成server证书
+1.创建私钥 ：
+openssl genrsa -des3 -out server-key.pem  2048 -sha256
+2.创建证书请求 ：
+openssl req -new -out server-req.csr -key server-key.pem -sha256 -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=localhost/emailAddress=luck@drill.cn"
+3.自签署证书 ：
+openssl x509 -req -in server-req.csr -out server-cert.pem -signkey server-key.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -days 3650
+4.将证书导出成浏览器支持的.p12格式 ：
+openssl pkcs12 -export -clcerts -in server-cert.pem -inkey server-key.pem -out server.p12
+ 
+
+四.生成client证书 
+1.创建私钥 ：
+openssl genrsa -out client-key.pem 2048 -sha256
+2.创建证书请求 ：
+openssl req -new -out client-req.csr -key client-key.pem -sha256 -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=luck.cn/emailAddress=luck@drill.cn"
+3.自签署证书 ：
+openssl x509 -req -in client-req.csr -out  client-cert.pem -signkey  client-key.pem -CA  ca-cert.pem -CAkey  ca-key.pem -CAcreateserial -days 3650 -sha256
+4.将证书导出成浏览器支持的.p12格式 ：
+openssl pkcs12 -export -clcerts -in client-cert.pem -inkey client-key.pem -out client.p12
+
+
+五.根据ca证书生成jks文件 (Java keystore)
+keytool -keystore truststore.jks -keypass luckluck -storepass luckluck -alias ca -import -trustcacerts -file ca-cert.pem
+
+注意: ca,server,client的证书的common name(ca=ca,server=localhost,client=dong)一定不能重复，否则ssl不成功

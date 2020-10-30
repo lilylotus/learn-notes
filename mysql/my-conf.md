@@ -40,8 +40,6 @@ skip_name_resolve
 default-character-set=utf8mb4
 ```
 
-
-
 #### 3. 基本配置
 
 ```

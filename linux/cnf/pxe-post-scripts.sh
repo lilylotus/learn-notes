@@ -11,15 +11,16 @@ cat <<EOF > /etc/sysctl.d/optimize.conf
 vm.swappiness = 0
 vm.overcommit_memory = 1
 vm.panic_on_oom = 0
+user.max_user_namespaces = 10000
 
 fs.inotify.max_user_instances = 8192
 fs.inotify.max_user_watches = 89100
 fs.file-max = 52706963
 fs.nr_open = 52706963
 
+net.bridge.bridge-nf-call-arptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
-net.bridge.bridge-nf-call-arptables = 1
 
 net.ipv4.ip_forward = 1
 net.ipv4.ip_local_port_range = 10000 65000

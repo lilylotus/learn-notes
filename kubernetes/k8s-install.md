@@ -75,9 +75,10 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 ```bash
 #!/bin/bash
 cat <<EOF > /etc/sysctl.d/kubernetes.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.ipv4.ip_forward                 = 1
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-arptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
 
 net.ipv4.tcp_tw_recycle = 0
 net.ipv4.tcp_timestamps = 1

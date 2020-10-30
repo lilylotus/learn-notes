@@ -67,7 +67,12 @@ done
    # 其中 0 来自上一步的 awk 命令
    # 设置 GRUB_DEFAULT=0，通过上面查询显示的编号为 0 的内核作为默认内核
    sudo grub2-set-default 0 && grub2-mkconfig -o /etc/grub2.cfg
+   # 开启 user namespaces （户名命名空间）功能，默认是禁用的
    sudo grubby --args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
+   # 写入配置文件
+    echo "user.max_user_namespaces=10000" >> /etc/sysctl.conf
+   # 关闭 user namespaces
+   grubby --remove-args="user_namespace.enable=1" --update-kernel="$(grubby --default-kernel)"
    # 或者
    sudo grub2-set-default 'CentOS Linux (4.4.230-1.el7.elrepo.x86_64) 7 (Core)'
    ```
