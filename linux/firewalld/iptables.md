@@ -1,46 +1,37 @@
 ## iptables 使用
 
-#### netfilter 和 iptables
+### netfilter 和 iptables
 
-Netfilter: 是 Linux 操作系统核心层内部的一个数据包处理模块
-Hook Point : 数据包在 Netfilter 的挂载点 (PRE_ROUTING, INPUT, OUTPUT, FORWARD, POST_ROUTING)
+* Netfilter： 是  Linux 操作系统核心层内部的一个数据包处理模块
+* Hook Point： 数据包在 Netfilter 的挂载点 (PRE_ROUTING, INPUT, OUTPUT, FORWARD, POST_ROUTING)
 
-#### iptables 的规则组成
+### iptables 的规则组成
 
 四张表 + 五条链 (每一条链可以放到具体的表里面)
 
-> 四张表: filter, net, mangle, raw
-> 五条链: INPUT, OUTPUT, FORWARD, PREROUTING, POSTROUTING
-> 组成: 
->    数据包的访问控制: ACCEPT, DROP (不会有返回信息), REJECT (会有拒绝的返回信息)
->    数据包改写: SNAT (对发起目标的地址改写), DNAT (对目的目标的地址改写)
->    信息记录: LOG
+* 四张表： filter, net, mangle, raw
+* 五条链：INPUT, OUTPUT, FORWARD, PREROUTING, POSTROUTING
+    组成: 
+    * 数据包的访问控制: ACCEPT, DROP (不会有返回信息), REJECT (会有拒绝的返回信息)
+    * 数据包改写: SNAT (源地址改写), DNAT (目标地址改写)
+    * 信息记录: LOG
 
-![iptables](./iptables.png "iptables command")
+* 常用参数
+    `-m [tcp, state, multiport]`
+    `--sport`
+    `--dport`
+    `--dports`
 
-`-m [tcp, state, multiport]`
+`-n, --numeric`: 不以主机名显示,显示地址和端口
+`-F, --flush [chain]`: 删除此链中的所有规则
+`-L, --list [chain [rulenum]]`: 列出链或者所以链中的规则
 
-`--sport`
+<font color="red">**注意:**</font> 连用仅能使用 `iptables -nL` 不能 `iptables -Ln`
 
-`--dport`
+<font color="blue">默认 table 为 filter</font>
 
-`--dports`
-
-
-
-**常用参数:**
-
-`-n, --numeric: 不以主机名显示,显示地址和端口`
-
-`-F, --flush [chain]: 删除此链中的所有规则`
-
-`-L, --list [chain [rulenum]]: 列出链或者所以链中的规则`
-
-**注意:** 连用仅能使用 `iptables -nL` 不能 `iptables -Ln`
-
-> 默认 table 为 filter
-
-```
+示例：
+```bash
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 iptables -I INPUT -p tcp --dport 10:21 -j ACCEPT
 
@@ -48,28 +39,30 @@ iptables -I INPUT -p icmp -j ACCEPT
 ```
 
 
+### SNAT(源地址) 和 DNAT(目的地址)  -- nat 表
 
-**SNAT 和 DNAT 的使用示例, nat 表**
+<font color="red">**注意:**</font>  /etc/sysctl.conf 要配置 IP 地址转发 *net.ipv4.ip_forward=1*  -->  *sysctl -p*
 
-**注意:**  /etc/sysctl.conf 要配置 *net.ipv4.ip_forward=1*  -->  *sysctl -p*
+#### SNAT （POSTROUTING）
 
-1. SNAT
+示例：
+```bash
+iptables -t nat -A POSTROUTING -s 172.18.0.0/16 -j SNAT --to 172.20.0.2
 
-   ```bash
-   iptables -t nat -A POSTROUTING -s 172.18.0.0/16 -j SNAT --to 172.20.0.2 (多张网卡的堡垒机)
-   a (18.0.2)  ---  bastion (18.0.3, 20.0.3) --- b (20.0.2)  [ b -> a ]
-   在客户机添加 
-   ip route add 0.0.0.0 via 172.18.0.3
-   ip route add default via 172.18.0.3
-   ```
+(多张网卡的堡垒机)
+a (18.0.2)  ---  bastion (18.0.3, 20.0.3) --- b (20.0.2)  [ b -> a ]
 
-2. DNAT
+在客户机添加 (bastion)
+ip route add 0.0.0.0 via 172.18.0.3
+ip route add default via 172.18.0.3
+```
 
-   ```
-   iptables -t nat -A PREROUTING -d 172.18.0.3 -p tcp --dport 80 -j DNAT --to 172.20.0.2:80
-   ```
+#### DNAT (PREROUTING)
+```
+iptables -t nat -A PREROUTING -d 172.18.0.3 -p tcp --dport 80 -j DNAT --to 172.20.0.2:80
+```
 
-3. 完整示例
+#### 完整示例
 ```bash
 控制 ssh 的访问, A(138), B(131), C(132)
 target: (C)
