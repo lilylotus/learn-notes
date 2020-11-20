@@ -1,0 +1,278 @@
+## Spring Boot 拓展点
+
+一。创建对象实例
+* `org.springframework.context.annotation.ImportSelector`
+    由 spring boot 默认创建 bean 对象实例，掌握整个对象生命周期
+    注意：要配合注解 `org.springframework.context.annotation.Import` 使用
+* `org.springframework.context.annotation.ImportBeanDefinitionRegistrar`
+    由用户自定义 bean 的创建方法，创建后的实例对象交由 spring boot 管理
+* `org.springframework.beans.factory.FactoryBean`
+    用户自定义创建对象实例，实现该接口本身实体也是一个 spring bean 实体
+* `org.springframework.context.annotation.Import`
+    Import 注解，引入 `ImportBeanDefinitionRegistrar`/`ImportSelector` 实现
+
+二。资源控制拓展
+
+* `org.springframework.context.ApplicationContextAware`
+    获取 spring 容器中的对象实例
+* `org.springframework.web.servlet.config.annotation.WebMvcConfigurer`
+    添加/注册自定义 web mvc 支持，如：拦截器等
+* `org.springframework.context.annotation.ImportSelector`
+    自定义 web 请求拦截器
+* `org.springframework.context.ResourceLoaderAware`
+    资源加载
+
+### ImportSelector
+
+#### 实现 ImportSelector 接口
+
+```java
+public class ImportSelectorStarter implements ImportSelector, ResourceLoaderAware {
+
+    private ResourceLoader resourceLoader;
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    @Override
+    public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+        System.out.println("SelectorImport Start Loading ...");
+
+        Map<String, Object> attributesMap =
+                importingClassMetadata.getAnnotationAttributes(ImportSelectorAnnotation.class.getName(), true);
+        AnnotationAttributes attributes = AnnotationAttributes.fromMap(attributesMap);
+
+        final List<String> scanPath = Optional.ofNullable(attributes)
+                .map(at -> at.getStringArray("value"))
+                .map(Arrays::asList)
+                .orElse(new ArrayList<>(0));
+
+        final List<String> classNameList = new ArrayList<>(10);
+        scanPath.forEach(path -> scanPathClass(path, classNameList));
+
+        System.out.println("SelectorImport Start Loading End");
+        return classNameList.toArray(new String[0]);
+    }
+
+    private void scanPathClass(String path, List<String> classNameList) {
+        System.out.println("Scan class path [" + path + "]");
+        ResourcePatternResolver resolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
+        CachingMetadataReaderFactory readerFactory = new CachingMetadataReaderFactory(resourceLoader);
+
+        // "classpath*:your/package/name/**/*.class" ： dir 目录及其子目录下
+        // dir/*/*.class ：dir 目录的子目录下
+        // dir/*.class  ： dir 目录下
+        String location = "classpath*:" + path.replace(".", "/") + "/**/*.class";
+        System.out.println("location [" + location + "]");
+
+        try {
+            Resource[] resources = resolver.getResources(location);
+            for (Resource resource : resources) {
+                MetadataReader metadata = readerFactory.getMetadataReader(resource);
+                String className = metadata.getClassMetadata().getClassName();
+                System.out.println("Scan class name [" + className + "]");
+                classNameList.add(className);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Scan class over");
+    }
+}
+```
+
+#### Import 注解使用，和常见的 Enablexxx 注解类似
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Import({ImportSelectorStarter.class})
+@Inherited
+@Documented
+public @interface ImportSelectorAnnotation {
+    /* 扫描的包 */
+    String[] value() default {};
+}
+```
+
+#### 添加使用注解的配置类
+
+```java
+@ImportSelectorAnnotation({"cn.nihility.selector2.scan",
+                           "cn.nihility.selector2.entity"})
+public class ImportSelectorStarterConfig { }
+```
+
+#### spring 容器加载配置
+
+添加到 `META-INF/spring.factories` spring boot 配置加载文件
+
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.nihility.selector2.ImportSelectorStarterConfig
+```
+
+### ImportBeanDefinitionRegistrar
+
+#### 实现 ImportBeanDefinitionRegistrar 接口
+
+```java
+public class ImportBeanDefinitionRegistrarStarter implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
+    private ResourceLoader resourceLoader;
+    private int index = 0;
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
+    @Override
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        System.out.println("RegisterBeanDefinitions starting.");
+        Map<String, Object> attributesMap =
+                importingClassMetadata.getAnnotationAttributes(RegistrarAnnotation.class.getName(), true);
+        AnnotationAttributes attributes = AnnotationAttributes.fromMap(attributesMap);
+
+        List<String> scanList = Optional.ofNullable(attributes)
+                .map(at -> at.getStringArray("value"))
+                .map(Arrays::asList)
+                .orElse(new ArrayList<>(0));
+        System.out.println("Scan " + scanList);
+
+        final List<String> classNameList = new ArrayList<>(10);
+        scanList.forEach(path -> findResources(path, classNameList));
+        classNameList.forEach(clazz -> registryBean(registry, clazz));
+
+        System.out.println("RegisterBeanDefinitions over.");
+
+        /*BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(MyFactoryBeanAdapt.class);
+        GenericBeanDefinition beanDefinition = (GenericBeanDefinition) builder.getBeanDefinition();
+        beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(UserMapper.class);
+        //走public构造器(且要求参数最多的且参数是在spring容器中)
+        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+
+        registry.registerBeanDefinition("userMapper", beanDefinition);*/
+    }
+
+    private void registryBean(BeanDefinitionRegistry registry, String clazzFullName) {
+        System.out.println("registry class [" + clazzFullName + "]");
+
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FactoryBeanStarter.class);
+        //builder.addPropertyValue("mapperInterface", clazzFullName);
+
+        GenericBeanDefinition beanDefinition = (GenericBeanDefinition) builder.getBeanDefinition();
+        /* 要有对应的 getter/setter 方法 */
+        //beanDefinition.getPropertyValues().add("mapperInterface", clazzFullName);
+        beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(clazzFullName);
+        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+
+        /*GenericBeanDefinition beanDefinition = (GenericBeanDefinition) builder.getBeanDefinition();
+        beanDefinition.getConstructorArgumentValues().addGenericArgumentValue(mapper);
+        // 走 public 构造器(且要求参数最多的且参数是在 spring 容器中)
+        beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);*/
+
+        String registryBeanName = "mapperInterface#index" + (++index);
+        registry.registerBeanDefinition(registryBeanName, beanDefinition);
+        System.out.println("Registry bean name [" + registryBeanName + "]");
+    }
+
+    private void findResources(String path, List<String> classNameList) {
+        System.out.println("Scan resource path [" + path + "]");
+        String location = "classpath*:" + path.replace(".", "/") + "/**/*.class";
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(resourceLoader);
+        CachingMetadataReaderFactory factory = new CachingMetadataReaderFactory(resourceLoader);
+        try {
+            Resource[] resources = resolver.getResources(location);
+            for (Resource resource : resources) {
+                MetadataReader metadata = factory.getMetadataReader(resource);
+                String className = metadata.getClassMetadata().getClassName();
+                System.out.println("Scan class name [" + className + "]");
+                classNameList.add(className);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Scan resource path over");
+    }
+}
+```
+
+#### 实现 FactoryBean 接口，自定义 bean 的实例初初始化
+
+采用 JDK 动态代理方式实现接口 + 注解的实现
+
+```java
+public class FactoryBeanStarter implements FactoryBean<Object>, BeanClassLoaderAware {
+
+    private Class<?> mapperInterface;
+    private ClassLoader classLoader;
+
+    public FactoryBeanStarter() {
+        System.out.println("FactoryBeanStarter Constructor");
+    }
+
+    public FactoryBeanStarter(Class<?> mapperInterface) {
+        this.mapperInterface = mapperInterface;
+        System.out.println("FactoryBeanStarter Constructor [" + mapperInterface.getName() + "]");
+    }
+
+    @Override
+    public Object getObject() {
+        return Proxy.newProxyInstance(classLoader,
+                new Class<?>[] {mapperInterface},
+                (proxy, method, args) -> {
+                    System.out.println("proxy object [" + proxy.getClass().getName() + "]");
+                    System.out.println("proxy method [" + method.getName() + "]");
+                    System.out.println("proxy args [" + splitArgs(args) + "]");
+
+                    Select annotation = method.getAnnotation(Select.class);
+                    if (null != annotation) {
+                        String sql = annotation.sql();
+                        System.out.println("Exec sql [" + sql + "]");
+                        return new SelectEntity(sql);
+                    }
+                    return new SelectEntity("Factory Bean Proxy Default Entity");
+                });
+    }
+
+    @Override
+    public Class<?> getObjectType() { return mapperInterface; }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader classLoader) { this.classLoader = classLoader; }
+}
+```
+
+#### 添加注解，联合 Import 注解一起使用
+
+注册实现的配置类
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Import({ImportBeanDefinitionRegistrarStarter.class})
+@Inherited
+@Documented
+public @interface RegistrarAnnotation {
+    /* 扫描的包 */
+    String[] value() default {};
+}
+```
+
+#### Registrar 配置类
+
+```java
+@RegistrarAnnotation({"cn.nihility.registrar2.mapper"})
+public class RegistrarConfig {}
+```
+
+#### spring boot 自动配置
+
+路径：`META-INF/spring.factories`
+
+```
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  cn.nihility.registrar2.RegistrarConfig
+```
