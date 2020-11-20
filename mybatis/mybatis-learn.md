@@ -4,7 +4,7 @@
 
 ```properties
 driver=com.mysql.cl.jdbc.Driver
-url=jdbc:mysql://localhost:50000/test?serverTime=UTC&characterEncoding=utf8&useUnicode=true&useSSL=false
+url=jdbc:mysql://localhost:50000/test?serverTime=UTC&serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false
 username=
 password=
 ```

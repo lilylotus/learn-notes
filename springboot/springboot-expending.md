@@ -276,3 +276,38 @@ public class RegistrarConfig {}
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   cn.nihility.registrar2.RegistrarConfig
 ```
+
+### 编程式 bean 注册
+
+`org.springframework.beans.factory.support.BeanDefinitionBuilder` 和
+`org.springframework.beans.factory.support.GenericBeanDefinition`
+
+操作方式
+
+```java
+// 定义一个 Bean 定义的构造器， 指定操作 bean 的实例对象
+BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(FactoryBeanStarter.class);
+
+// 采用实例构造方法初始化实例
+// 添加构造参数, 下两种方式一样
+builder.addConstructorArgValue(SelectMapper.class);
+builder.addConstructorArgValue("mapper.SelectMapper");
+// 添加构造函数参数依赖 bean， 参数为依赖 bean 的名称
+ builder.addConstructorArgReference("entityA");
+
+// 采用属性配置方式初始化对象属性
+// 采用 setter 方式初始化实例
+builderAB.addPropertyValue("entityA", "entityA");
+builderAB.addPropertyValue("entityA", "test.EntityA");
+// 采用 setter 依赖别的 bean 的方式
+builder.addPropertyReference("entityA", "entityA");
+
+// 设置自动注入的模式
+builder.setAutowireMode(AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE);
+
+// 最后得到 bean 的构造定义实例
+GenericBeanDefinition beanDefinition = (GenericBeanDefinition) builder.getBeanDefinition();
+
+// 交给 spring bean 构造注册容器
+ctx.registerBeanDefinition("factoryBeanStarter", beanDefinition);
+```
