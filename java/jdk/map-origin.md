@@ -16,6 +16,19 @@ JDK 1.8
 HashMap 可以存放 null 键和 null 值，但不是线程并发安全的，还不会保证 map 键值的排序
 ```
 
+##### HashMap resize()
+
+* 首次初始化
+    1. 指定容量时：threshold （阈值）= 接近初始化容量最大的 2 的幂次方值
+    2. 首次初始化时，threshold （阈值）大于零，初始化 table 容量就为 threshold
+    3. 没有指定容量，table 容量为默认容量 16，加载因子 0.75
+    4. 新的 threshold （阈值） = 容量 * 加载因子
+
+* 扩容
+    1. 新容量 = 旧容量 * 2
+    2. 新 threshold 在就容量大于默认初始化容量 16 时直接 * 2 （翻倍）
+    3. 否则新 threshold = 新容量 * 加载因子
+
 ###### hash 值的计算
 
 ```java
