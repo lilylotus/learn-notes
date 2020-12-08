@@ -11,7 +11,7 @@
 * `org.springframework.context.annotation.Import`
     Import 注解，引入 `ImportBeanDefinitionRegistrar`/`ImportSelector` 实现
 
-二。资源控制拓展
+二。`资源控制拓展`
 
 * `org.springframework.context.ApplicationContextAware`
     获取 spring 容器中的对象实例
@@ -310,4 +310,62 @@ GenericBeanDefinition beanDefinition = (GenericBeanDefinition) builder.getBeanDe
 
 // 交给 spring bean 构造注册容器
 ctx.registerBeanDefinition("factoryBeanStarter", beanDefinition);
+```
+
+### ClassPathBeanDefinitionScanner 按指定过滤条件注册 bean
+
+```java
+@Configuration
+@Import(ScannerConfig.class)
+public class ScannerConfig implements ApplicationContextAware, ImportBeanDefinitionRegistrar {
+
+  private final static Logger log = LoggerFactory.getLogger(ScannerConfig.class);
+  private ApplicationContext applicationContext;
+
+  @Override
+  public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry) {
+      @Override
+      protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
+        Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
+
+        GenericBeanDefinition definition;
+        for (BeanDefinitionHolder holder : beanDefinitions) {
+          definition = (GenericBeanDefinition) holder.getBeanDefinition();
+          String beanClassName = definition.getBeanClassName();
+          System.out.println(beanClassName);
+
+          // 偷梁换柱，改变 bean 的内部实体类和添加参数
+          definition.getConstructorArgumentValues().addGenericArgumentValue(beanClassName);
+          definition.setBeanClass(FilterClassWrapper.class);
+
+          definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+          definition.setLazyInit(false);
+        }
+        return beanDefinitions;
+      }
+      /**
+       * 自定义是否加入 candidates 组件中，重写 ClassPathScanningCandidateComponentProvider
+       */
+      @Override
+      protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+        return beanDefinition.getMetadata().isInterface() && beanDefinition.getMetadata().isIndependent();
+      }
+    };
+    scanner.setResourceLoader(applicationContext);
+    // 添加过滤条件 或 排除条件
+    scanner.addIncludeFilter(((metadataReader, metadataReaderFactory) -> {
+      String className = metadataReader.getClassMetadata().getClassName();
+      log.info("Include Filter Class Name [{}]", className);
+      return className.contains("IncludeFilterClass");
+    }));
+    // 指定扫描的包
+    scanner.scan("cn.nihility.mapper");
+  }
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
+  }
+}
 ```
