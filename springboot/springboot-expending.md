@@ -369,3 +369,47 @@ public class ScannerConfig implements ApplicationContextAware, ImportBeanDefinit
   }
 }
 ```
+
+### BeanDefinitionRegistryPostProcessor 接口实现注册 bean
+
+* 实现 BeanDefinitionRegistryPostProcessor 接口
+```java
+public class BeanDefinitionRegistryPostProcessorImpl implements BeanDefinitionRegistryPostProcessor {
+    private final static Logger log = LoggerFactory.getLogger(BeanDefinitionRegistryPostProcessorImpl.class);
+    private String tag;
+    public BeanDefinitionRegistryPostProcessorImpl(String tag) { this.tag = tag; }
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+      log.info("postProcessBeanDefinitionRegistry tag[{}]", tag);
+      // 注册 bean 到 spring 容器
+      GenericBeanDefinition definition = new GenericBeanDefinition();
+      definition.setBeanClass(ExcludeFilterClass.class);
+      registry.registerBeanDefinition("ExcludeFilterClass", definition);
+    }
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+      log.info("postProcessBeanFactory tag[{}]", tag);
+    }
+  }
+```
+
+采用某些方法来注册实现了 BeanDefinitionRegistryPostProcessor 接口类实例到 spring 容器
+
+* 此处使用 ImportBeanDefinitionRegistrar 接口实现类来注册
+
+```java
+@Configuration
+@Import(ImportBeanDefinitionRegistrarImpl.class)
+public class ImportBeanDefinitionRegistrarImpl implements ImportBeanDefinitionRegistrar {
+  private final static Logger log = LoggerFactory.getLogger(ImportBeanDefinitionRegistrarImpl.class);
+  @Override
+  public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+    // spring 容器注册 BeanDefinitionRegistryPostProcessorImpl
+    BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(BeanDefinitionRegistryPostProcessorImpl.class);
+    builder.addConstructorArgValue("BeanDefinitionBuilder Tag");
+    registry.registerBeanDefinition("BeanDefinitionRegistryPostProcessorImpl", builder.getBeanDefinition());
+  }
+}
+```
+
+这样 BeanDefinitionRegistryPostProcessor 接口中实现的 bean 注册就可以到 spring 容器。
