@@ -28,6 +28,8 @@ DNS2="114.114.114.114"
 
 nmcli 是 redhat7 或者 centos7 之后的命令，可完成网卡所有的配置工作，并可写入配置文件，永久生效
 
+<font color="red">Centos8 没有了 network，转为使用 nmcli 工具</font>
+
 ##### 2.1 查看网卡信息
 
 ```bash
@@ -62,10 +64,28 @@ mncli d disconnect ens32
 # 删除连接
 nmcli c delete ens32
 # 重新加载
-nmcli c reload
+nmcli c reload / nmcli connection reload
 ```
 
+##### 2.4 修改网络配置
 
+```bash
+# 启动方式 BOOTPROTO=dhcp -> auto, BOOTPROTO=none -> manual
+nmcli connection modify ens37 ipv4.method auto
+# 修改 IP 地址, IPADDR=192.168.1.166 PREFIX=24
+nmcli connection modify ens37 ipv4.addresses 192.168.1.166/24
+# 修改网关 GATEWAY=192.168.1.1
+nmcli connection modify ens37 ipv4.gateway 192.168.1.1
+
+# 添加第二个IP地址（IPADDR1=172.16.10.10 PREFIX1=24）
+nmcli connection modify ens37 +ipv4.addresses 192.168.123.207/24
+nmcli connection modify ens37 +ipv4.addresses 192.168.0.58
+
+# 添加DNS（DNS1=8.8.8.8）
+nmcli connection modify ens37 +ipv4.dns 8.8.8.8
+# 删除 DNS
+nmcli connection modify ens37 -ipv4.dns 8.8.8.8
+```
 
 
 

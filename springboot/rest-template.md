@@ -29,7 +29,8 @@ String uri = baseUrl + port + "/rest/foo-header";
 HttpHeaders headers = new HttpHeaders();
 headers.set("id", "1000");
 headers.add("name", "addHeader");
-HttpEntity<Foo> requestEntity = new HttpEntity<>(null, headers);
+String jsonData = "{\"name\":\"anyone\"}";
+HttpEntity<Foo> requestEntity = new HttpEntity<>(jsonData, headers);
 final ResponseEntity<Foo> responseEntity = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, Foo.class);
 final Foo body = responseEntity.getBody();
 
