@@ -10,6 +10,8 @@
 > *ELRepo* 仓库是基于社区的用于企业级 Linux 仓库，提供对 RedHat Enterprise (RHEL) 和其它基于 RHEL 的 Linux 发行版（CentOS、Scientific、Fedora 等）的支持。
 > ELRepo 聚焦于和硬件相关的软件包，包括文件系统驱动、显卡驱动、网络驱动、声卡驱动和摄像头驱动等。
 
+<font color="red">官方 website</font> http://elrepo.org/tiki/HomePage
+
 <font color="red">官方 CentOS7</font> http://elrepo.org/linux/kernel/el7/x86_64/RPMS/
 
 ```bash
@@ -32,6 +34,16 @@ yum --enablerepo=elrepo-kernel install kernel-lt
 # --enablerepo 选项开启 CentOS 系统上的指定仓库，默认开启的是 elrepo，这里用 elrepo-kernel 替换
 
 ```
+
+<font color="red">官方 CentOS8</font> http://elrepo.org/linux/kernel/el8/x86_64/RPMS/
+
+```bash
+# 1. import public key
+rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+
+# 2. install ELReop RedHat 8
+yum install https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm
+````
 
 ##### 下载 rpm 内核安装
 
