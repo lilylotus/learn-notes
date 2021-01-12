@@ -153,3 +153,31 @@ InputStream inputStream = new FileInputStream(file);
 ```
 
 前三种方法在开发环境(IDE中)和生产环境(linux部署成jar包)都可以读取到，第四种只有开发环境 时可以读取到，生产环境读取失败。
+
+---
+
+### spring boot 启动
+
+```java
+String libsPath = "D:\\coding\\idea\\boot-learn\\build\\libs\\lib";
+File libFiles = new File(libsPath);
+
+List<URL> urls = new ArrayList<>(50);
+//File[] files = libFiles.listFiles(((file, s) -> s.endsWith(".jar")));
+File[] files = libFiles.listFiles();
+
+File classFile = new File("D:\\coding\\idea\\boot-learn\\out\\production\\classes");
+
+assert files != null;
+for (File file : files) {
+    urls.add(file.toURI().toURL());
+}
+urls.add(classFile.toURI().toURL());
+
+URLClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[0]), RunDemo.class.getClassLoader());
+Thread.currentThread().setContextClassLoader(classLoader);
+Class<?> mainClass = Class.forName("cn.nihility.boot.BootLearnApplication", false, classLoader);
+Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
+mainMethod.setAccessible(true);
+mainMethod.invoke(null, new Object[] { args });
+```

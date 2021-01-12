@@ -98,3 +98,14 @@ $ git commit -m "Add application.properties"
 - `{application}`, which maps to `spring.application.name` on the client side.
 - `{profile}`, which maps to `spring.profiles.active` on the client (comma-separated list).
 - `{label}`, which is a server side feature labelling a "versioned" set of config files.
+
+
+### spring cloud config
+
+#### 自动刷新生效条件
+
+添加注解 `@EnableDiscoveryClient`
+
+<font color="red">tip</font> 使用配置中心时，部分配置会自动刷新，使用 `@ConfigurationProperties` 注解的会自动刷新配置，`@Value` 的不会自动刷新，需要添加 `@RefreshScope` 注解在自动刷新的 Bean 上才会自动刷新配置。
+
+使用 `@ConfigurationProperties` 或者 `@Value` + `@RefreshScope` 注解。
