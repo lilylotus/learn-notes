@@ -93,3 +93,15 @@ yum install apr-devel openssl-devel
 ln -sf /opt/apache-tomcat/lib/libtcnative-1.so /root/ella/bin/libtcnative-1.so
 ```
 
+### 改变上传文件大小限制
+
+```yml
+# 包上传大小限制配置
+spring:
+  servlet:
+    multipart:
+      # 单个数据大小
+      max-file-size: 100MB
+      # 总上传数据大小
+      max-request-size: 100MB
+```
