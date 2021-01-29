@@ -2,7 +2,7 @@
 
 Redis 支持两份持久化方式：
 
-- RDB： 在指定的时间间隔能对你的数据进行快照存储。
+- RDB： 在指定的时间间隔能对你的数据进行快照存储。dump.rdb 快照存储文件。
 - AOF：记录每次对服务器写的操作,当服务器重启的时候会重新执行这些命令来恢复原始的数据。
 
 ### 持久化配置
@@ -11,8 +11,11 @@ Redis 支持两份持久化方式：
 
 ```
 # 时间策略
+# 900s 内至少达到一条写命令
 save 900 1
+# 300s 内至少达至 10 条写命令
 save 300 10
+# 60s 内至少达到 10000 条写命令
 save 60 10000
 
 # 文件名称
@@ -29,6 +32,20 @@ rdbcompression yes
 
 # 导入时是否检查
 rdbchecksum yes
+```
+
+#### 持久化命令
+
+```bash
+# 同步数据到磁盘上, save 命令：是一个同步操作。
+> save
+
+# Bgsave：与 Save 命令不同，Bgsave 命令是一个异步操作。
+# 异步保存数据集到磁盘上
+> bgsave
+
+# 启动服务器加载配置文件
+redis-server redis.conf
 ```
 
 持久化时间策略
@@ -63,9 +80,10 @@ appendonly yes
 appendfilename "appendonly.aof"
 
 # 同步方式
+# 写入策略, always 表示每个写操作都保存到 aof 文件中,也可以是 everysec 或 no
 appendfsync everysec
 
-# aof重写期间是否同步
+# aof 重写期间是否同步，默认不重写 aof 文件
 no-appendfsync-on-rewrite no
 
 # 重写触发配置
@@ -77,6 +95,11 @@ aof-load-truncated yes
 
 # 文件重写策略
 aof-rewrite-incremental-fsync yes
+```
+
+```bash
+# 修复aof日志文件
+$ redis-check-aof -fix appendonly.aof
 ```
 
 `appendfsync` 有三种模式：
