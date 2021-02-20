@@ -119,8 +119,8 @@ services:
 # bind 127.0.0.1
 # 关闭保护模式
 protected-mode no
-# 让 redis 服务后台运行
-daemonize yes
+# 让 redis 不在服务后台运行
+daemonize no
 # 对登录权限做限制，redis 每个节点的 requirepass 可以是独立、不同的
 requirepass redispassword
 # 设定主库的密码，用于认证，如果主库开启了 requirepass 选项这里就必须填相应的密码
@@ -134,8 +134,8 @@ logfile "/var/log/redis/redis.log"
 # bind 127.0.0.1
 # 关闭保护模式
 protected-mode no
-# 让 redis 服务后台运行
-daemonize yes
+# 让 redis 不在服务后台运行
+daemonize no
 # 对登录权限做限制，redis 每个节点的 requirepass 可以是独立、不同的
 requirepass redispassword
 # 设定主库的密码，用于认证，如果主库开启了 requirepass 选项这里就必须填相应的密码
@@ -215,4 +215,103 @@ redis> sentinel sentinels [监视的节点名称]
 ```
 
 #### redis cluster
+
+```properties
+# 开启 cluster
+# cluster-enabled yes
+```
+
+```yaml
+version: "3.8"
+services:
+  cluster1:
+    image: redis:5.0.9
+    container_name: cluster1
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26379:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+  cluster2:
+    image: redis:5.0.9
+    container_name: cluster2
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26380:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+  cluster3:
+    image: redis:5.0.9
+    container_name: cluster3
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26381:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+  cluster4:
+    image: redis:5.0.9
+    container_name: cluster4
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26382:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+  cluster5:
+    image: redis:5.0.9
+    container_name: cluster5
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26383:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+  cluster6:
+    image: redis:5.0.9
+    container_name: cluster6
+    command: redis-server /usr/local/etc/redis/redis.conf
+    ports:
+      - 26384:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+```
+
+创建集群
+
+```bash
+# 对域名的支持不好，替换为 IP:PORT 格式
+redis-cli -a mredis --cluster create 192.168.10.6:26379 192.168.10.6:26380 192.168.10.6:26381 192.168.10.6:26382 192.168.10.6:26383 192.168.10.6:26384 --cluster-replicas 1
+```
+
+Cluster 操作
+
+```bash
+# -c 以集群方式
+$ redis-cli -c -p 6382 -h 192.168.10.12
+
+redis> cluster info
+
+# 集群
+cluster info ：打印集群的信息
+cluster nodes ：列出集群当前已知的所有节点（ node），以及这些节点的相关信息。
+
+# 节点
+cluster meet <ip> <port> ：将 ip 和 port 所指定的节点添加到集群当中，让它成为集群的一份子。
+cluster forget <node_id> ：从集群中移除 node_id 指定的节点。
+cluster replicate <master_node_id> ：将当前从节点设置为 node_id 指定的master节点的slave节点。只能针对slave节点操作。
+cluster saveconfig ：将节点的配置文件保存到硬盘里面。
+
+# 槽(slot)
+cluster addslots <slot> [slot ...] ：将一个或多个槽（ slot）指派（ assign）给当前节点。
+cluster delslots <slot> [slot ...] ：移除一个或多个槽对当前节点的指派。
+cluster flushslots ：移除指派给当前节点的所有槽，让当前节点变成一个没有指派任何槽的节点。
+cluster setslot <slot> node <node_id> ：将槽 slot 指派给 node_id 指定的节点，如果槽已经指派给
+另一个节点，那么先让另一个节点删除该槽>，然后再进行指派。
+cluster setslot <slot> migrating <node_id> ：将本节点的槽 slot 迁移到 node_id 指定的节点中。
+cluster setslot <slot> importing <node_id> ：从 node_id 指定的节点中导入槽 slot 到本节点。
+cluster setslot <slot> stable ：取消对槽 slot 的导入（ import）或者迁移（ migrate）。
+
+# 键
+cluster keyslot <key> ：计算键 key 应该被放置在哪个槽上。
+cluster countkeysinslot <slot> ：返回槽 slot 目前包含的键值对数量。
+cluster getkeysinslot <slot> <count> ：返回 count 个 slot 槽中的键 
+```
 
