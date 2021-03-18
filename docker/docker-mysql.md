@@ -183,9 +183,9 @@ services:
       - "${MASTER_LOG_DIR}:/var/log/mysql"
     ports:
       - "${MASTER_PORT}:3306"
-    networks:
-      backend:
-        ipv4_address: 172.18.10.10
+    # networks:
+    #   backend:
+    #     ipv4_address: 172.18.10.10
 
   slave:
     image: "mysql:${MYSQL_VERSION}"
@@ -200,13 +200,14 @@ services:
       - "${SLAVE_DIR_LOG}:/var/log/mysql"
     ports:
       - "${SLAVE_PORT}:3306"
-    networks:
-      - backend
+    # networks:
+    #   backend:
+    #     ipv4_address: 172.18.10.11
 
-networks:
-  backend:
-    external:
-      name: mnet
+# networks:
+#   backend:
+#     external:
+#       name: mnet
 ```
 
 .env
@@ -216,14 +217,14 @@ MYSQL_VERSION=5.7.28
 
 MASTER_PORT=50000
 MASTER_PASSWORD=mysql
-MASTER_CONTAINER_NAME=mysql-master
+MASTER_CONTAINER_NAME=master
 MASTER_DIR_CONF=/data/compose/mysql/master/conf
 MASTER_DIR_DATA=/data/compose/mysql/master/data
 MASTER_DIR_LOG=/data/compose/mysql/master/logs
 
 SLAVE_PORT=50001
 SLAVE_PASSWORD=mysql
-SLAVE_CONTAINER_NAME=mysql-slave
+SLAVE_CONTAINER_NAME=slave
 SLAVE_DIR_CONF=/data/compose/mysql/slave/conf
 SLAVE_DIR_DATA=/data/compose/mysql/slave/data
 SLAVE_DIR_LOG=/data/compose/mysql/slave/logs

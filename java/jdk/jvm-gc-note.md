@@ -12,6 +12,15 @@
 
 ```
 
+#### 设置垃圾回收器
+
+- **-XX:+UseSerialGC**，虚拟机Client模式下的默认值，使用Serial（新生代）+ Serial Old（老年代）收集器；
+- **-XX:+UseParNewGC**，使用ParNew + Serial Old，JDK9后不再支持；
+- **-XX:+UseConcMarkSweepGC**，使用ParNew + CMS + Serial Old组合收集器，Serial Old作为CMS出现“Concurrent Mode Failure”错误后的备选；
+- **-XX:+UseParallelGC**，使用Parallel Scavenge（新生代） + Serial Old（老年代）收集器，JDK9之前Server模式下的默认设置；
+- **-XX:+UseParallelOldGC**，使用Parallel Scavenge（新生代） + Parallel Old（老年代）收集器；
+- **-XX:+UseG1GC**，使用G1垃圾收集器，JDK9之后的Server模式默认值；
+
 #### 1. 并行 GC (Parallel Collector)
 
 并行 *GC*  又被称为 *throughput collector* 吞吐量垃圾收集器
