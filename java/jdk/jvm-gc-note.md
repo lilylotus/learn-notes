@@ -10,14 +10,37 @@
 # GC 信息
 –XX:+PrintGCDetails
 
+# 查看正在使用的 GC, JDK8 默认使用的是 -XX:+UseParallelGC 垃圾回收器
+java -XX:+PrintCommandLineFlags -version
+
+-XX:InitialHeapSize=266235648 -XX:MaxHeapSize=4259770368 -XX:+PrintCommandLineFlags -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:-UseLargePagesIndividualAllocation -XX:+UseParallelGC
+java version "1.8.0_251"
+Java(TM) SE Runtime Environment (build 1.8.0_251-b08)
+Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
+
 ```
 
 #### 设置垃圾回收器
 
 - **-XX:+UseSerialGC**，虚拟机Client模式下的默认值，使用Serial（新生代）+ Serial Old（老年代）收集器；
+  使用此参数开启 Serial，老年代默认会开启 Serial Old，新生代和老年代都会使用串行回收收集器。
+  新生代使用复制算法，老年代使用标记-整理算法 (**DefNew + Tenured**)
 - **-XX:+UseParNewGC**，使用ParNew + Serial Old，JDK9后不再支持；
+  相当于 SerialGC 的并行版本。在垃圾收集时，必须暂停所有的工作线程直到它收集结束。
+  只影响新生代的收集，不影响老年代。
+  开启后会使用：ParNew（Young）+ Serial Old（Old）的收集器组合。
+  新生代使用复制算法，老年代使用标记-整理算法。
+  <font color="red">注意：ParNew + Tenured，但是这种组合已经不再推荐被使用</font>
 - **-XX:+UseConcMarkSweepGC**，使用ParNew + CMS + Serial Old组合收集器，Serial Old作为CMS出现“Concurrent Mode Failure”错误后的备选；
-- **-XX:+UseParallelGC**，使用Parallel Scavenge（新生代） + Serial Old（老年代）收集器，JDK9之前Server模式下的默认设置；
+    CMS非常适合堆内存大、CPU核数多的服务器端应用，也是G1出现之前大型应用的首选收集器
+    使用 ParNew（Young）+CMS（Old）+Serial Old 的收集器组合（Serial Old将作为 CMS 出错的后备收集器）
+- **-XX:+UseParallelGC**，使用Parallel Scavenge（新生代） + Serial Old（老年代）收集器，JDK9之前Server模式下的默认设置；jdk8 默认使用。
+    Parallel 重点关注的是：可控制的吞吐量
+    吞吐量=运行用户代码的时间/（运行用户代码时间+垃圾收集时间）
+    高吞吐量意味着高效利用CPU的时间，它多用于在后台运算而不需要太多交互的任务
+    -XX:ParallelGCThreads=数字N    表示启动多少个GC线程
+    cpu>8 -> N=5/8 , cpu<8 -> N=实际个数
+    **PSYoungGen+ParOldGen**
 - **-XX:+UseParallelOldGC**，使用Parallel Scavenge（新生代） + Parallel Old（老年代）收集器；
 - **-XX:+UseG1GC**，使用G1垃圾收集器，JDK9之后的Server模式默认值；
 

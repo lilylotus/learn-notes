@@ -43,3 +43,12 @@ JPDA（Java Platform Debugger Architecture）是 Java 平台调试体系结构�
 ```
 -Xdebug -Xrunjdwp:transport=dt_socket,address=127.0.0.1:8000,suspend=y
 ```
+
+
+
+### java 运行，网络仅使用 ipv4 参数
+
+```bash
+java -Djava.net.preferIPv4Stack=true xxx
+```
+
