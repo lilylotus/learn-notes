@@ -5,16 +5,67 @@ SSL (Secure Sockets Layer 安全套接字协议)，及其继任者传输层安�
 
 Secure Socket Layer，为 Netscape 所研发，用以保障在 Internet 上数据传输的安全，利用数据加密(Encryption)技术，可确保数据在网络上的传输过程中不会被截取及窃听。
 
-SSL 协议位于 TCP/IP 协议与各种应用层协议之间，为数据通讯提供安全支持。SSL 协议可分为两层：
-SSL 记录协议（SSL Record Protocol）：它建立在可靠的传输协议（如 TCP）之上，为高层协议提供数据封装、压缩、加密等基本功能的支持。
-SS L握手协议（SSL Handshake Protocol）：它建立在 SSL 记录协议之上，用于在实际的数据传输开始前，通讯双方进行身份认证、协商加密算法、交换加密密钥等。
+SSL 协议位于 TCP/IP 协议与各种应用层协议之间，为数据通讯提供安全支持。
+
+SSL 协议可分为两层：
+
+1. SSL 记录协议（SSL Record Protocol）：它建立在可靠的传输协议（如 TCP）之上，为高层协议提供数据封装、压缩、加密等基本功能的支持。
+
+2. SSL握手协议（SSL Handshake Protocol）：它建立在 SSL 记录协议之上，用于在实际的数据传输开始前，通讯双方进行身份认证、协商加密算法、交换加密密钥等。
 
 术语：
 * `CA` (Certification Authority、Certifying Authority) : 认证机构
 * `HTTPS`（Hypertext Transfer Protocol Secure）：安全超文本传输协议
 * `PKC` (Public-Key Certificate) ：公钥证书，也简称为证书（certificate）
 
+
+
+Typically, x.509 certificates can have a [variety of file extension types that you can convert certificates and keys to](https://medium.com/@nirmaluchoudhari/converting-certificates-using-openssl-9957a743c66b), including:
+
+- Certificate (.CRT) or (.CER)
+- Distinguished encoding rules (.DER)
+- Privacy-enhanced electronic mail (.PEM)
+
+#### OpenSSL: Convert CRT to PEM:
+
+Type the following code into your OpenSSL client:
+
+```bash
+openssl x509 -in cert.crt -out cert.pem
+
+# Convert PEM to CRT (.CRT file)
+openssl x509 -in certificate.pem -out certificate.crt
+```
+
+#### OpenSSL: Convert CER to PEM
+
+```bash
+openssl x509 -in cert.cer -out cert.pem
+```
+
+#### OpenSSL: Convert DER to PEM
+
+```bash
+openssl x509 -in cert.der -out cert.pem
+openssl x509 -inform der -in certificate.cer -out certificate.pem
+
+# Convert a PEM file to DER
+openssl x509 -outform der -in certificate.pem -out certificate.der
+```
+
+#### Convert a PKCS#12 file (.pfx .p12) containing a private key and certificates to PEM
+
+```bash
+openssl pkcs12 -in keyStore.pfx -out keyStore.pem -nodes
+
+# Convert a PEM certificate file and a private key to PKCS#12 (.pfx .p12)
+openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile CACert.crt
+```
+
+
+
 ### 证书签发
+
 #### 生成 CA 根证书
 
 生成 CA 密钥对   --->  生成根证书签发申请  ---> 根证书签发

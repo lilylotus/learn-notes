@@ -453,3 +453,61 @@ task zip(type: Zip, dependsOn: [bootJar]) {
 }
 ```
 
+#### 4. build.gradle.kts 添加 git 提交 id
+
+```groovy
+fun String.runCommand(workingDir: File = file("./")): String {
+    val parts = this.split("\\s".toRegex())
+    val proc = ProcessBuilder(*parts.toTypedArray())
+            .directory(workingDir)
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+    proc.waitFor(1, TimeUnit.MINUTES)
+    return proc.inputStream.bufferedReader().readText().trim()
+}
+
+val branchCommitId = "git rev-parse HEAD".runCommand()
+val branchName = "git rev-parse --abbrev-ref HEAD".runCommand()
+
+tasks.named<Jar>("jar") {
+    enabled = true
+    version = "${jarVersion}"
+    manifest {
+        attributes.put("Manifest-Version", "1.0")
+        attributes.put("Git-Commit-ID", branchCommitId)
+        attributes.put("Git-Commit-Branch", branchName)
+    }
+}
+
+tasks.create<Delete>("clearJar") {
+    delete.add("$buildDir/libs")
+}
+
+// 将依赖包复制到lib目录
+tasks.create<Copy>("copyJar") {
+    from(configurations.compileClasspath)
+    from(configurations.runtimeClasspath)
+    into("$buildDir/libs/lib")
+}.dependsOn("clearJar")
+
+tasks.named<BootJar>("bootJar") {
+    version = "${jarVersion}"
+    excludes.add("*.yml")
+    excludes.add("*.jar")
+    dependsOn(tasks.get("clearJar"))
+    dependsOn(tasks.get("copyJar"))
+    manifest {
+        attributes.put("Manifest-Version", "1.0")
+        attributes.put("Start-Class", "xxx.xxx.Application")
+        attributes.put("Built-By", System.getProperty("user.name"))
+        attributes.put("Created-By", "gradle")
+        attributes.put("Created-Date", dateStr)
+        attributes.put("Main-Class", "org.springframework.boot.loader.PropertiesLauncher")
+        attributes.put("Git-Commit-ID", branchCommitId)
+        attributes.put("Git-Commit-Branch", branchName)
+    }
+}
+```
+
