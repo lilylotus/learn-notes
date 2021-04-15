@@ -1,6 +1,6 @@
-##### mybatis 开始配置
+### mybatis 配置
 
-###### mysql 链接配置：
+#### 数据库连接配置：
 
 ```properties
 driver=com.mysql.cl.jdbc.Driver
@@ -9,7 +9,7 @@ username=
 password=
 ```
 
-###### mybatis 配置：mybatis-config.xml
+#### mybatis config：mybatis-config.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -42,22 +42,18 @@ password=
 </configuration>
 ```
 
-
-
-###### mybatis mapper 配置 xxMapper.xml
+#### mapper config : xxMapper.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.nihility.mybatis.mapper.UserMapper">
-
+	<cache/> <!-- 开启二级缓存 -->
 </mapper>
 ```
 
-
-
-###### 执行 mybatis 查询
+#### 执行写法
 
 ```java
 InputStream resource = Resources.getResourceAsStream(MYBATIS_CONFIG);
@@ -73,9 +69,31 @@ try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
 ---
 
-##### mybatis config 配置详解：
+### mybatis config 详解：
 
-###### settings
+#### 默认 setting
+
+```xml
+<settings>
+  <setting name="cacheEnabled" value="true"/>
+  <setting name="lazyLoadingEnabled" value="true"/>
+  <setting name="multipleResultSetsEnabled" value="true"/>
+  <setting name="useColumnLabel" value="true"/>
+  <setting name="useGeneratedKeys" value="false"/>
+  <setting name="autoMappingBehavior" value="PARTIAL"/>
+  <setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+  <setting name="defaultExecutorType" value="SIMPLE"/>
+  <setting name="defaultStatementTimeout" value="25"/>
+  <setting name="defaultFetchSize" value="100"/>
+  <setting name="safeRowBoundsEnabled" value="false"/>
+  <setting name="mapUnderscoreToCamelCase" value="false"/>
+  <setting name="localCacheScope" value="SESSION"/>
+  <setting name="jdbcTypeForNull" value="OTHER"/>
+  <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+</settings>
+```
+
+#### 常用 setting
 
 ```xml
 <settings>
@@ -87,7 +105,7 @@ try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 </settings>
 ```
 
-###### typeAliases 类型别名
+#### typeAliases 类型别名
 
 ```xml
 <typeAliases>
@@ -103,28 +121,71 @@ domain.blog.Author --> author 是这样对应的。
 </typeAliases>
 ```
 
-Java 常用数据类型别名
+##### Java 常用数据类型别名
 
-| Alias      | Mapped Type |
-| :--------- | :---------- |
-| _byte      | byte        |
-| _int       | int         |
-| _integer   | int         |
-| string     | String      |
-| int        | Integer     |
-| integer    | Integer     |
-| date       | Date        |
-| decimal    | BigDecimal  |
-| bigdecimal | BigDecimal  |
-| object     | Object      |
-| map        | Map         |
-| hashmap    | HashMap     |
-| list       | List        |
-| arraylist  | ArrayList   |
-| collection | Collection  |
-| iterator   | Iterator    |
+| **Alias**  | **Mapped Type** |
+| :--------- | :-------------- |
+| _byte      | byte            |
+| _long      | long            |
+| _short     | short           |
+| _int       | int             |
+| _integer   | int             |
+| _double    | double          |
+| _float     | float           |
+| _boolean   | boolean         |
+| string     | String          |
+| byte       | Byte            |
+| long       | Long            |
+| short      | Short           |
+| int        | Integer         |
+| integer    | Integer         |
+| double     | Double          |
+| float      | Float           |
+| boolean    | Boolean         |
+| date       | Date            |
+| decimal    | BigDecimal      |
+| bigdecimal | BigDecimal      |
+| object     | Object          |
+| map        | Map             |
+| hashmap    | HashMap         |
+| list       | List            |
+| arraylist  | ArrayList       |
+| collection | Collection      |
+| iterator   | Iterator        |
 
-###### mapper 配置
+##### JavaType 和 JdbcType 的对应关系
+
+| JdbcType | JavaType |
+| -------- | -------- |
+|CHAR | String |
+|VARCHAR | String |
+|LONGVARCHAR | String |
+|NUMERIC | java.math.BigDecimal |
+|DECIMAL | java.math.BigDecimal |
+|BIT | boolean |
+|BOOLEAN | boolean |
+|TINYINT | byte |
+|SMALLINT | short |
+|INTEGER | INTEGER |
+|BIGINT | long |
+|REAL | float |
+|FLOAT | double |
+|DOUBLE | double |
+|BINARY | byte[] |
+|VARBINARY | byte[] |
+|LONGVARBINARY | byte[] |
+|DATE | java.sql.Date |
+|TIME | java.sql.Time |
+|TIMESTAMP | java.sql.Timestamp |
+|CLOB | Clob |
+|BLOB | Blob |
+|ARRAY | Array |
+|DISTINCT | mapping | of | underlying | type |
+|STRUCT | Struct |
+|REF | Ref |
+|DATALINK | java.net.URL |
+
+#### mapper 配置
 
 ```xml
 <mappers>
@@ -136,13 +197,25 @@ Java 常用数据类型别名
 <mappers>
     <package name="cn.nihility.mybatis.mapper"/>
 </mappers>
+
+
+<mappers>
+    <!-- Using classpath relative resources -->
+    <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+    <!-- Using url fully qualified paths -->
+    <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+    <!-- Using mapper interface classes -->
+    <mapper class="org.mybatis.builder.AuthorMapper"/>
+    <!-- Register all interfaces in a package as mappers -->
+    <package name="org.mybatis.builder"/>
+</mappers>
 ```
 
 ---
 
-#### 2. Mybatis 查询方式
+### Mybatis 查询方式
 
-##### 2.1 嵌套查询
+#### 嵌套查询
 
 ```xml
 <!-- 嵌套查询 -->
@@ -163,7 +236,7 @@ Java 常用数据类型别名
 弊端也比较明显：即所谓的 N+1 问题。关联的嵌套查询显示得到一个结果集，然后根据这个结果集的每一条记录进行关联查询。
 现在假设嵌套查询就一个（即 resultMap 内部就一个 association 标签），现查询的结果集返回条数为 N，那么关联查询语句将会被执行 N 次，加上自身返回结果集查询 1 次，共需要访问数据库 N+1 次。如果 N 比较大的话，这样的数据库访问消耗是非常大的！所以使用这种嵌套语句查询的使用者一定要考虑慎重考虑，确保 N 值不会很大。
 
-##### 2.2 嵌套结果
+#### 嵌套结果
 
 ```xml
 <!-- 嵌套结果  -->
