@@ -1,3 +1,5 @@
+[详细的微服务构架解释说明链接](https://martinfowler.com/articles/microservices.html)
+
 #### 分布式系统学习笔记 (distributed systems)
 
 > 在过去当我们想存储更多数据或提高处理能力时，通常的选择是 (*scale vertically*) 垂直扩展（获得功能更强大的机器）或进一步优化现有代码库。

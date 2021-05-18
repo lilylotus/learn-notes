@@ -16,5 +16,8 @@ git log ad4c9ea..a22c3c2
 
 ```bash
 git diff 63f396f 499983e -- xxx.file
+
+# 对比两次提交之间文件更新
+git diff --stat --stat-width=200 93d8eb8 develop
 ```
 
