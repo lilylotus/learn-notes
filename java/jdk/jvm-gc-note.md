@@ -1,4 +1,4 @@
-### JVM GC 笔记
+## JVM GC 笔记
 
 ```bash
 –XX:+UseSerialGC
@@ -8,7 +8,12 @@
 -XX:+UseG1GC
 
 # GC 信息
-–XX:+PrintGCDetails
+-XX:+PrintGcDetails
+-XX:+PrintGCDateStamps
+-XX:+PrintTenuringDistribution
+-XX:+PrintHeapAtGC
+-XX:+PrintReferenceGC
+-XX:+PrintGCApplicationStoppedTime
 
 # 查看正在使用的 GC, JDK8 默认使用的是 -XX:+UseParallelGC 垃圾回收器
 java -XX:+PrintCommandLineFlags -version
@@ -20,7 +25,9 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 
 ```
 
-#### 设置垃圾回收器
+### JDK支持的垃圾回收器
+
+采用分代收集机制，年轻代和老年代采用不同的收集算法。
 
 - **-XX:+UseSerialGC**，虚拟机Client模式下的默认值，使用Serial（新生代）+ Serial Old（老年代）收集器；
   使用此参数开启 Serial，老年代默认会开启 Serial Old，新生代和老年代都会使用串行回收收集器。
@@ -44,28 +51,78 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 - **-XX:+UseParallelOldGC**，使用Parallel Scavenge（新生代） + Parallel Old（老年代）收集器；
 - **-XX:+UseG1GC**，使用G1垃圾收集器，JDK9之后的Server模式默认值；
 
-#### 1. 并行 GC (Parallel Collector)
+### 常用 GC 垃圾收集算法
+
+#### 1. 垃圾回收
+
+##### 1.1 引用计数法
+
+每个对象中都会存储一个引用计数，每增加一个引用就 +1，消失一个引用就 -1。当引用计数器为 0 时就会判断该对象是垃圾，进行回收。
+
+**弊端**：就是当有两个对象互相引用时，那么这两个对象的引用计数器都不为 0，那么就不会对其进行回收。
+
+##### 1.2 可达性分析
+
+* 直接引用（GC Roots）：就是虚拟机栈帧中的局部或本地变量表、类加载器、static 成员、常量引用、Thread 等等中的引用直接到达。**[当前虚拟机栈中局部变量表中的引用的对象，方法区中类静态属性引用的对象，方法区中的常量引用的对象]**
+* 间接引用：通过其它对象的引用来达到。
+
+#### 2. 垃圾回收算法
+
+##### 2.1 标记-清除 (mark-sweep)
+
+标记所有需要回收的对象，然后统一回收被标记的对象。
+
+**优点**：简单、明了、好操作
+
+**缺点**：
+
+*  标记/清除的效率不高（对比复制算法），在标记和清除的过程中、会扫描整个堆内存，比较耗时
+* 会有空间碎片问题，空间不连续，如果有大一点的对象进来，发现没有连续的空间内存去进行分配，就会再一次的触发垃圾回收机制
+
+##### 2.2 复制算法 (copying)
+
+将可用内存按容量划分为大小相等的两块，每次只使用其中的一块。当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用过的内存空间一次清理掉。每次都是对整个半区进行内存回收，内存分配时也就不用考虑内存碎片等复杂情况，只要按顺序分配内存即可，实现简单，运行高效。只是这种算法的代价是将内存缩小为了原来的一半。（空间利用率低）
+
+**优点**： 简单高效，不会出现内存碎片
+
+**缺点**：内存利用率低，存活对象较多时效率明显降低，因为需要移动每个不可回收数据的内存实际位置
+
+##### 2.3 标记-整理算法 (Mark-Compact)
+
+首先标记出所有需要回收的对象，在标记完成后，后续步骤不是直接对可回收对象进行清理，而是让所有存活的对象都向一端移动，然后直接清理掉端，边界以外的内存。
+
+整理移动之后会得到一片连续的可分配内存空间。解决了空间碎片的问题，但是这种方式在标记和整理移动的过程中也是耗时的。
+
+**优点**： 利用率100% ，没有内存碎片
+
+**缺点**：标记和清除效率都不高（对比复制算法及标记清楚算法）
+
+
+
+---
+
+### 1. 并行 GC (Parallel Collector)
 
 并行 *GC*  又被称为 *throughput collector* 吞吐量垃圾收集器
 
-##### 1.1 使用并行收集器收集 *Young Generation*
+#### 1.1 使用并行收集器收集 *Young Generation*
 
 并行收集器使用串行收集器使用的年轻一代收集算法的并行版本。
 仍是一个 *STW* 的复制收集器，用许多 CPU 并行执行年轻代收集，减少垃圾收集开销，提高应用程序吞吐量
 
 ![parallel gc](../../images/parallel-gc.png)
 
-##### 1.2 使用并行收集器收集 *Old Generation*
+#### 1.2 使用并行收集器收集 *Old Generation*
 
 使用与串行收集器相同的串行 mark-sweepcompact 收集算法来完成并行收集器的 *Old Generation* 圾收集
 
-##### 1.3 使用命令参数
+#### 1.3 使用命令参数
 
 ```bash
 java -XX:+UseParallelGC -jar xxx.jar
 ```
 
-##### 1.4 压缩对象
+#### 1.4 压缩对象
 
 1. 每个代都被划分在固定大小的区域内
 2. 标记阶段
@@ -73,7 +130,7 @@ java -XX:+UseParallelGC -jar xxx.jar
 3. 汇总阶段
    操作的是区域不是对象。
 
-#### 2. 并发标记清除收集器 (Concurrent Mark-Sweep (CMS) )
+### 2. 并发标记清除收集器 (Concurrent Mark-Sweep (CMS) )
 
 *Young generation* 收集通常不会导致很长的暂停。 *old generation* 尽管不频繁，可以导致很长的暂停，尤其是当 *heaps* 很大的时候。
 
@@ -111,7 +168,7 @@ java -XX:+UseConcMarkSweepGC -jar xxx.jar
 
 总而言之，与并行收集器相比，CMS收集器有时会显着减少旧一代的停顿，但代价是年轻一代的停顿时间会稍长一些，吞吐量会有所降低，并且需要额外的堆大小。
 
-#### 3. G1 垃圾收集 (Garbage-First - G1)
+### 3. G1 垃圾收集 (Garbage-First - G1)
 
 G1收集器通过多种技术实现了高性能和暂停时间目标。
 
