@@ -7,8 +7,10 @@
 –XX:+UseConcMarkSweepGC
 -XX:+UseG1GC
 
+-XX:+UseCompressedClassPointers # 开启指针压缩
+
 # GC 信息
--XX:+PrintGcDetails
+-XX:+PrintGCDetails
 -XX:+PrintGCDateStamps
 -XX:+PrintTenuringDistribution
 -XX:+PrintHeapAtGC
@@ -50,6 +52,24 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
     **PSYoungGen+ParOldGen**
 - **-XX:+UseParallelOldGC**，使用Parallel Scavenge（新生代） + Parallel Old（老年代）收集器；
 - **-XX:+UseG1GC**，使用G1垃圾收集器，JDK9之后的Server模式默认值；
+
+### JDK 1.8 支持常用的 GC 垃圾收集器
+
+1. 串行 (Serialize) GC
+–XX:+UseSerialGC
+
+2. 并行 (Parallel) GC
+-XX:+UseParallelGC (JDK 1.8 默认)
+    -XX:ParallelGCThreads=<N>
+    -XX:MaxGCPauseMillis=<N>
+    -XX:GCTimeRatio=19
+
+3. 并发 (Concurrent) GC
+    3.1 Concurrent Mark Sweep (CMS) Collector
+        -XX:+UseConcMarkSweepGC
+
+    3.2 Garbage-First Garbage (G1) Collector [大内存的多处理器]
+        -XX:+UseG1GC
 
 ### 常用 GC 垃圾收集算法
 

@@ -50,7 +50,11 @@
 
 
 
-##### *Java* 虚拟机结构
+#### *Java* 虚拟机结构
+
+[Java JVM 内存结构](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html)
+
+![JVM](../../images/jvm.jpg)
 
 ##### 运行时区域 (Run-Time Data Areas)
 
@@ -132,7 +136,9 @@
 
 ---
 
-######  **Loading, Linking, and Initializing**  (加载、链接、初始化)
+####  **Loading, Linking, and Initializing**  (加载、链接、初始化)
+
+[JVM 启动加载](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html)
 
 > Loading (加载) ：查找特定名称的类或接口由二进制表示的文件，然后依据该二进制数据创建一个类或接口的过程。
 > Linking (链接)：链接是获取类或接口并将其组合到 Java 虚拟机的运行时状态以便可以执行的过程
