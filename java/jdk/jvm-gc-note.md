@@ -17,6 +17,16 @@
 -XX:+PrintReferenceGC
 -XX:+PrintGCApplicationStoppedTime
 
+# 日志分割
+# GC 日志输出文件路径
+-Xloggc:/path/gc.log
+# 开启日志文件分隔
+-XX:+UseGCLogFileRotation
+# 最多分隔几个日志文件，在重头开始
+-XX:NumberOfGCLogFiles=14
+# 每个文件上限大小，超过就触发日志分割
+-XX:GCLogFileSize=100M
+
 # 查看正在使用的 GC, JDK8 默认使用的是 -XX:+UseParallelGC 垃圾回收器
 java -XX:+PrintCommandLineFlags -version
 
@@ -25,6 +35,8 @@ java version "1.8.0_251"
 Java(TM) SE Runtime Environment (build 1.8.0_251-b08)
 Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 
+# 示例
+-Xms2g -Xmx2g -Xmn1g -Xss256k -XXSurviorRatio=8 –XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:MetaspaceSize=512m
 ```
 
 ### JDK支持的垃圾回收器
@@ -67,7 +79,8 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 3. 并发 (Concurrent) GC
     3.1 Concurrent Mark Sweep (CMS) Collector
         -XX:+UseConcMarkSweepGC
-
+        -XX:ConcGCThreads=<N>
+    
     3.2 Garbage-First Garbage (G1) Collector [大内存的多处理器]
         -XX:+UseG1GC
 

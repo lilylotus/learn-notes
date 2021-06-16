@@ -30,108 +30,63 @@ mysql:5.7.28
 ##### 2. mysql 配置
 
 ```properties
-# mysql master my.cnf
+# master
 [client]
-default_character_set=utf8mb4
+default-character-set=utf8mb4
 
 [mysqld]
-server_id=100
-character_set_server=utf8mb4
-collation_server=utf8mb4_general_ci
-init_connect='set names utf8mb4'
-character_set_client_handshake=FALSE
-default_storage_engine=INNODB
-max_connections=300
-# 0 都区分大小写， 1 存储在磁盘是小写的，但是比较的时候是不区分大小写
-lower_case_table_names=1
-skip_name_resolve
-sql-mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+default-storage-engine=INNODB
 
-#log_output=FILE
-log_bin=mysql-bin
-#binlog_format=MIXED
-#sync_binlog=1
+default_time_zone='+8:00'
 
-#binlog-do-db=test
+# replication
+server-id=100
+log-bin=mysql-bin
+log-bin-index=mysql-bin.index
+binlog_format=mixed
+sync-binlog=1
 binlog-ignore-db=mysql
 binlog_ignore_db=information_schema
 binlog_ignore_db=performation_schema
 binlog_ignore_db=sys
 
-log_error=/var/lib/mysql/error.log
-
-slow_query_log=ON
-long_query_time=2
-slow_query_log_file=/var/lib/mysql/slow.log
-log_queries_not_using_indexes=OFF
-
-#insertoptimize
-innodb_buffer_pool_size=128M
-bulk_insert_buffer_size=64M
-max_allowed_packet=16M
-read_buffer_size=1M
-read_rnd_buffer_size=16M
-
-wait_timeout=120
-interactive_timeout=120
-default_time_zone='+8:00'
-
 [mysql]
-default_character_set=utf8mb4
+default-character-set=utf8mb4
 ```
 
 ```properties
-# mysql slave my.cnf
+# slave
 [client]
-default_character_set=utf8mb4
+default-character-set=utf8mb4
 
 [mysqld]
-server_id=200
-character_set_server=utf8mb4
-collation_server=utf8mb4_unicode_ci
-init_connect='set names utf8mb4'
-character_set_client_handshake=FALSE
-default_storage_engine=INNODB
-max_connections=300
-lower_case_table_names=0
-skip_name_resolve
+character-set-server=utf8mb4
+collation-server=utf8mb4_unicode_ci
+default-storage-engine=INNODB
 
-log_output=FILE
-log_bin=mysql-bin
-binlog_format=MIXED
-# 每进行 n 次事务提交之后，MySQL 将 binlog_cache 中的数据强制写入磁盘。
-sync_binlog=100
-# * 从主服务器接收到的更新同时要写入二进制日志
-log_slave_updates=1
-master_info_repository=TABLE
-relay_log_info_repository=TABLE
-relay_log_recovery=ON
+default_time_zone='+8:00'
 
-#binlog-do-db=test
+# replication
+server-id=200
+log-bin=mysql-bin
+log-bin-index=mysql-bin.index
+binlog_format=mixed
+sync-binlog=1
+log-slave-updates=0
+relay-log=mysql-relay-bin
+relay-log-index=mysql-relay-bin.index
+read-only=1
+slave_net_timeout=10
+
 binlog-ignore-db=mysql
 binlog_ignore_db=information_schema
 binlog_ignore_db=performation_schema
 binlog_ignore_db=sys
 
-log_error=/var/log/mysql/error.log
-
-slow_query_log=ON
-long_query_time=2
-slow_query_log_file=/var/log/mysql/slow.log
-log_queries_not_using_indexes=OFF
-
-#insertoptimize
-bulk_insert_buffer_size=64M
-max_allowed_packet=16M
-read_buffer_size=1M
-read_rnd_buffer_size=16M
-
-wait_timeout=120
-interactive_timeout=120
-default_time_zone='+8:00'
-
 [mysql]
-default_character_set=utf8mb4
+default-character-set=utf8mb4
 ```
 
 ##### 3. mysql 的 authentication
