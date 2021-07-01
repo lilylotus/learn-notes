@@ -39,6 +39,40 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 -Xms2g -Xmx2g -Xmn1g -Xss256k -XXSurviorRatio=8 –XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:MetaspaceSize=512m
 ```
 
+#### 查看当前 GC 的状况
+
+```
+# 每隔一秒打印一次 gc 统计信息
+jstat -gcutil <pid> 1000
+```
+
+GC 日志，需要在 JVM 启动参数添加
+
+- `-XX:+PrintGCDateStamps`：打印 gc 发生的时间戳。
+- `-XX:+PrintTenuringDistribution`：打印 gc 发生时的分代信息。
+- `-XX:+PrintGCApplicationStoppedTime`：打印 gc 停顿时长
+- `-XX:+PrintGCApplicationConcurrentTime`：打印 gc 间隔的服务运行时长
+- `-XX:+PrintGCDetails`：打印 gc 详情，包括 gc 前/内存等。
+- `-Xloggc:../gclogs/gc.log.date`：指定 gc log 的路径
+
+去 [gceasy](https://gceasy.io/) 分析 GC 日志。
+
+解决方式：
+
+增大 young 区，存在疑问，对 GC 最直观的印象来说，增大 young 区，YGC 的时长也会迅速增大。
+
+知道 YGC 的耗时是由 `GC 标记 + GC 复制` 组成的，相对于 GC 复制，GC 标记是非常快的。而 young 区内大多数对象的生命周期都非常短，如果将 young 区增大一倍，GC 标记的时长会提升一倍，但到 GC 发生时被标记的对象大部分已经死亡， GC 复制的时长肯定不会提升一倍，所以我们可以放心增大 young 区大小。
+
+知道 GC 的提升机制，每次 GC 后，JVM 存活代数大于 `MaxTenuringThreshold` 的对象提升到老年代。当然，JVM 还有动态年龄计算的规则：按照年龄从小到大对其所占用的大小进行累积，当累积的某个年龄大小超过了 survivor 区的一半时，取这个年龄和 `MaxTenuringThreshold` 中更小的一个值，作为新的晋升年龄阈值
+
+【想查看 JVM 里各个线程的资源占用情况该用什么工具？】
+
+就是使用 `jtop`，jtop 只是一个 jar 包，它的项目地址在 [yujikiriki/jtop](https://github.com/yujikiriki/jtop)， 获取到 java 应用的 pid 后，使用 `java -jar jtop.jar [options] <pid>` 即可输出 JVM 内部统计信息。
+
+火焰图工具 [FlameGraph](https://github.com/brendangregg/FlameGraph)
+
+**注意**：*Hystrix*  使用信号量隔离模式也要注意一个问题：信号量只能限制方法是否能够进入执行，在方法返回后再判断接口是否超时并对超时进行处理，而无法干预已经在执行的方法，这可能会导致有请求超时时，一直占用一个信号量，但框架却无法处理。
+
 ### JDK支持的垃圾回收器
 
 采用分代收集机制，年轻代和老年代采用不同的收集算法。

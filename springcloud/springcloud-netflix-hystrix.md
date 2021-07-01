@@ -1,5 +1,7 @@
 ### [Hystrix : Circuit Breaker](https://docs.spring.io/spring-cloud-netflix/docs/2.2.5.RELEASE/reference/html/#circuit-breaker-spring-cloud-circuit-breaker-with-hystrix)
 
+[详细参数配置参考，Hystrix 配置参数解析](https://zhenbianshu.github.io/2018/09/hystrix_configuration_analysis.html)
+
 #### 禁用 Spring Cloud Circuit Breaker Hsytrix
 
 ```properties
