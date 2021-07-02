@@ -56,6 +56,16 @@
 
 ![JVM](../../images/jvm.jpg)
 
+![JVM内存](../../images/jvm_jmm.png)
+
+- -Xms 设置堆的最小空间大小。
+- -Xmx 设置堆的最大空间大小。
+- -XX:NewSize 设置新生代最小空间大小。
+- -XX:MaxNewSize 设置新生代最大空间大小。
+- -XX:PermSize 设置永久代最小空间大小。
+- -XX:MaxPermSize 设置永久代最大空间大小。
+- -Xss 设置每个线程的堆栈大小
+
 ##### 运行时区域 (Run-Time Data Areas)
 
 > *Java Virtual Machine*  在程序执行时定义了多种 *运行时*  数据区域，某些区域在 *Java* 虚拟机启动时创建，关闭时销毁。其它的区域对每个线程，每个线程数据区域在线程被创建时创建，在线程退出时销毁。
