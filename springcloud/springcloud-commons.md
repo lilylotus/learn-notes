@@ -66,3 +66,13 @@ env:
 > 注意自定义配置 `BootstrapConfiguration` 不要扫描到错误的 *package*，可以把 *cloud* 使用的包和 `@ComponentScan` 或者 `@SpringBootApplication` 扫描的包分隔开来。
 
 引导过程通过将初始化程序注入主 *SpringApplication* 实例而结束（无论是作为独立应用程序运行还是在应用程序服务器中部署，这都是正常的Spring Boot启动顺序）。首先，从 `spring.factories` 中找到的类来创建引导上下文。然后，所有 `ApplicationContextInitializer` 类型的 `@Beans` 会被添加到主 `SpringApplication` 在它启动之前。
+
+#### Environment Changes
+
+当 *spring cloud* 应用监听到 `EnvironmentChangeEvent` 事件后，会包含已改变的键值对列表，应用会产生如下行为：
+
+* 重新绑定在上下文中注解 `@ConfigurationProperties` 的 Bean 的属性值为改变后的属性值。
+
+* 设置任意属性的日志级别为 `logging.level.*`
+
+  

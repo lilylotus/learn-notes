@@ -204,21 +204,22 @@ public void onStartup(ServletContext servletContext) throws ServletException {
 4. 依据运行的环境创建对应的 `ApplicationContext`
    
    方法：`org.springframework.boot.SpringApplication#createApplicationContext`
-   `SERVLET` -> `AnnotationConfigServletWebServerApplicationContext`
-   `REACTIVE` -> `AnnotationConfigReactiveWebServerApplicationContext`
-   默认 -> `AnnotationConfigApplicationContext`
+   `SERVLET` -> **`AnnotationConfigServletWebServerApplicationContext`**
+   `REACTIVE` -> **`AnnotationConfigReactiveWebServerApplicationContext`**
+   默认 -> **`AnnotationConfigApplicationContext`**
    
 5. 加载初始化 spring boot 预定义的所有 `SpringBootExceptionReporter`，异常报告回调
 
 6. 准备 *Context* 环境，联合 Context/Environment/Listener
    方法: `org.springframework.boot.SpringApplication#prepareContext`
 
-7. 调用 `org.springframework.context.support.AbstractApplicationContext#refresh` 更新和初始化环境 <font color="red">重点</font>
-   方法: `org.springframework.boot.SpringApplication#refreshContext`
-   *web + tomcat* 环境使用 `ServletWebServerApplicationContext`，在调用 `ServletWebServerApplicationContext#onRefresh` 方法启动 *servlet* 容器。在处理 `ServletWebServerApplicationContext#createWebServer`
+7. 调用 `org.springframework.boot.SpringApplication#refresh(ApplicationContext)` 更新和初始化环境 <font color="red">重点</font>
+   方法: **`org.springframework.boot.SpringApplication#refreshContext`** (**`AbstractApplicationContext`**)
+   *web + tomcat* 环境使用 `ServletWebServerApplicationContext`，在调用 `ServletWebServerApplicationContext#onRefresh` 方法启动 *servlet* 容器。在处理 **`ServletWebServerApplicationContext#createWebServer`**
+   
 8. 启动所有 *Listener*  和按配置环境 (environment) 和 参数 运行环境
 
-#### web server 容器加载
+#### web server 容器创建/加载
 
 都是在 `org.springframework.context.support.AbstractApplicationContext#refresh` 方法中调用 `org.springframework.context.support.AbstractApplicationContext#onRefresh` 处理 *context* 环境。
 
@@ -239,6 +240,14 @@ public void onStartup(ServletContext servletContext) throws ServletException {
    注册环境
    *servlet* 容器启动调用 `ServletContextInitializer`  接口的 `onStartup` 方法
    `beans.onStartup(servletContext);`
+
+##### tomcat 容器创建
+
+`spring-boot-autoconfigure` 的 `META-INF/spring.factories` 中 `org.springframework.boot.autoconfigure.EnableAutoConfiguration` 注入了 `ServletWebServerFactoryAutoConfiguration` 自动配置类。
+
+`org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration` 这个 *spring boot* 自动 `@Import` 创建类，引入了下面 *Tomcat Web*  容器的创建。
+
+`org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryConfiguration.EmbeddedTomcat#tomcatServletWebServerFactory` 这个方法创建了 *Tomcat Servlet* 的 Web 工厂。
 
 #### tomcat 容器运行
 

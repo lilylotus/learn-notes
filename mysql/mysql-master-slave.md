@@ -34,6 +34,16 @@ binlog_format=mixed
 server-id=100
 sync-binlog=1
 character-set-server=utf8mb4
+
+[mysqld]
+## 设置server_id,注意要唯一
+server-id=1
+# 开启binlog
+log-bin=mysql-bin
+# binlog缓存
+binlog_cache_size=1M
+# binlog格式(mixed、statement、row,默认格式是statement)
+binlog_format=mixed
 ```
 
 配置说明
@@ -93,6 +103,23 @@ relay-log=mysql-relay-bin
 relay-log-index=mysql-relay-bin.index
 read-only=1
 slave_net_timeout=10
+
+[mysqld]
+## 设置server_id,注意要唯一
+server-id=2
+## 开启binlog,以备Slave作为其它Slave的Master时使用
+log-bin=mysql-slave-bin
+# relay_log配置中继日志
+relay_log=edu-mysql-relay-bin
+# 如果需要同步函数或者存储过程
+log_bin_trust_function_creators=true
+# binlog缓存
+binlog_cache_size=1M
+# binlog格式(mixed、statement、row,默认格式是statement)
+binlog_format=mixed
+# 跳过主从复制中遇到的所有错误或指定类型的错误,避免slave端复制中断
+# 如:1062错误是指一些主键重复,1032错误是因为主从数据库数据不一致
+slave_skip_errors=1062
 ```
 
 配置说明
