@@ -55,7 +55,7 @@ Java 虚拟机使用 1 表示 *true* ， 0 表示 *false*。使用 `int` 类型�
 
 [Java JVM 内存结构](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html)
 
-![JVM](../../images/jvm.jpg)
+![JVM](../../images/jvm.png)
 
 ![JVM内存](../../images/jvm_jmm.png)
 

@@ -2,7 +2,7 @@
 
 ```bash
 –XX:+UseSerialGC
-–XX:+UseParallelGC # 默认开启压缩
+–XX:+UseParallelGC # 默认开启压缩，jdk1.8 默认使用
 –XX:+UseParallelOldGC # 关闭压缩
 –XX:+UseConcMarkSweepGC
 -XX:+UseG1GC
@@ -37,6 +37,8 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.251-b08, mixed mode)
 
 # 示例
 -Xms2g -Xmx2g -Xmn1g -Xss256k -XXSurviorRatio=8 –XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:MetaspaceSize=512m
+
+-Xms30m -Xmx30m -XX:NewSize=20m -XX:+PrintGCDetails
 ```
 
 #### 查看当前 GC 的状况
