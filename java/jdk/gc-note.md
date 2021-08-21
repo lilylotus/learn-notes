@@ -1,5 +1,76 @@
 [java 运行参数](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html)
 
+测试代码
+
+```java
+    /**
+     * VM参数：-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8
+     */
+    @SuppressWarnings("unused")
+    public static void testAllocation() {
+        byte[] allocation1 = new byte[2 * _1MB];
+        byte[] allocation2 = new byte[2 * _1MB];
+        byte[] allocation3 = new byte[2 * _1MB];
+        byte[] allocation4 = new byte[4 * _1MB];  // 出现一次Minor GC
+    }
+
+    /**
+     * VM参数：-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8
+     * -XX:PretenureSizeThreshold=3145728
+     */
+    @SuppressWarnings("unused")
+    public static void testPretenureSizeThreshold() {
+        byte[] allocation = new byte[4 * _1MB];  //直接分配在老年代中
+    }
+
+    /**
+     * VM参数：-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=1
+     * -XX:+PrintTenuringDistribution
+     */
+    @SuppressWarnings("unused")
+    public static void testTenuringThreshold() {
+        byte[] allocation1 = new byte[_1MB / 4];  // 什么时候进入老年代决定于XX:MaxTenuringThreshold设置
+        byte[] allocation2 = new byte[4 * _1MB];
+        byte[] allocation3 = new byte[4 * _1MB];
+        allocation3 = null;
+        allocation3 = new byte[4 * _1MB];
+    }
+
+    /**
+     * VM参数：-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=15
+     * -XX:+PrintTenuringDistribution
+     */
+    @SuppressWarnings("unused")
+    public static void testTenuringThreshold2() {
+        byte[] allocation1 = new byte[_1MB / 4];   // allocation1+allocation2大于survivo空间一半
+        byte[] allocation2 = new byte[_1MB / 4];
+        byte[] allocation3 = new byte[4 * _1MB];
+        byte[] allocation4 = new byte[4 * _1MB];
+        allocation4 = null;
+        allocation4 = new byte[4 * _1MB];
+    }
+
+    /**
+     * VM参数：-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8 -XX:-HandlePromotionFailure
+     */
+    @SuppressWarnings("unused")
+    public static void testHandlePromotion() {
+        byte[] allocation1 = new byte[2 * _1MB];
+        byte[] allocation2 = new byte[2 * _1MB];
+        byte[] allocation3 = new byte[2 * _1MB];
+        allocation1 = null;
+        byte[] allocation4 = new byte[2 * _1MB];
+        byte[] allocation5 = new byte[2 * _1MB];
+        byte[] allocation6 = new byte[2 * _1MB];
+        allocation4 = null;
+        allocation5 = null;
+        allocation6 = null;
+        byte[] allocation7 = new byte[2 * _1MB];
+    }
+```
+
+
+
 ### UseParNewGC
 
 `-XX:+UseParNewGC`
