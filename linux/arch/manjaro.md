@@ -1,3 +1,5 @@
+[KDE安装教程](https://zhuanlan.zhihu.com/p/114296129)
+
 桌面优化
 
 ```shell
