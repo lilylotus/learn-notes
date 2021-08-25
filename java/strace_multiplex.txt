@@ -1,0 +1,47 @@
+
+多路复用器 EPOLL
+
+socket(AF_INET6, SOCK_STREAM, IPPROTO_IP) = 6
+fcntl(6, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
+
+
+bind(6, {sa_family=AF_INET6, sin6_port=htons(9090), = 0
+listen(6, 50)
+
+pipe([7, 8])                            = 0
+fcntl(7, F_GETFL)                       = 0 (flags O_RDONLY)
+fcntl(7, F_SETFL, O_RDONLY|O_NONBLOCK)  = 0
+fcntl(8, F_GETFL)                       = 0x1 (flags O_WRONLY)
+fcntl(8, F_SETFL, O_WRONLY|O_NONBLOCK)  = 0
+
+epoll_create(256)                       = 9
+epoll_ctl(9, EPOLL_CTL_ADD, 7
+epoll_ctl(9, EPOLL_CTL_ADD, 6
+epoll_wait(9,
+
+连接建立
+epoll_wait(9, [{EPOLLIN, {u32=6, u64=140479790317574}}], 4096, -1) = 1
+accept(6, {sa_family=AF_INET6, sin6_port=htons(18826) = 10
+fcntl(10, F_SETFL, O_RDWR|O_NONBLOCK)
+epoll_ctl(9, EPOLL_CTL_ADD, 10, {EPOLLIN, {u32=10, u64=140479790317578}}) = 0
+
+等待下个一个连接
+epoll_wait(9,
+
+
+-----------------------
+NIO
+
+socket(AF_INET6, SOCK_STREAM, IPPROTO_IP) = 6
+fcntl(6, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
+bind(6, {sa_family=AF_INET6, sin6_port=htons(9090)
+listen(6, 50)
+
+accept(6, 0x7f7484108990, [28])         = -1
+
+accept(6, {sa_family=AF_INET6, sin6_port=htons(18830)  = 7
+fcntl(7, F_SETFL, O_RDWR|O_NONBLOCK)    = 0
+
+accept(6, 0x7f7484108b40, [28])         = -1 EAGAIN (Resource temporarily unavailable)
+read(7, 0x7f7484109f20, 1024)           = -1 EAGAIN (Resource temporarily unavailable)
+这样循环

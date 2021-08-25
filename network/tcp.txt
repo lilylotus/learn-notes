@@ -1,0 +1,52 @@
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on enp8s0, link-type EN10MB (Ethernet), capture size 262144 bytes
+
+10:16:23.836826 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [S], seq 697555533, win 64240, options [mss 1460,sackOK,TS val 1241547052 ecr 0,nop,wscale 7], length 0
+10:16:23.854901 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [S.], seq 731990459, ack 697555534, win 8192, options [mss 1452,sackOK,nop,nop,nop,nop,nop,nop,nop,nop,nop,nop,nop,wscale 5], length 0
+10:16:23.854958 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [.], ack 1, win 502, length 0
+
+10:16:23.855057 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [P.], seq 1:78, ack 1, win 502, length 77: HTTP: GET / HTTP/1.1
+10:16:23.876332 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [.], ack 78, win 908, length 0
+
+10:16:23.877401 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [P.], seq 1:1441, ack 78, win 908, length 1440: HTTP: HTTP/1.1 200 OK
+10:16:23.877435 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [.], ack 1441, win 501, length 0
+10:16:23.877441 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [P.], seq 1441:2782, ack 78, win 908, length 1341: HTTP
+10:16:23.877447 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [.], ack 2782, win 496, length 0
+
+10:16:23.877603 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [F.], seq 78, ack 2782, win 501, length 0
+-- 这一段是多传的数据，前面已经传输了
+10:16:23.886621 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [P.], seq 1441:2782, ack 78, win 908, length 1341: HTTP
+10:16:23.886653 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [.], ack 2782, win 501, options [nop,nop,sack 1 {1441:2782}], length 0
+10:16:23.901312 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [.], ack 79, win 908, length 0
+10:16:23.901409 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [F.], seq 2782, ack 79, win 908, length 0
+10:16:23.901451 IP 192.168.1.7.40030 > 180.101.49.12.80: Flags [.], ack 2783, win 501, length 0
+
+10:16:26.921345 IP 180.101.49.12.80 > 192.168.1.7.40030: Flags [R], seq 731993242, win 0, length 0
+
+
+
+There are 8 bits in the control bits section of the TCP header:
+CWR | ECE | URG | ACK | PSH | RST | SYN | FIN
+
+TCP uses a 3-way handshake protocol when it initializes a new connection:
+1) Caller sends SYN
+2) Recipient responds with SYN, ACK
+3) Caller sends ACK
+
+
+Recall the structure of a TCP header without options:
+
+0                            15                              31
+-----------------------------------------------------------------
+|          source port          |       destination port        |
+-----------------------------------------------------------------
+|                        sequence number                        |
+-----------------------------------------------------------------
+|                     acknowledgment number                     |
+-----------------------------------------------------------------
+|  HL   | rsvd  |C|E|U|A|P|R|S|F|        window size            |
+-----------------------------------------------------------------
+|         TCP checksum          |       urgent pointer          |
+-----------------------------------------------------------------
+
+
