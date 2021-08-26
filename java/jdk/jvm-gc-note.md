@@ -5,6 +5,9 @@
 ## JVM GC 笔记
 
 ```bash
+-XX:+UnlockExperimentalVMOptions
+-XX:+UseEpsilonGC # 堆内存满的时候，不执行 GC，直接抛出 OutofMemory 异常并程序结束
+
 –XX:+UseSerialGC
 –XX:+UseParallelGC # 默认开启压缩，jdk1.8 默认使用
 –XX:+UseParallelOldGC # 关闭压缩

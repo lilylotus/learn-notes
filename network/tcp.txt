@@ -36,6 +36,7 @@ TCP uses a 3-way handshake protocol when it initializes a new connection:
 
 Recall the structure of a TCP header without options:
 
+```
 0                            15                              31
 -----------------------------------------------------------------
 |          source port          |       destination port        |
@@ -48,5 +49,4 @@ Recall the structure of a TCP header without options:
 -----------------------------------------------------------------
 |         TCP checksum          |       urgent pointer          |
 -----------------------------------------------------------------
-
-
+```
