@@ -1,3 +1,5 @@
+[参考文档](http://ifeve.com/introduce-abstractqueuedsynchronizer/)
+
 #### 1. 简介
 
 > 简单解释一下J.U.C，是JDK中提供的并发工具包,`java.util.concurrent`。里面提供了很多并发编程中很常用的实用工具类，比如atomic原子操作、比如lock同步锁、fork/join等。
@@ -27,7 +29,7 @@ void unlock() // 释放锁
 
 #### 4. QAS 简介
 
-QAS - AbstractQueuedSynchronizer 的一个抽象类，它提供了一个 FIFO 队列，可以看成是一个用来实现同步锁以及其他涉及到同步功能的核心组件，常见的有: `ReentrantLock`、`CountDownLatch` 等。
+QAS - `AbstractQueuedSynchronizer` 的一个抽象类，它提供了一个 FIFO 队列，可以看成是一个用来实现同步锁以及其他涉及到同步功能的核心组件，常见的有: `ReentrantLock`、`CountDownLatch` 等。
 AQS 是一个抽象类，主要是通过继承的方式来使用，它本身没有实现任何的同步接口，仅仅是定义了同步状态的获取以及释放的方法来提供自定义的同步组件。
 可以这么说，只要搞懂了 AQS，那么 J.U.C 中绝大部分的 api 都能轻松掌握。
 
