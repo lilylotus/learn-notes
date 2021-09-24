@@ -1,0 +1,1840 @@
+{
+  "version": "4.4.0.0",
+  "configs": [
+    {
+      "server": "",
+      "server_port": 8388,
+      "password": "",
+      "method": "chacha20-ietf-poly1305",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 22001,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-英国",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 22004,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->英国",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 22004,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->英国",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 22004,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->英国",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21153,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-韩国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21153,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->韩国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21153,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->韩国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21153,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->韩国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21154,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-韩国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21154,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->韩国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21154,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->韩国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21154,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->韩国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23018,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-台湾N Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21133,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->台湾N Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21133,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->台湾N Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21133,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->台湾N Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23019,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-台湾S Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21135,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->台湾S Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21135,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->台湾S Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21135,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->台湾S Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23020,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-台湾R Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21136,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->台湾R Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21136,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->台湾R Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21136,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->台湾R Hinet NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23000,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港1 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21100,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港1 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21100,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港1 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21100,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港1 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23002,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港3 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21102,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港3 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21102,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港3 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21102,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港3 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23003,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港8 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21103,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港8 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21103,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港8 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21103,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港8 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23004,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港9 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21104,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港9 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21104,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港9 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21104,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港9 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23005,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港10 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21105,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港10 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21105,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港10 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21105,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港10 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23006,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港11 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21106,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港11 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21106,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港11 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21106,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港11 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23007,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港12 HGC TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21107,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港12 HGC TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21107,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港12 HGC TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21107,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港12 HGC TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23008,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港13 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21108,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港13 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21108,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港13 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21108,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港13 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23009,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港15 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21109,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港15 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21109,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港15 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21109,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港15 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23023,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港16 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21159,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港16 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21159,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港16 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21159,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港16 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23010,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港17 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21111,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港17 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21111,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港17 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21111,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港17 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23012,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港20 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21113,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港20 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21113,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港20 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21113,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港20 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23014,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港22 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21150,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港22 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21150,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港22 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21150,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港22 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23015,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港23 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21151,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港23 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21151,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港23 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21151,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港23 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23016,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港25 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21152,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港25 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21152,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港25 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21152,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港25 HKT TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 23017,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-香港27 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21115,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->香港27 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21115,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->香港27 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21115,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->香港27 HKBN TVB NF HBO",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21500,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21300,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21300,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21300,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21501,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21301,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21301,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21301,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21502,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国3",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21302,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国3",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21302,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国3",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21302,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国3",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21503,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国4",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21303,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国4",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21303,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国4",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21303,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国4",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21504,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国5",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21304,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国5",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21304,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国5",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21304,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国5",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21505,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国6",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21305,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国6",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21305,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国6",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21305,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国6",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21506,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国7",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21306,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国7",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21306,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国7",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shh.swvip.xyz",
+      "server_port": 21306,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国7",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gz.swvip.xyz",
+      "server_port": 21507,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国8",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21307,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国8",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21307,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国8",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21307,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国8",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21508,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国9",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21308,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国9",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21308,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国9",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21308,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国9",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 21509,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-美国10",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21309,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->美国10",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21309,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->美国10",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21309,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->美国10",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23140,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-新加坡 1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21241,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->新加坡 1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21241,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->新加坡 1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21241,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->新加坡 1",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23141,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-新加坡 2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21242,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->新加坡 2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21242,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->新加坡 2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21242,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->新加坡 2",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23124,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本1 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21227,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本1 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21227,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本1 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21227,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本1 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23127,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本4 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21230,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本4 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21230,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本4 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21230,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本4 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23128,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本5 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21231,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本5 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21231,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本5 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21231,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本5 GMO NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23129,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本6 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21232,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本6 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21232,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本6 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21232,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本6 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23130,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本7 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21233,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本7 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21233,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本7 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21233,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本7 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23132,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本9 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21235,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本9 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21235,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本9 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21235,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本9 NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23133,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本10 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21236,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本10 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21236,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本10 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21236,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本10 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23134,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本11 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21237,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本11 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21237,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本11 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21237,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本11 IDCF NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23136,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本13 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21238,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本13 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21238,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本13 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21238,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本13 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-gzb.swvip.xyz",
+      "server_port": 23137,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（广SS）IEPL-日本15 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhu2.swvip.xyz",
+      "server_port": 21239,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）广州CM->日本15 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-hn.swvip.xyz",
+      "server_port": 21239,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）长沙CU->日本15 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    },
+    {
+      "server": "node-cn-shhb.swvip.xyz",
+      "server_port": 21239,
+      "password": "5B54F37E-A5B1-2540-017B-F2D4A3E86EE6",
+      "method": "aes-256-gcm",
+      "remarks": "（SS）上海CN2->日本15 Sakura NF",
+      "group": "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH",
+      "timeout": 5,
+      "warnLegacyUrl": false
+    }
+  ],
+  "onlineConfigSource": [
+    "https://subscription.kyapi.xyz/modules/servers/V2RaySocks/subscribe/Shadowsocks.php?sid=69836&token=JgwQPXtFfpVH"
+  ],
+  "strategy": "com.shadowsocks.strategy.ha",
+  "index": -1,
+  "global": false,
+  "enabled": true,
+  "shareOverLan": false,
+  "firstRun": false,
+  "localPort": 1080,
+  "portableMode": true,
+  "showPluginOutput": false,
+  "pacUrl": "",
+  "useOnlinePac": false,
+  "secureLocalPac": true,
+  "regeneratePacOnUpdate": true,
+  "autoCheckUpdate": false,
+  "checkPreRelease": false,
+  "skippedUpdateVersion": "",
+  "isVerboseLogging": false,
+  "isIPv6Enabled": false,
+  "generateLegacyUrl": false,
+  "geositeUrl": "",
+  "geositeSha256sumUrl": "",
+  "geositeDirectGroups": [
+    "private",
+    "cn",
+    "geolocation-!cn@cn"
+  ],
+  "geositeProxiedGroups": [
+    "geolocation-!cn"
+  ],
+  "geositePreferDirect": false,
+  "userAgent": "ShadowsocksWindows/$version",
+  "logViewer": {
+    "topMost": false,
+    "wrapText": false,
+    "toolbarShown": false,
+    "Font": "Consolas, 8pt",
+    "BackgroundColor": "Black",
+    "TextColor": "White"
+  },
+  "proxy": {
+    "useProxy": false,
+    "proxyType": 0,
+    "proxyServer": "",
+    "proxyPort": 0,
+    "proxyTimeout": 3,
+    "useAuth": false,
+    "authUser": "",
+    "authPwd": ""
+  },
+  "hotkey": {
+    "SwitchSystemProxy": "",
+    "SwitchSystemProxyMode": "",
+    "SwitchAllowLan": "",
+    "ShowLogs": "",
+    "ServerMoveUp": "",
+    "ServerMoveDown": "",
+    "RegHotkeysAtStartup": false
+  },
+  "WebProxy": {
+    "_BypassOnLocal": false,
+    "_ProxyAddress": "http://127.0.0.1:1080",
+    "_BypassList": null,
+    "_UseDefaultCredentials": false
+  }
+}

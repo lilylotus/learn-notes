@@ -1776,7 +1776,7 @@
   "strategy": "com.shadowsocks.strategy.ha",
   "index": -1,
   "global": true,
-  "enabled": false,
+  "enabled": true,
   "shareOverLan": false,
   "firstRun": false,
   "localPort": 1080,
@@ -1831,5 +1831,10 @@
     "ServerMoveDown": "",
     "RegHotkeysAtStartup": false
   },
-  "WebProxy": null
+  "WebProxy": {
+    "_BypassOnLocal": false,
+    "_ProxyAddress": "http://127.0.0.1:1080",
+    "_BypassList": null,
+    "_UseDefaultCredentials": false
+  }
 }
