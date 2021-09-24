@@ -64,10 +64,11 @@ patch:
 
 写好该文件之后，点击右下角托盘图标右键菜单，点“重新部署”，然后再点右键，在方案列表里面应该就有“ 🍀️四叶草拼音输入法”的选项了。
 
-配置主题：
+配置主题： `~/.config/fcitx5/conf/classicui.conf`
 
 ```bash
 yay -S fcitx5-material-color
+pacman -S fcitx5-material-color
 
 # ~/.config/fcitx5/conf/classicui.conf
 # 垂直候选列表
@@ -77,7 +78,7 @@ PerScreenDPI=True
 ## Font (设置成你喜欢的字体)
 Font="思源黑体 CN Medium 13"
 ## 主题
-Theme=Material-Color-Pink
+Theme=Material-Color-DeepPurple
 
 # 单行模式 (inline preedit)
 # fcitx5-rime -> ~/.config/fcitx5/conf/rime.conf
