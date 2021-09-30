@@ -12,3 +12,18 @@
   a: curl --socks5 a_address:a_port c_address:c_port
 ```
 
+## 仅支持密钥登录
+
+```
+# 开启 RSA 验证
+RSAAuthentication yes
+# 是否使用公钥验证
+PubkeyAuthentication yes
+#  禁止使用密码验证登录
+PasswordAuthentication no
+
+#  公钥的保存位置
+AuthorizedKeysFile .ssh/authorized_keys
+#HostKey /etc/ssh/ssh_host_rsa_key
+```
+
