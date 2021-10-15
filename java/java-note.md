@@ -1,3 +1,11 @@
+### JDK 时区问题
+
+JVM 读取时区文件顺序依次为：`$TZ` > `/etc/timezone` > `/etc/localtime` > `默认GMT`
+
+> **默认 GMT 说明**：java.util.TimeZone 类中 getDefault 方法的源代码显示，最终是会调用sun.util.calendar.ZoneInfo 类的 getTimeZone 方法。这个方法为需要的时间区域返回一个作为 ID 的 String 参数。这个默认的时间区域 ID 是从 user.timezone (system) 属性那里得到。如果 user.timezone 没有定义，它就会尝试从 user.country 和 java.home (System) 属性来得到 ID。 如果它没有成功找到一个时间区域 ID，它就会使用一个 "fallback"  的 GMT 值。换句话说， 如果它没有计算出你的时间区域 ID，它将使用 GMT 作为你默认的时间区域。
+
+<font color="red">［推荐］Java 程序在发布后的启动脚本中，可通过 JVM 参数指定应用的时区、编码, 比如 `java -Duser.timezone=Asia/Shanghai -Dfile.encoding=utf8 DateTest` </font>
+
 ### 获取 jvm 总运行时间
 
 ```java
