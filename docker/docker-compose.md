@@ -11,6 +11,8 @@ chmod +x /usr/local/bin/docker-compose
 
 `docker-compose` 使用的 `version` 版本号。[docker-compose 官方文档](https://docs.docker.com/compose/compose-file/)  [docker-compose 网络配置文档](https://docs.docker.com/compose/networking/)
 
+[docker-compose v3 文档说明](https://docs.docker.com/compose/compose-file/compose-file-v3)
+
 | **Compose file format** | **Docker Engine release** |
 | :---------------------- | :------------------------ |
 | 3.8                     | 19.03.0+                  |
@@ -153,6 +155,37 @@ networks:
 ```
 
 Compose 不会尝试创建名为 `[projectname] _default` 的网络，而是查找名为 `my-pre-existing-network` 的网络并将您的应用程序的容器连接到该网络。
+
+##### 指定 ip 地址
+
+```yml
+version: "3.7"
+
+services:
+  app:
+    image: nginx:alpine
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.10
+        ipv6_address: 2001:3984:3989::10
+  app2:
+    image: busybox:latest
+    # 执行指定命令
+    command: sh -c "tail -f /dev/null"
+    networks:
+      app_net:
+        ipv4_address: 172.16.238.20
+
+networks:
+  app_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
+        - subnet: "2001:3984:3989::/64"
+```
+
+
 
 #### 二. 命令使用
 

@@ -64,3 +64,4 @@ sysctl -p
 [自编译 openwrt](https://github.com/Lienol/openwrt)
 
 [安装 passwall](https://mianao.info/2020/05/05/%E7%BC%96%E8%AF%91%E6%9B%B4%E6%96%B0OpenWrt-PassWall%E5%92%8CSSR-plus%E6%8F%92%E4%BB%B6)
+
