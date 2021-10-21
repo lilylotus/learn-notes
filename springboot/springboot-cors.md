@@ -52,9 +52,13 @@ public class CorsConfig implements WebMvcConfigurer {
 ##### 第二种办法:
 
 ```java
-@WebFilter(filterName = "CorsFilter ")
+@WebFilter(filterName = "CorsFilter ", urlPatterns = "/*")
+@ServletComponentScan
 @Configuration
 public class CorsFilter implements Filter {
+    /**
+     * 跨域问题解决方式二， Spring Framework 5.x 版本推荐
+     */
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
