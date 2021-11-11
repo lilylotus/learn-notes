@@ -1,4 +1,22 @@
-文件测试
+#### 获取执行 SHELL 脚本所在目录
+
+```bash
+#!/bin/bash
+SHELL_DIR=$(cd $(dirname $0) && pwd)
+
+# 软链接版
+SOURCE_DIR="$0"
+while [ -h "$SOURCE_DIR" ];
+do
+	DIR="$(cd -P $( dirname "$SOURCE_DIR" ) && pwd)"
+	SOURCE_DIR="$(readlink "$SOURCE_DIR")"
+	[[ "$SOURCE" != "/*"  ]] && SOURCE="$DIR/$SOURCE_DIR"
+done
+DIR="$( cd -P $( dirname "$SOURCE_DIR" ) && pwd )"
+echo "SHELL DIR [$DIR]"
+```
+
+#### 文件测试
 
 ```bash
 -b filename - Block special file
