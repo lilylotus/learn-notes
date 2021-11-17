@@ -1,6 +1,30 @@
+### jdk1.8 Dockerfile
+
+```dockerfile
+FROM centos:7.8.2003
+
+ADD jdk-8u181-linux-x64.tar.gz /usr/local/src
+
+ENV JAVA_HOME=/usr/local/src/jdk1.8.0_181 \
+	CLASSPATH=.:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar:${JAVA_HOME}/jre/lib/rt.jar
+ENV PATH=${PATH}:${JAVA_HOME}/bin
+
+CMD ["java", "-version"]
+```
+
 #### 1. docker-file
 
 参考地址：https://docs.docker.com/engine/reference/builder/
+
+[docker 镜像/容器的层级文档](https://docs.docker.com/storage/storagedriver/)
+
+<font color="red">注意：</font>
+
+- 仅 `RUN`，`COPY`，`ADD` 会创建层（layers），其他指令会创建临时中间镜像，并且不会增加构建的大小。除了 [`RUN`，`COPY`，`ADD`] 别的指令都仅修改了镜像的元数据信息，所以不会产生新的镜像层。
+- 推荐使用 <font color="red">多阶段构建（multi-stage builds）</font>。
+- `overlay2` 文件系统原生支持小于 128 OverlayFS 层。
+
+<font color="red">提示：</font> 容器和镜像之间的主要区别是顶部可写层。 添加新数据或修改现有数据的所有写入容器都存储在此可写层中。 当容器被删除时，可写层也被删除。 底层镜像保持不变。
 
 ##### 1.1 docker-file 构建
 
@@ -34,6 +58,8 @@ ENV ghi=$abc
 ##### 2.2 指令列表
 
 `FROM`, `RUN`, `CMD`, `LABEL`, `EXPOSE`, `ADD`, `COPY`, `ENTRYPOINT`, `VOLUME`, `WORKDIR`
+
+<font color="red">注意：</font> `ADD` 和 `COPY` 命令若到指定的目录的话一定要加上 `/` 线，不然会认为是文件。
 
 ##### FROM
 
