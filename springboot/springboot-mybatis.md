@@ -42,3 +42,16 @@ mybatis:
 <mapper namespace="">
 </mapper>
 ```
+
+##### 1.3 指定 mapper 扫描
+
+```java
+@SpringBootApplication
+@MapperScan(basePackages = {"cn.example.mybatis.mapper"})
+public class MybatisApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MybatisApplication.class, args);
+    }
+}
+```
+
