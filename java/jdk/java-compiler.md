@@ -116,6 +116,11 @@ Main-Class: cn.nihility.remote.RemoteSay
 ```bat
 javac -d D:\jvm *.java
 
+# 使用指定的 manifest ，-C 后面指定要打包的目录， 目录后面的 . 代表目录下所有文件
+jar -cvfm boot.jar META-INF/MANIFEST.MF -C bootDir .
 jar cvfm jvm.jar manifest
+
+# 打包当前目录中的所有内容到 jar 包， 0 仅打包不压缩
+jar cf0M xxx.jar *
 ```
 
