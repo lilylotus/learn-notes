@@ -1,3 +1,7 @@
+### nginx 代理默认会删除请求 header 中带下划线 _ 的参数
+
+解决方法：nginx 配置 *http* 中添加  **`underscores_in_headers on`** ，开启支持。默认是 off。
+
 ### JDK 时区问题
 
 JVM 读取时区文件顺序依次为：`$TZ` > `/etc/timezone` > `/etc/localtime` > `默认GMT`
