@@ -4,6 +4,27 @@
 - Visual Assist Options （插件）
 - **C++  Version 11**
 
+## g++ usage
+
+编译器 **`g++`** 通过检查命令行中指定的文件的后缀名识别其为 C++ 源代码文件。
+编译器默认的动作：编译源代码文件生成对象文件(object file)，链接对象文件和 libstdc++ 库中的函数得到可执行程序。然后删除对象文件。由于命令行中未指定可执行程序的文件名，编译器采用默认的 a.out。
+
+```bash
+# 默认生成 a.out 的可执行文件
+g++ test.cpp
+
+# 指定生成的可执行文件名称， -o test
+g++ test.cpp -o test
+
+# 同时编译多个文件, 若是有 #include "test.h" 默认是在当前目录中查找
+g++ test1.cpp test2.cpp -o test
+
+# 预编译源码，生成 obj (.o) 文件，-c 编译源代码但不执行链接
+g++ -c test.cpp
+
+
+```
+
 ## Tips
 
 ### Struct
