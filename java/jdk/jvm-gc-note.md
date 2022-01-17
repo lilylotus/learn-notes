@@ -4,6 +4,10 @@
 
 [JVM 参数编辑](https://jvmmemory.com/)
 
+[seven important **JVM arguments**](https://blog.gceasy.io/2020/03/18/7-jvm-arguments-of-highly-effective-applications/)
+
+[LARGE OR SMALL MEMORY SIZE FOR MY APP?](https://blog.heaphero.io/2019/06/21/large-or-small-memory-size-for-my-app/)
+
 ## JVM GC 笔记
 
 ```bash

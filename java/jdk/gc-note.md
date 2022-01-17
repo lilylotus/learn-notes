@@ -1,5 +1,15 @@
 [java 运行参数](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html)
 
+| **GC Algorithm**                                            | **JVM argument**        |
+| ----------------------------------------------------------- | ----------------------- |
+| Serial GC                                                   | -XX:+UseSerialGC        |
+| Parallel GC （Java 8 Default GC Algorithm）吞吐量           | -XX:+UseParallelGC      |
+| Concurrent Market & Sweep (CMS) GC ，响应时间               | -XX:+UseConcMarkSweepGC |
+| G1 GC （Java 9 Default gc algorithm），平衡吞吐量和响应时间 | -XX:+UseG1GC            |
+| Shenandoah GC                                               | -XX:+UseShenandoahGC    |
+| Z GC （ JVM 11+，性能极好）                                 | -XX:+UseZGC             |
+| Epsilon GC                                                  | -XX:+UseEpsilonGC       |
+
 测试代码
 
 ```java
