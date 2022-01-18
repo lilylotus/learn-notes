@@ -1,3 +1,41 @@
+### C++ time
+
+```c++
+#include <iostream>
+#include <ctime>
+#include <chrono>
+
+int main()
+{
+    auto start = std::chrono::system_clock::now();
+
+    // 秒为单位的数值，以 1970 年 1 月 1 日 为基准
+    time_t t1 = time(0);
+    std::cout << "time(0) = " << t1 << std::endl;
+    char* tChar = ctime(&t1);
+    std::cout << "ctime() = " << tChar << std::endl;
+    tm* local_struct =  localtime(&t1);
+    std::cout << local_struct->tm_year + 1900 << "/" << local_struct->tm_mon + 1 << "/" << local_struct->tm_mday << " " 
+        << local_struct->tm_hour << ":" << local_struct->tm_min << ":" << local_struct->tm_sec << std::endl;
+
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "Duration count = " << duration.count() << std::endl;
+    std::cout << (double)(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den  << "s" << std::endl;
+    return 0;
+}
+```
+
+> time(0) = 1642499735
+>
+> ctime() = Tue Jan 18 17:55:35 2022
+>
+> 2022/1/18 17:55:35
+>
+> Duration count = 1027
+>
+> 0.001027s 
+
 ##### 1. 访问限制
 
 > C++ 的类访问限制，private|protected|public 的访问限制仅在编译的时候有效，在运行时没有管。
@@ -139,6 +177,59 @@ A b(a); // 等同于 A b = a;
 
 > 运算符重载
 > 对象是 *成员的复制* 不是 *位的复制*
+
+  // ERROR: c++ 产生的只是一个临时的中间值， 前置 ++ 的效率要高于后置 ++。
+
+  // (c++)++ 编译错误
+
+  // ++(c++) 编译错误
+
+```c++
+class SortContainer
+{
+private:
+    int opCount;
+public:
+    SortContainer();
+    SortContainer(const SortContainer& other); // Copy Constructor
+    SortContainer& operator++();  // ++i，前置形式
+    const SortContainer operator++(int);  // i++，后置形式
+    SortContainer& operator--();
+    const SortContainer operator--(int);
+};
+
+SortContainer::SortContainer(const SortContainer& other)
+{
+    this->opCount = other.opCount;
+}
+SortContainer& SortContainer::operator--()
+{
+    opCount -= 1;
+    return *this;
+}
+const SortContainer SortContainer::operator--(int)
+{
+    SortContainer tmp = *this;
+    --(*this);
+    return tmp;
+}
+SortContainer& SortContainer::operator++()
+{
+    opCount += 1;
+    return *this;
+}
+const SortContainer SortContainer::operator++(int)
+{
+    // ERROR: c++ 产生的只是一个临时的中间值， 前置 ++ 的效率要高于后置 ++。
+    // (c++)++ 编译错误
+    // ++(c++) 编译错误
+    SortContainer tmp = *this; // Copy Constructor
+    ++(*this);
+    return tmp;
+}
+```
+
+
 
 ```c++
 + - * / % ^ & | ~

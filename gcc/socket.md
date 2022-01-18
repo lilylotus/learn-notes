@@ -454,6 +454,157 @@ int ppoll(struct pollfd *fds, nfds_t nfds,
 #include <sys/epoll.h>
 ```
 
+##### 边沿触发 (Level-triggered) 和水平触发 (edge-triggered)
+
+**epoll** 事件分发接口能够同时作为边沿触发 (ET) 和水平触发 (LT) 。两种机制的区别可以如下面描述：
+
+1.  The file descriptor that represents the read side of a pipe (**rfd**) is registered on the **epoll** instance.【表示管道读取端的文件描述符 (rfd) 在 epoll 实例上注册。】
+2. A pipe writer writes 2 kB of data on the write side of the pipe. 【管道写入器在写入端写入 2 kB 的数据管道】
+3. A call to `epoll_wait(2)` is done that will return **rfd** as a ready file descriptor.
+4. The pipe reader reads 1 kB of data from **rfd**.
+5. A call to **`epoll_wait(2)`** is done.
+
+监听读缓冲区的变化：
+
+- [LT] 水平触发：只要读缓冲区有数据就会触发 epoll_wait
+- [ET] 边沿触发： 数据来一次，epoll_wait 只触发一次
+
+监听写缓冲区的变化：
+
+- [LT] 水平触发：只要可以写，就会触发
+- [ET] 边沿触发： 数据从有到无，就会触发
+
+推荐的使用示例：
+
+```c++
+#define MAX_EVENTS 10
+struct epoll_event ev, events[MAX_EVENTS];
+int listen_sock, conn_sock, nfds, epollfd;
+
+/* Code to set up listening socket, 'listen_sock', (socket(), bind(), listen()) omitted. */
+
+epollfd = epoll_create1(0);
+if (epollfd == -1) {
+    perror("epoll_create1");
+    exit(EXIT_FAILURE);
+}
+
+// read()
+ev.events = EPOLLIN;
+ev.data.fd = listen_sock;
+if (epoll_ctl(epollfd, EPOLL_CTL_ADD, listen_sock, &ev) == -1) {
+    perror("epoll_ctl: listen_sock");
+    exit(EXIT_FAILURE);
+}
+
+for (;;) {
+    nfds = epoll_wait(epollfd, events, MAX_EVENTS, -1);
+    if (nfds == -1) {
+        perror("epoll_wait");
+        exit(EXIT_FAILURE);
+    }
+
+    for (n = 0; n < nfds; ++n) {
+        if (events[n].data.fd == listen_sock) {
+            conn_sock = accept(listen_sock, (struct sockaddr *) &addr, &addrlen);
+            if (conn_sock == -1) {
+                perror("accept");
+                exit(EXIT_FAILURE);
+            }
+            setnonblocking(conn_sock);
+            ev.events = EPOLLIN | EPOLLET;
+            ev.data.fd = conn_sock;
+            if (epoll_ctl(epollfd, EPOLL_CTL_ADD, conn_sock, &ev) == -1) {
+                perror("epoll_ctl: conn_sock");
+                exit(EXIT_FAILURE);
+            }
+        } else {
+            do_use_fd(events[n].data.fd);
+        }
+    }
+}
+```
+
+
+
+##### 10.1 打开一个 epoll 的文件描述符 `epoll_create()`
+
+[epoll_create()](https://man7.org/linux/man-pages/man2/epoll_create.2.html)
+
+注意：**`epoll_create()`** was added to the kernel in version 2.6. Since Linux 2.6.8, the size argument is ignored, but must be greater than zero (1).
+
+**`epoll_create1()`** 当 **flag** 参数是 0 值，除了事实上绝对的 **size** 参数会丢弃，`epoll_create1()` 就和 `epoll_create()` 相同。
+
+成功返回一个 *epoll* 的文件描述符实例 （非复整数）。失败/错误返回 -1 ，`errno` 表明错误的原因。
+
+```c++
+ #include <sys/epoll.h>
+// open an epoll file descriptor
+int epoll_create(int size);
+int epoll_create1(int flags);
+```
+
+`epoll_create()` returns a file descriptor referring to the new *epoll* instance.
+
+`epoll_create()` 返回一个指向新 *epoll* 实例的文件描述符，该文件描述符用来随后所有 *epoll* 接口的调用。当不在需要使用时，需要调用 `close()` 函数关闭，当所有文件描述符引用到一个 epoll 实例已经关闭，内核销毁实例并释放相关资源以供重用。
+
+##### 10.2 添加关注感兴趣的文件描述符 `epoll_ctl()`
+
+[epoll_ctl()](https://man7.org/linux/man-pages/man2/epoll_ctl.2.html)
+
+通过方法 `epoll_ctl()` 注册感兴趣的文件描述符，添加项到 *epoll* 实例的兴趣列表当中。
+
+当处理成功，返回 0 值。当遇到异常，返回 -1 值， `errno` 设置表示错误原因。
+
+```c++
+#include <sys/epoll.h>
+// control interface for an epoll file descriptor
+int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+```
+
+针对 *op* 参数有效的值：
+
+- `EPOLL_CTL_ADD` ：在 *epoll* 文件描述符的兴趣列表中添加一个条目 *epfd* 。
+- `EPOLL_CTL_MOD`：Change the settings associated with **fd** in the interest list to the new settings specified in **event**.
+- `EPOLL_CTL_DEL`：Remove (deregister) the target file descriptor **fd** from the interest list.  The **event** argument is ignored and can be NULL (but see BUGS below).
+
+针对 *event* 参数中的 *events* 值配置列表：
+
+- `EPOLLIN`:  The associated file is available for `read(2)` operations.
+- `EPOLLOUT`：The associated file is available for `write(2)` operations.
+- `EPOLLET`: Requests edge-triggered notification for the associated file descriptor.
+
+`struct epoll_event` 的数据结构
+
+```c++
+typedef union epoll_data {
+    void        *ptr;
+    int          fd;
+    uint32_t     u32;
+    uint64_t     u64;
+} epoll_data_t;
+
+struct epoll_event {
+    uint32_t     events;      /* Epoll events */
+    epoll_data_t data;        /* User data variable */
+};
+```
+
+##### 10.3 等待 I/O 事件 `epoll_wait()`
+
+[epoll_wait()](https://man7.org/linux/man-pages/man2/epoll_wait.2.html)
+
+等待 I/O 事件，阻塞调用线程 如果当前没有可用的事件。
+
+成功，返回准备好请求 I/O 的文件描述符数据量或者 0 值表示没有准备好事件的文件描述符。遇到异常，返回 -1 值，`errno` 设置表示错误原因。
+
+```c++
+#include <sys/epoll.h>
+// wait for an I/O event on an epoll file descriptor
+int epoll_wait(int epfd, struct epoll_event *events,
+               int maxevents, int timeout);
+```
+
 
 
 ### 客户端
