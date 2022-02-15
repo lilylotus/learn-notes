@@ -10,6 +10,41 @@
 | Z GC （ JVM 11+，性能极好）                                 | -XX:+UseZGC             |
 | Epsilon GC                                                  | -XX:+UseEpsilonGC       |
 
+### GC 常用参数
+
+#### Old generation collectors:
+
+- G1 - `-XX:+UseG1GC`
+- ConcurrentMarkSweep - `-XX:+UseConcMarkSweepGC` （并发的、低暂停、cpu 敏感）
+- Serial Old - `-XX:+UseSerialGC` （带压缩）
+- Parallel Old
+
+#### Young generation collectors:
+
+- Serial (Copy) - `-XX:+UseSerialGC`
+- Parallel Scavenge - `-XX:+UseParallelGC ` （jdk1.8 default）
+- Parallel New - `-XX:+UseParNewGC` （串行 gc 的多线程版本）
+
+年轻代为并发收集，可与 CMS 一同使用 : **`-XX:+UseParNewGC`** + **`-XX:+UseConcMarkSweepGC`**
+
+-XX:+UseSerialGC         (Serial Old [MarkSweepCompact])
+-XX:+UseParallelGC       (Parallel Scavenge [young], jdk1.8 default)
+-XX:+UseConcMarkSweepGC  (ConcurrentMarkSweep [old])
+    -XX:ConcGCThreads=4      Concurrent GC threads
+    -XX:ParallelGCThreads=2  Parallel GC threads
+-XX:+UseG1GC             (G1)
+
+常用组合： -Xms1g -Xmx1g -Xmn512m -XX:+UseConcMarkSweepGC -XX:+CMSScavengeBeforeRemark -XX:+UseParNewGC
+
+打印 GC 日志：
+-XX:+PrintHeapAtGC        Print heap information at every gc
+-XX:+PrintTenuringDistribution    Tenuring age information.
+-XX:+PrintGCTimeStamps    Relative time stamp at the start of gc event
+-XX:+PrintGCDateStamps    Calendar date stamp at the start of gc event
+-Xloggc:gc.log
+
+-Xms512m -Xmx512m -Xmn400m -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCApplicationStoppedTime -XX:+PrintTenuringDistribution -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:gc.log
+
 ## GC 优化
 
 #### JVM 内存结构
@@ -137,6 +172,8 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 **注意：**在 JDK 8 中不推荐使用 `-XX:+UseParNewGC` 选项而不使用 `-XX:+UseConcMarkSweepGC` 选项。
 
 ### UseConcMarkSweepGC
+
+推荐使用的垃圾收集器组合： ParNew + CMS
 
 老年代 `-XX:+UseConcMarkSweepGC`  （concurrent mark-sweep - CMS）
 
