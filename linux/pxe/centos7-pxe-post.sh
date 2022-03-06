@@ -14,6 +14,7 @@ sed -ri '/^SELINUX=/s/^(.*)$/SELINUX=disabled/' /etc/selinux/config
 
 echo $(date "+%Y-%m-%d %H:%M:%S") "update system kernel params" >> ${LOGPATH}
 cat <<EOF > /etc/sysctl.d/optimize.conf
+vm.overcommit_memory = 1
 net.ipv4.ip_forward = 1
 net.ipv4.tcp_syncookies = 1
 net.ipv4.tcp_tw_reuse = 1
@@ -27,7 +28,7 @@ EOF
 sysctl -p /etc/sysctl.d/optimize.conf
 
 # 修改 swap 虚拟内存的使用规则，设置为10 说明当内存使用量超过 90% 才会使用 swap 空间
-echo "10" >/proc/sys/vm/swappiness
+echo "10" > /proc/sys/vm/swappiness
 
 
 # 设置系统打开文件最大数
@@ -67,7 +68,7 @@ iptables -F && iptables -X && iptables -Z
 # 4. Vim config
 echo $(date "+%Y-%m-%d %H:%M:%S") "vim config" >> ${LOGPATH}
 
-cat <<EOF > /etc/vimrc
+cat <<EOF >> /etc/vimrc
 syntax on
 set tabstop=4
 set autoindent
@@ -75,7 +76,7 @@ EOF
 
 # 5. ssh config
 echo $(date "+%Y-%m-%d %H:%M:%S") "ssh config" >> ${LOGPATH}
-wget -P /root ftp://${PXESERVER}/pub/sh/id_rsa.pub && mkdir -p /root/.ssh || cat /root/id_rsa.pub >> /root/.ssh/authorized_keys
+wget -P /root ftp://${PXESERVER}/pub/sh/id_rsa.pub && mkdir -p /root/.ssh ; cat /root/id_rsa.pub >> /root/.ssh/authorized_keys
 
 # 6. config timezone
 echo $(date "+%Y-%m-%d %H:%M:%S") "config timezone" >> ${LOGPATH}
