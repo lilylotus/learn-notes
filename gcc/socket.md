@@ -193,9 +193,9 @@ TCP 数据报文：
 
 **注意：**三次握手的关键是要确认对方收到了自己的数据包，这个目标就是通过“确认号（**ack**）字段实现的。
 
-
-
 客户端最后一次发送 ACK 包后进入 TIME_WAIT 状态，而不是直接进入 CLOSED 状态关闭连接。
+
+这称为报文最大生存时间（**MSL，Maximum Segment Lifetime**）。TIME_WAIT 要等待 2MSL 才会进入 CLOSED 状态。ACK 包到达服务器需要 MSL 时间，服务器重传 FIN 包也需要 MSL 时间，2MSL 是数据包往返的最大时间，如果 2MSL 后还未收到服务器重传的 FIN 包，就说明服务器已经收到了 ACK 包。
 
 ## Linux Socket 函数
 
@@ -371,7 +371,7 @@ ssize_t write(int fd, const void *buf, size_t count);
 
 // 示例：
 const char* msg = "欢迎来到 Linux Socket Server";
-int writeBytesCount = (int)send(clientSocket, msg, (int)strlen(msg), 0);
+int writeBytesCount = (int)write(clientSocket, msg, (int)strlen(msg), 0);
 ```
 
 写入成功返回写入的字节数，错误返回 -1 .
