@@ -14,7 +14,7 @@
 
 垃圾回收就是释放生命周期结束后的对象实例占用的空间。
 
-- 什么样的对象实例会被当作垃圾回收？
+- 什么样的对象实例会被当作垃圾回收？（当一个对象不能再从正在运行的程序中的任何指针访问时，它就被认为是垃圾）
 
 - 当对象实例被确定为垃圾后采用什么样的策略来回收（释放空间）？（垃圾收集算法）
 - 在商业虚拟机中有哪些典型的垃圾收集器？
@@ -139,7 +139,7 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 - 老年代的垃圾回收（又称 **Major GC**）：区域中对象存活率高，通常使用 “标记-清理” 或 “标记-整理” 算法。
 - 整堆包括新生代和老年代的垃圾回收称为 **Full GC**：（HotSpot VM 里，除了 CMS 之外，其它能收集老年代的 GC 都会同时收集整个 GC 堆，包括新生代）。
 
-**注意：**各分区的大小对GC的性能影响很大。如何将各分区调整到合适的大小，分析活跃数据的大小是很好的切入点。
+**注意：** 各分区的大小对GC的性能影响很大。如何将各分区调整到合适的大小，分析活跃数据的大小是很好的切入点。
 
 ### 垃圾收集的目标
 
@@ -157,6 +157,8 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 - 暂停（*Pauses*）时间：暂停是应用程序由于垃圾收集而出现无响应的时间。（低延迟，请求必须多少毫秒内完成响应）
 
 ## JDK 1.8 可用的收集器
+
+[参考官方标准 gc 说明文档](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/)
 
 - 串型（Serial）收集器：`-XX:+UseSerialGC`
 - 并行（Parallel）收集器：**吞吐量**，`-XX:+UseParallelGC (default)` [(major collections)默认启用并行压缩]，`-XX:-UseParallelOldGC` 关闭并行压缩。
@@ -188,6 +190,7 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 ```bash
 # 打印 GC 信息参数
 -XX:+PrintGCDetails # 打印 gc 详情
+-verbose:gc # 详细的堆大小信息
 -XX:+PrintGCDateStamps # 打印 gc 发生的时间戳
 -XX:+PrintTenuringDistribution # 打印 gc 发生时的分代信息
 -XX:+PrintGCApplicationStoppedTime # 打印 gc 停顿时长
@@ -197,8 +200,24 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 -Xms2g -Xmx2g
 -Xmn1g # 年轻代最大内存
 -Xss256k 
--XX:SurvivorRatio=8 # eden/survivor, default eden = 8/10 = (1 - 2/(8 + 1 + 1))
--XX:NewRatio=2 # old/new generation, default new = 1/3
+-XX:NewRatio=2 # young:tenured generation = 1:2, young = 1/3, default new = 1/3
+-XX:SurvivorRatio=8 # 这通常对性能调优并不重要 eden/a survivor = 1:8,每个幸存者空间将是伊甸园大小的八分之一， eden = 8/(8 + 1 + 1) * young, default eden = 8/10 = [young * n/(n + 2)]
+```
+
+```
+# -verbose:gc
+[GC 325407K->83000K(776768K), 0.2300771 secs]
+[Full GC 267628K->83769K(776768K), 1.8479984 secs]
+# 325407K->83000K : 表示垃圾收集前后活动对象的大小
+# (776768K) : 堆中可用的内存数，数字只包括 survivor 空间之一
+# 0.2300771 secs : 执行垃圾收集使用的时间
+
+# -XX:+PrintGCDetails
+[GC [DefNew: 64575K->959K(64576K), 0.0457646 secs] 196016K->133633K(261184K), 0.0459067 secs]
+# 64575K->959K(64576K), 0.0457646 secs ： 次要收集回收了大约 98% 的年轻代，用时 0.0457646 secs
+# 196016K->133633K(261184K) ： 整个堆减少到大约 51%
+
+# -XX:+PrintGCTimeStamps : 添加了时间戳
 ```
 
 ### 并行（Parallel）收集器
@@ -207,11 +226,24 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 
 并行垃圾收集器主要是针对 **吞吐量（*Throughput*）** 调优的垃圾收集器。
 
-开启参数：`-XX:+UseParallelGC`
+与串型垃圾收集器不同点在于使用多线程加速垃圾收集，默认情况下，次要（minor）和主要（major）垃圾收集都并行执行以进一步减少垃圾收集开销。
+
+**注意：** 当线程数（N）大于 8 时，使用大于 5/8 * N 的线程数执行，N 小于 8 时执行线程就是 N。
+
+开启参数：`-XX:+UseParallelGC`，在执行 *major collections* 是默认开启了并行压缩特性的，关闭并行压缩参数 `-XX:-UseParallelOldGC`。
+
+减少垃圾收集器线程的数量并增加老年代的大小将减少这种碎片效应。
+
+#### 常用调整参数
+
+- **`-XX:ParallelGCThreads=<N>`** 参数指定并行垃圾回收的线程数
+- **`-XX:GCTimeRatio=19`** 调整吞吐量，= `1 / (1 + <N>)`，总的垃圾收集时间占运行时间的 1/20 或者 5%。默认是 99，即总垃圾收集时间占 1%。
 
 ### 并发（Concurrent）收集器
 
 参考文档：[常用并发垃圾收集器说明](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/concurrent.html)，[CMS 标记清除垃圾收集器介绍](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html#concurrent_mark_sweep_cms_collector)，[G1 (Garbage-First) 垃圾收集器介绍](https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/g1_gc.html#garbage_first_garbage_collection)
+
+并发收集器执行和应用程序并发执行的，为了保证垃圾收集的暂停时间尽可能的短。
 
 #### 并发标记清除 (CMS) 垃圾收集器
 
@@ -244,7 +276,7 @@ CMS 提供 **`CMSScavengeBeforeRemark`** 参数，用来保证 Remark 前强制�
 
 #### G1 (Garbage-First) 垃圾收集器
 
-G1 垃圾收集器主要是平衡响应时间和吞吐量之间的垃圾收集器，设计目标是取代 CMS 收集器。
+G1 垃圾收集器主要是平衡响应时间和吞吐量之间的垃圾收集器，设计目标是取代 CMS 收集器。针对具有大内存的多处理器机器。它试图在实现高吞吐量的同时以高概率满足垃圾收集 (GC) 暂停时间目标。
 
 开启参数：`-XX:+UseG1GC`
 
@@ -272,7 +304,7 @@ G1 提供了两种 GC 模式，**Young GC** 和 **Mixed GC**，两种都是完�
 
 而 G1 的各代存储地址是不连续的，每一代都使用了 n 个不连续的大小相同的 Region，每个 Region 占有一块连续的虚拟内存地址。
 
-**注意：**一个 Region 的大小可以通过参数 **`-XX:G1HeapRegionSize`** 设定，取值范围从 1M 到 32M，且是 2 的指数。如果不设定，那么 G1 会根据 Heap 大小自动决定。
+**注意：** 一个 Region 的大小可以通过参数 **`-XX:G1HeapRegionSize`** 设定，取值范围从 1M 到 32M，且是 2 的指数。如果不设定，那么 G1 会根据 Heap 大小自动决定。
 
 **SATB**
 
