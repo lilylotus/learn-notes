@@ -202,6 +202,7 @@ Hotspot VM 将内存划分为不同的物理区，就是“分代”思想的体
 -Xss256k 
 -XX:NewRatio=2 # young:tenured generation = 1:2, young = 1/3, default new = 1/3
 -XX:SurvivorRatio=8 # 这通常对性能调优并不重要 eden/a survivor = 1:8,每个幸存者空间将是伊甸园大小的八分之一， eden = 8/(8 + 1 + 1) * young, default eden = 8/10 = [young * n/(n + 2)]
+-XX:MetaspaceSize=265M
 ```
 
 ```
