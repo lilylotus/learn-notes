@@ -1,0 +1,72 @@
+version: "3.6"
+services:
+  master:
+    image: redis:5.0.14-bullseye
+    ports:
+      - "${MASTER_PORT:-8001}:6379"
+    volumes:
+      - "./master:/data"
+    command: ["redis-server", "/data/redis.conf"]
+    networks:
+      - backend
+  slave1:
+    image: redis:5.0.14-bullseye
+    ports:
+      - "${SLAVE1_PORT:-8002}:6379"
+    volumes:
+      - "./slave1:/data"
+    command: ["redis-server", "/data/redis.conf"]
+    networks:
+      - backend
+    depends_on:
+      - master
+  slave2:
+    image: redis:5.0.14-bullseye
+    ports:
+      - "${SLAVE2_PORT:-8003}:6379"
+    volumes:
+      - "./slave2:/data"
+    command: ["redis-server", "/data/redis.conf"]
+    networks:
+      - backend
+    depends_on:
+      - master
+  sentinel1:
+    image: redis:5.0.14-bullseye
+    command: ["redis-sentinel", "/data/sentinel.conf"]
+    ports:
+      - "${SENTINEL1_PORT:-28001}:6379"
+    volumes:
+      - "./sentinel/sentinel1.conf:/data/sentinel.conf"
+    networks:
+      - backend
+    depends_on:
+      - master
+      - slave1
+      - slave2
+  sentinel2:
+    image: redis:5.0.14-bullseye
+    command: ["redis-sentinel", "/data/sentinel.conf"]
+    ports:
+      - "${SENTINEL2_PORT:-28002}:6379"
+    volumes:
+      - "./sentinel/sentinel2.conf:/data/sentinel.conf"
+    networks:
+      - backend
+    depends_on:
+      - sentinel1
+  sentinel3:
+    image: redis:5.0.14-bullseye
+    command: ["redis-sentinel", "/data/sentinel.conf"]
+    ports:
+      - "${SENTINEL3_PORT:-28003}:6379"
+    volumes:
+      - "./sentinel/sentinel3.conf:/data/sentinel.conf"
+    networks:
+      - backend
+    depends_on:
+      - sentinel1
+
+networks:
+  backend:
+    attachable: true

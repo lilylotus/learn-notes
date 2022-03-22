@@ -1,0 +1,60 @@
+version: "3.6"
+services:
+  master:
+    build: ./master
+    ports:
+      - "${MASTER_PORT:-8001}:6379"
+    volumes:
+      - "./master:/data"
+    networks:
+      - backend
+  slave1:
+    build: ./slave1
+    ports:
+      - "${SLAVE1_PORT:-8002}:6379"
+    volumes:
+      - "./slave1:/data"
+    networks:
+      - backend
+    depends_on:
+      - master
+  slave2:
+    build: ./slave2
+    ports:
+      - "${SLAVE2_PORT:-8003}:6379"
+    volumes:
+      - "./slave2:/data"
+    networks:
+      - backend
+    depends_on:
+      - master
+  sentinel1:
+    build: ./sentinel
+    ports:
+      - "${SENTINEL1_PORT:-28001}:6379"
+    networks:
+      - backend
+    depends_on:
+      - master
+      - slave1
+      - slave2
+  sentinel2:
+    build: ./sentinel
+    ports:
+      - "${SENTINEL2_PORT:-28002}:6379"
+    networks:
+      - backend
+    depends_on:
+      - sentinel1
+  sentinel3:
+    build: ./sentinel
+    ports:
+      - "${SENTINEL3_PORT:-28003}:6379"
+    networks:
+      - backend
+    depends_on:
+      - sentinel2
+
+networks:
+  backend:
+    attachable: true
