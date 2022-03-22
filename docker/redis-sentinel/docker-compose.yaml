@@ -29,9 +29,11 @@ services:
     depends_on:
       - master
   sentinel1:
-    build: ./sentinel
+    build: ./sentinel1
     ports:
       - "${SENTINEL1_PORT:-28001}:6379"
+    volumes:
+      - "./sentinel1:/data"
     networks:
       - backend
     depends_on:
@@ -39,17 +41,21 @@ services:
       - slave1
       - slave2
   sentinel2:
-    build: ./sentinel
+    build: ./sentinel2
     ports:
       - "${SENTINEL2_PORT:-28002}:6379"
+    volumes:
+      - "./sentinel2:/data"
     networks:
       - backend
     depends_on:
       - sentinel1
   sentinel3:
-    build: ./sentinel
+    build: ./sentinel3
     ports:
       - "${SENTINEL3_PORT:-28003}:6379"
+    volumes:
+      - "./sentinel3:/data"
     networks:
       - backend
     depends_on:

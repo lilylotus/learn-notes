@@ -37,7 +37,7 @@ services:
     ports:
       - "${SENTINEL1_PORT:-28001}:6379"
     volumes:
-      - "./sentinel/sentinel1.conf:/data/sentinel.conf"
+      - "./sentinel1/sentinel.conf:/data/sentinel.conf"
     networks:
       - backend
     depends_on:
@@ -50,7 +50,7 @@ services:
     ports:
       - "${SENTINEL2_PORT:-28002}:6379"
     volumes:
-      - "./sentinel/sentinel2.conf:/data/sentinel.conf"
+      - "./sentinel2/sentinel.conf:/data/sentinel.conf"
     networks:
       - backend
     depends_on:
@@ -61,11 +61,11 @@ services:
     ports:
       - "${SENTINEL3_PORT:-28003}:6379"
     volumes:
-      - "./sentinel/sentinel3.conf:/data/sentinel.conf"
+      - "./sentinel3/sentinel.conf:/data/sentinel.conf"
     networks:
       - backend
     depends_on:
-      - sentinel1
+      - sentinel2
 
 networks:
   backend:
