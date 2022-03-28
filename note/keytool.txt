@@ -1,0 +1,27 @@
+keytool -genkeypair -alias www.bo.org -keyalg RSA -keystore D:\koal\bo.keystore -storetype pkcs12
+
+keytool -list -v -keystore D:\koal\bo.keystore
+
+
+keytool -exportcert -keystore D:\koal\bo.keystore -alias www.bo.org -file D:\koal\bo.crt
+
+keytool -importcert -file D:\koal\test.crt -alias test -keystore D:\koal\bo.keystore
+
+
+keytool -importkeystore -srckeystore mypfxfile.pfx -srcstoretype pkcs12 -destkeystore clientcert.jks -deststoretype JKS 
+
+
+CN=subca_root_rsa, C=CN
+
+keytool -genkeypair -validity 3600 -keyalg RSA -storetype pkcs12 -alias mykey -keystore keytool.keystore
+
+keytool -exportcert -keystore keytool.keystore -file keytool.cer -rfc
+
+keytool -list -v -keystore keytool.keystore
+
+
+pfx -> jks
+keytool -importkeystore -v -srckeystore keytool.pfx -srcstoretype pkcs12 -srcstorepass 123456 -destkeystore keytool.keystore -deststoretype pkcs12 -deststorepass 123456
+
+jks -> pfs
+keytool -importkeystore -srckeystore keytool.keystore -srcstoretype pkcs12 -deststoretype PKCS12 -destkeystore keytool.p12
