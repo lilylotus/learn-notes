@@ -10,19 +10,22 @@ echo $(date "+%Y-%m-%d %H:%M:%S") "shutdown firewalld and configure selinux" >> 
 systemctl stop firewalld.service
 systemctl disable firewalld.service
 sed -ri '/^SELINUX=/s/^(.*)$/SELINUX=disabled/' /etc/selinux/config
-
+sed -i '/ swap / s/^\(.*\)$/#\1/' /etc/fstab
 
 echo $(date "+%Y-%m-%d %H:%M:%S") "update system kernel params" >> ${LOGPATH}
 cat <<EOF > /etc/sysctl.d/optimize.conf
-vm.overcommit_memory = 1
 net.ipv4.ip_forward = 1
+vm.swappiness = 0
+vm.overcommit_memory = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv6.conf.all.disable_ipv6 = 1
 EOF
 
 sysctl -p /etc/sysctl.d/optimize.conf
 
 # 修改 swap 虚拟内存的使用规则，设置为10 说明当内存使用量超过 90% 才会使用 swap 空间
 echo "10" > /proc/sys/vm/swappiness
-
 
 # 设置系统打开文件最大数
 cat >> /etc/security/limits.conf <<EOF
@@ -33,9 +36,9 @@ EOF
 # 2. config repository
 echo $(date "+%Y-%m-%d %H:%M:%S") "yum repository config" >> ${LOGPATH}
 mkdir -p /etc/yum.repos.d/backup
-mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup
-wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
-sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo
+cp /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup
+# wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+# sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo
 wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 
 # upgrade system
@@ -78,6 +81,19 @@ timedatectl set-timezone Asia/Shanghai
 
 # 7. install docker
 echo $(date "+%Y-%m-%d %H:%M:%S") "install docker" >> ${LOGPATH}
+
+yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+sed -i 's+download.docker.com+mirrors.aliyun.com/docker-ce+' /etc/yum.repos.d/docker-ce.repo
+
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
 
 if [[ ! -d /etc/docker ]]; then
     mkdir -p /etc/docker

@@ -64,6 +64,8 @@ openssl rsa -in private_pkcs8.pem -pubout -out public.pem
 2.生成 pfx 文件
 生成 key，openssl.key 为 key 的名字随意起，1024 为密钥长度
 openssl genrsa -out openssl.key 2048
+# openssl key 脱密码
+openssl rsa -in openssl.key -out server.key
 
 CN=subca_root_rsa, C=CN -> {CertificateChain@13334} 
 生成 cer 证书（openssl.key 为之前生成的 key 的名字，openssl.cer 为生成的证书名字，3650 为证书过期天数，CN 的参数 ***.website 是的你主机名或者IP地址(这里一定要写对，不然以后访问的话，浏览器会提示有风险)。
@@ -92,3 +94,11 @@ openssl req -new -SHA256 -newkey rsa:2048 -nodes -keyout nihility.cn.key -out ni
 （pem 后缀的证书都是base64编码；der 后缀的证书都是二进制格式；crt .cer 后缀的文件都是证书文件（编码方式不一定，有可能是.pem,也有可能是.der）；.pfx 主要用于windows平台，浏览器可以使用，也是包含证书和私钥，获取私钥需要密码才可以）
 
 X509文件扩展名（x509 这种证书只有公钥，不包含私钥。）
+
+
+============================
+openssl genrsa -des3 -out server.key 2048
+openssl req -new-key server.key -out server.csr
+cp server.key server.key.org
+openssl rsa -in server.key.org -out server.key
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
