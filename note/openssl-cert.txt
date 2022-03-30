@@ -67,15 +67,14 @@ openssl genrsa -out openssl.key 2048
 # openssl key 脱密码
 openssl rsa -in openssl.key -out server.key
 
-CN=subca_root_rsa, C=CN -> {CertificateChain@13334} 
 生成 cer 证书（openssl.key 为之前生成的 key 的名字，openssl.cer 为生成的证书名字，3650 为证书过期天数，CN 的参数 ***.website 是的你主机名或者IP地址(这里一定要写对，不然以后访问的话，浏览器会提示有风险)。
-openssl req -new -x509 -key openssl.key -out openssl.cer -days 3650 -subj /CN=subca_root_rsa,c=CN
+openssl req -new -x509 -key openssl.key -out openssl.cer -days 3650 -subj "/CN=userId,c=CN"
 
 生成需要的pfx私钥文件（会让你输入密码，使用私钥时候使用的（千万不能忘记））
-openssl pkcs12 -export -out openssl.pfx -inkey openssl.key -in subca_rsa.cer
+openssl pkcs12 -export -out openssl.pfx -inkey openssl.key -in openssl.cer
 
 生成crt证书（由于手机需要crt证书，所以需要的话还要生成crt）
-openssl req -new -x509 -key openssl.key -out openssl.crt -days 3650 -subj /CN=yuanzx,/C=CN
+openssl req -new -x509 -key openssl.key -out openssl.crt -days 3650 -subj "/CN=userId,/C=CN"
 
 openssl pkcs12 -in openssl.pfx -nocerts -nodes -out 555555.key
 openssl pkcs12 -in openssl.pfx -nodes -out 777777.pem
@@ -98,7 +97,51 @@ X509文件扩展名（x509 这种证书只有公钥，不包含私钥。）
 
 ============================
 openssl genrsa -des3 -out server.key 2048
-openssl req -new-key server.key -out server.csr
+openssl req -new -key server.key -out server.csr
 cp server.key server.key.org
 openssl rsa -in server.key.org -out server.key
 openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+# https://goharbor.io/docs/2.4.0/install-config/configure-https/
+
+生成证书颁发机构证书
+1. Generate a CA certificate private key.
+openssl genrsa -out ca.key 4096
+
+2. Generate the CA certificate（证书）.
+openssl req -x509 -new -nodes -sha512 -days 3650 \
+ -subj "/C=CN/ST=Shanghai/L=Shanghai/O=example/OU=Personal/CN=yourdomain.com" \
+ -key ca.key \
+ -out ca.crt
+
+生成服务器证书，证书通常包含一个 .crt 文件和一个 .key 文件
+1. 生成私钥
+openssl genrsa -out yourdomain.com.key 4096
+
+2. 生成证书签名请求 (CSR)
+openssl req -sha512 -new \
+    -subj "/C=CN/ST=Shanghai/L=Shanghai/O=example/OU=Personal/CN=yourdomain.com" \
+    -key yourdomain.com.key \
+    -out yourdomain.com.csr
+
+3. 生成 x509 v3 扩展文件
+cat > v3.ext << EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=harbor.nihility.cn
+DNS.2=nihility.cn
+DNS.3=nihility
+EOF
+
+openssl x509 -req -sha512 -days 3650 \
+    -extfile v3.ext \
+    -CA ca.crt -CAkey ca.key -CAcreateserial \
+    -in yourdomain.com.csr \
+    -out yourdomain.com.crt
+
+openssl x509 -inform PEM -in yourdomain.com.crt -out yourdomain.com.cert

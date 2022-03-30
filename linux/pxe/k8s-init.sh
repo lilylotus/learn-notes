@@ -1,24 +1,68 @@
 #!/bin/bash
 
-cat <<EOF | tee /etc/modules-load.d/containerd.conf
-br_netfilter
+# kubeadm config print init-defaults > kubeadm-init.yaml
+
+k8s_version=1.20.6
+k8s_master_ip=192.168.110.30
+k8s_master_hostname=k8s-master2
+pod_subnet=10.244.0.0/16
+
+cat <<EOF > kubeadm-init.yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: ${k8s_master_ip}
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /var/run/dockershim.sock
+  imagePullPolicy: IfNotPresent
+  name: ${k8s_master_hostname}
+  taints: null
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: k8s.gcr.io
+kind: ClusterConfiguration
+kubernetesVersion: ${k8s_version}
+networking:
+  dnsDomain: cluster.local
+  podSubnet: "${pod_subnet}"
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
 EOF
 
-modprobe br_netfilter
+# sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+kubeadm init --config=kubeadm-init.yaml --upload-certs | tee kubeadm-init.log
 
-modprobe -- ip_vs
-modprobe -- ip_vs_rr
-modprobe -- ip_vs_wrr
-modprobe -- ip_vs_sh
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
 
-lsmod | grep -e ip_vs
+# You should now deploy a pod network to the cluster.
+# Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+# https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
-yum clean all && yum makecache faste
-yum install -y yum-utils device-mapper-persistent-data lvm2
-yum install -y docker-ce-20.10.12-3.el7 docker-ce-cli-20.10.12-3.el7 containerd.io
+# kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
-# 便于查看 ipvs 的代理规则
-yum install -y ipset ipvsadm
+# install calico
+# kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+# cidr: 10.244.0.0/16
+# kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
 
-yum install -y kubeadm-1.22.6 kubectl-1.22.6 kubelet-1.22.6
-systemctl enable kubelet.service
+# watch kubectl get pods -n calico-system
