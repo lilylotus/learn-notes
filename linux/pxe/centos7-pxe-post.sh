@@ -88,6 +88,7 @@ cat <<EOF > /etc/docker/daemon.json
     "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com"],
     "graph": "/data/docker",
     "exec-opts": ["native.cgroupdriver=systemd"],
+    "storage-driver": "overlay2",
     "log-driver": "json-file",
     "log-opts": {"max-size": "100m"}
 }

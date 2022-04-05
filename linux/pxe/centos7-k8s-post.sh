@@ -19,7 +19,6 @@ vm.swappiness = 0
 vm.overcommit_memory = 1
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.ipv6.conf.all.disable_ipv6 = 1
 EOF
 
 sysctl -p /etc/sysctl.d/optimize.conf
@@ -104,6 +103,7 @@ cat <<EOF > /etc/docker/daemon.json
     "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com"],
     "graph": "/data/docker",
     "exec-opts": ["native.cgroupdriver=systemd"],
+    "storage-driver": "overlay2",
     "log-driver": "json-file",
     "log-opts": {"max-size": "100m"}
 }
