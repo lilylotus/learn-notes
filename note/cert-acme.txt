@@ -1,0 +1,13 @@
+acme.sh --issue -d example.com -w example.com
+
+# https://github.com/acmesh-official/acme.sh
+acme.sh --set-default-ca --server letsencrypt
+./acme.sh --issue --dns -d nihility.cn --yes-I-know-dns-manual-mode-enough-go-ahead-please
+./acme.sh --renew -d nihility.cn --yes-I-know-dns-manual-mode-enough-go-ahead-please
+
+./acme.sh --install-cert -d nihility.cn \
+--cert-file ./nginx/cert.pem \
+--key-file ./nginx/key.pem  \
+--fullchain-file ./nginx/fullchain.pem
+
+openssl pkcs12 -export -out domain.pfx -inkey nihility.cn.key -in nihility.cn.cer -certfile ca.cer
