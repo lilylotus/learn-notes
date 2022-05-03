@@ -1,0 +1,182 @@
+certificate signing request (CSR)
+Certificate Authority (CA) CA：认证机构
+(网站)证书 ：发送给客户端的证书，其中大部分是公钥。是一个包含自己网站的公钥、认证、签名等信息的文件。
+(网站)私钥 ：服务器留存的解密私钥(server)
+注意区分 CA机构的证书（可以拿来给其他网站证书签名）和 自己网站的证书（不可以），不一样
+
+.crt .cer	证书(Certificate)
+.key	    密钥/私钥(Private Key)
+.csr	    证书认证签名请求(Certificate signing request)
+*.pem	    base64 编码文本储存格式，可以单独放证书或密钥，也可以同时放两个；base64 编码就是两条-------之间的那些莫名其妙的字符
+*.der	    证书的二进制储存格式(不常用)
+
+
+搞一个虚拟的CA机构，生成一个证书
+生成一个自己的密钥，然后填写证书认证申请，拿给上面的CA机构去签名
+于是就得到了自（自建CA机构认证的）签名证书
+
+
+1. 虚构一个CA认证机构
+$ openssl genrsa -out ca.key 2048
+
+# 去除密钥里的密码(可选)
+$ openssl rsa -in ca.key -out ca.key
+
+# 生成 ca 根证书请求文件
+$ openssl req -new -key ca.key -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=yourdomain.com" -out ca.csr 
+
+# 用私钥 ca.key 生成 CA 认证机构的证书 ca.crt，相当于用私钥生成公钥，再把公钥包装成证书
+# 这个证书 ca.crt 有的又称为"根证书",因为可以用来认证其它证书
+# 自己作为ca机构签发根证书（自签发证书）
+$ openssl x509 -req -days 365 -signkey ca.key -in ca.csr -out ca.crt
+$ openssl req -new -x509 -key ca.key -out ca.crt -days 365 -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=yourdomain.com"
+ 
+2. 生成网站的证书
+
+# 生成自己网站的密钥 server.key
+$ openssl genrsa -out server.key 2048
+
+# 生成自己网站证书的请求文件，找外面的 CA 机构认证，也是发个请求文件给他们
+# 私钥就包含在请求文件中了，认证机构要用它来生成网站的公钥，然后包装成一个证书
+$ openssl req -new -key server.key -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=yourdomain.com" -out server.csr
+
+# 使用虚拟的CA认证机构的证书 ca.crt，来对自己网站的证书请求文件 server.csr 进行处理，生成签名后的证书 server.crt
+# 注意设置序列号和有效期（一般都设1年）
+# 使用 ca 根证书为 server 端签发证书
+$ openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key -config openssl.cnf
+$ openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out server.crt -days 365
+
+$ openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt -certfile ca.crt
+
+-------------------------------------------------
+
+一. Generating Your Private Key
+The generated key is created using the OpenSSL format called PEM
+
+# openssl genrsa -out yourdomain.key 2048
+# openssl rsa -text -in yourdomain.key -noout
+
+二. Extracting Your Public Key
+
+# openssl rsa -in yourdomain.key -pubout -out yourdomain_public.key
+
+三. Creating Your CSR
+
+# openssl req -new -key yourdomain.key -out yourdomain.csr
+# openssl req -new -key yourdomain.key -out yourdomain.csr -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=yourdomain.com"
+
+
+四. Verifying CSR Information
+
+# openssl req -text -in yourdomain.csr -noout -verify
+
+五. Sending the CSR to the CA
+
+PEM to PKCS#12
+
+# openssl pkcs12 -export -name "yourdomain-digicert-(expiration date)" -out yourdomain.pfx -inkey yourdomain.key -in yourdomain.crt
+# openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile ca-bundle-client.crt
+
+PKCS#12 to PEM
+
+# openssl pkcs12 -in yourdomain.pfx -nocerts -out yourdomain.key -nodes
+# openssl pkcs12 -in yourdomain.pfx -nokeys -clcerts -out yourdomain.crt
+
+
+=============================================
+
+$ openssl genrsa -des3 -out server.key 2048
+$ openssl req -new -x509 -key server.key  -days 3650 -subj "/C=US/ST=Utah/L=Lehi/O=Your Company, Inc./OU=IT/CN=yourdomain.com" -out server.crt
+$ openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt
+
+
+======================================
+# 生成 CA 私钥
+$ openssl genrsa -des3 -out ca.key 2048
+$ openssl rsa -in ca.key -out ca-no-password.key # 脱密
+
+# 生成 CA 证书
+$ openssl req -new -key ca.key -subj "/C=CN/ST=Shanghai/L=Shanghai/O=nihility, Inc./OU=IT/CN=nihility.cn" -out ca.csr
+$ openssl x509 -req -days 7300 -signkey ca.key -in ca.csr -out ca.crt
+# 或一步生成
+$ openssl req -x509 -new -nodes -key ca.key -sha256 -days 7300 -subj "/C=CN/ST=Shanghai/L=Shanghai/O=nihility, Inc./OU=IT/CN=nihility.cn" -out ca2.crt
+
+$ openssl x509 -in ca.crt -noout -text
+
+# ssl 证书私钥
+$ openssl genrsa -out localhost.key 2048
+
+# ssl 证书 CSR
+$ openssl req -new -key localhost.key -subj "/C=CN/ST=Shanghai/L=Shanghai/O=nihility, Inc./OU=IT/CN=nihility.cn" -out localhost.csr
+
+# 创建域名附加配置文件 cert.ext
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = nihility.cn
+
+# 使用 CA 签署 ssl 证书
+$ openssl x509 -req -sha512 -in localhost.csr -out localhost.crt -days 3650 \
+  -CAcreateserial -CA ./ca/ca.crt -CAkey ./ca/ca.key \
+  -extfile cert.ext
+
+$ openssl x509 -in localhost.crt -noout -text
+$ openssl verify -CAfile ./ca/ca.crt localhost.crt
+
+
+==========================================
+# Generate a Certificate Authority Certificate
+# 1. Generate a CA certificate private key
+$ openssl genrsa -out ca.key 4096
+
+# 2. Generate the CA certificate.
+$ openssl req -x509 -new -nodes -sha512 -days 3650 \
+ -subj "/C=CN/ST=Shanghai/L=Shanghai/O=example/OU=Personal/CN=ca.com" \
+ -key ca.key \
+ -out ca.crt
+
+# Generate a Server Certificate
+# 1. Generate a private key.
+$ openssl genrsa -out domain.key 4096
+
+# 2. Generate a certificate signing request (CSR).
+$ openssl req -sha512 -new \
+    -subj "/C=CN/ST=Shanghai/L=Shanghai/O=example/OU=Personal/CN=yourdomain.com" \
+    -key domain.key \
+    -out domain.csr
+
+# 3. Generate an x509 v3 extension file.
+$ cat > v3.ext <<-EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=yourdomain.com
+DNS.2=yourdomain
+DNS.3=hostname
+EOF
+
+$ openssl x509 -req -sha512 -days 3650 \
+    -extfile v3.ext \
+    -CA ca.crt -CAkey ca.key -CAcreateserial \
+    -in domain.csr \
+    -out domain.crt
+
+$ openssl pkcs12 -export -out domain.pfx -inkey domain.key -in domain.crt -certfile ca.crt
+
+# Convert CRT to PEM
+$ openssl x509 -in cert.crt -out cert.pem
+
+# Convert CER to PEM
+$ openssl x509 -in cert.cer -out cert.pem
+
+# Convert DER to PEM
+$ openssl x509 -in cert.der -out cert.pem
