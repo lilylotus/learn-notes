@@ -2,10 +2,11 @@
 
 [Using kubeadm init with a configuration file](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file)
 
-print default configuration : `kubeadm config print`
+print default configuration : `kubeadm config print --init-defaults`
 
 list images: `kubeadm config images list --kubernetes-version ${k8s_version}`
 pull the images: `kubeadm config images pull --kubernetes-version ${k8s_version}`
+pull k8s images: `kubeadm config images pull --config=kubeadm-init.yaml`
 
 init command: `kubeadm init --config=kubeadm-init.yaml --upload-certs | tee kubeadm-init.log`
 
@@ -59,6 +60,8 @@ install command : `kubectl apply -f https://raw.githubusercontent.com/kubernetes
 ## dashbord
 
 [Deploy and Access the Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/)
+
+[Kubernetes Dashboard git release](https://github.com/kubernetes/dashboard/releases)
 
 Deploying the Dashboard UI :
 ```bash

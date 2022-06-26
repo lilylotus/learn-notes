@@ -2,9 +2,7 @@
 
 # 加载镜像，不在从 google 下载
 
-ls /root/sh/kubeadm-basic.images > /tmp/images-list.txt
-
-cd /root/sh/kubeadm-basic.images
+ls images/*.tar > /tmp/images-list.txt
 
 for i in $( cat /tmp/images-list.txt )
 do
@@ -12,4 +10,4 @@ do
         docker load -i $i
 done
 
-rm -rf /tmp/images-list.txt
+rm -f /tmp/images-list.txt

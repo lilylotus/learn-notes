@@ -1,7 +1,7 @@
 #!/bin/bash
 
 docker_version=20.10.12-3.el7
-k8s_version=1.22.6
+k8s_version=1.23.8
 
 yum clean all && yum makecache faste
 yum install -y yum-utils device-mapper-persistent-data lvm2

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-k8s_version=1.22.6
+k8s_version=1.23.8
 images_dir=images
 
 rm -rf $images_dir

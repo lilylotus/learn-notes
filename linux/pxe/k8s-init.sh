@@ -2,7 +2,7 @@
 
 # kubeadm config print init-defaults > kubeadm-init.yaml
 
-k8s_version=1.20.6
+k8s_version=1.22.6
 k8s_master_ip=192.168.110.30
 k8s_master_hostname=k8s-master2
 pod_subnet=10.244.0.0/16
@@ -45,6 +45,12 @@ networking:
   podSubnet: "${pod_subnet}"
   serviceSubnet: 10.96.0.0/12
 scheduler: {}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs
+ipvs:
+  strictARP: true
 EOF
 
 # sudo kubeadm init --pod-network-cidr=192.168.0.0/16

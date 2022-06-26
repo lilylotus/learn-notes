@@ -46,10 +46,14 @@ label 1
   kernel centos7/vmlinuz
   append initrd=centos7/initrd.img ks=ftp://${currentNet}/pub/ksdir/ks7.cfg
 label 2
+  menu label ^Install CentOS 7 K8S
+  kernel centos7/vmlinuz
+  append initrd=centos7/initrd.img ks=ftp://${currentNet}/pub/ksdir/ks7-k8s.cfg
+label 3
   menu label ^Install Network CentOS 8
   kernel centos8/vmlinuz
   append initrd=centos8/initrd.img ks=ftp://${currentNet}/pub/ksdir/ks8.cfg
-label 3
+label 4
   menu default
   menu label Boot from ^local drive
   localboot 0xffff
@@ -57,8 +61,8 @@ label 3
 EOF
 
 # 创建 ks 文件
-touch /var/ftp/pub/ksdir/{ks7.cfg,ks8.cfg}
-touch /var/ftp/pub/sh/{pxe7.sh,pxe8.sh,id_rsa.pub}
+touch /var/ftp/pub/ksdir/{ks7.cfg,ks8.cfg,ks7-k8s.cfg}
+touch /var/ftp/pub/sh/{pxe7.sh,pxe7-k8s.sh,pxe8.sh,id_rsa.pub}
 
 systemctl restart vsftpd
 systemctl restart dhcpd
