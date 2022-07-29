@@ -1,5 +1,16 @@
 [参考文档（为什么 HTTPS 需要 7 次握手以及 9 倍时延）](https://draveness.me/whys-the-design-https-latency/)
 
+### openssl 问题
+
+#### 问题一
+
+openssl: error while loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+
+```bash
+echo "/usr/local/lib64/" >> /etc/ld.so.conf
+ldconfig
+```
+
 ## 证书
 
 ### 安全协议 [SSL/TLS]
