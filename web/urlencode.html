@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL 在线编码、解码工具</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style type="text/css">
+        .margin-adjust {
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            overflow-y: hidden;
+            outline-color: green;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="margin-adjust">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="urlencode.html">URL编/解码</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="json.html">JSON格式化</a>
+                </li>
+            </ul>
+        </div>
+        <div class="margin-adjust">
+            <h1 class="text-secondary">URL 编码、解码工具</h1>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="originUrl" id="originUrlId" rows="6" placeholder="请输入要编/解码的 URL"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <button type="button" id="urlEncodeBtnId" class="btn btn-success btn-sm">URL 编码</button>
+            <button type="button" id="urlDecodeBtnId" class="btn btn-success btn-sm">URL 解码</button>
+            <button type="button" id="urlCopyBtnId" class="btn btn-danger btn-sm">复制</button>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="codedContent" id="codedContentlId" rows="6"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <div class="col border rounded border-success">
+                <h4>说明内容</h4>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        function isEmptyString(str) {
+            return str == null || str === '';
+        }
+
+        function isNotEmptyString(str) {
+            return !isEmptyString(str);
+        }
+
+        const urlEncodeBtn = document.getElementById('urlEncodeBtnId');
+        urlEncodeBtn.onclick = function () {
+            var url = document.getElementById('originUrlId').value;
+            if (isNotEmptyString(url)) {
+                document.getElementById('codedContentlId').value = encodeURIComponent(url);
+            }
+        }
+
+        const urlDecodeBtn = document.getElementById('urlDecodeBtnId');
+        urlDecodeBtn.onclick = function () {
+            var url = document.getElementById('originUrlId').value;
+            if (isNotEmptyString(url)) {
+                document.getElementById('codedContentlId').value = decodeURIComponent(url);
+            }
+        }
+
+        const urlCopyBtn = document.getElementById('urlCopyBtnId');
+        urlCopyBtn.onclick = function () {
+            var codedContent = document.getElementById('codedContentlId').value;
+            if (isNotEmptyString(codedContent)) {
+                navigator.clipboard.writeText(codedContent).then(function () { }, function () {
+                    document.getElementById('codedContentlId').select()
+                    document.execCommand('copy')
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>
