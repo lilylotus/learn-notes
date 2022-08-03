@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON格式化</title>
+    <title>JSON 在线格式化工具</title>
+    <meta name="author" content="nihility.cn">
+    <meta name="Copyright" content="nihility.cn">
+    <meta name="keywords" content="JSON格式化">
+    <meta name="description" content="在线 JSON 格式化工具">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/json-format.css">
 
@@ -17,7 +21,11 @@
         textarea {
             width: 100%;
             overflow-y: hidden;
-            outline-color: green;
+            outline-color: rgb(4, 160, 4);
+        }
+
+        p {
+            margin: 0 0;
         }
     </style>
 </head>
@@ -49,11 +57,12 @@
             <button type="button" class="btn btn-danger btn-sm" onclick="clearJsonContent()">清空</button>
         </div>
         <div class="margin-adjust">
-            <div id="Canvas" class="Canvas"></div>
+            <div id="jsonFormatContent" class="jsonFormatContent border rounded border-success"></div>
         </div>
         <div class="margin-adjust">
-            <div class="col border rounded border-success">
-                <h4>说明内容</h4>
+            <div class="col border rounded border-success alert alert-info">
+                <p>JSON（JavaScript Object Notation, JS对象简谱）是一种轻量级的数据交换格式。</p>
+                <p>简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言。 易于人阅读和编写，同时也易于机器解析和生成，并有效地提升网络传输效率。</p>
             </div>
         </div>
     </div>
@@ -71,7 +80,7 @@
         }
         function clearJsonContent() {
             document.getElementById('originJsonId').value = '';
-            document.getElementById('Canvas').innerHTML = '';
+            document.getElementById('jsonFormatContent').innerHTML = '';
         }
     </script>
 </body>

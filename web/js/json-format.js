@@ -1,6 +1,6 @@
 window.SINGLE_TAB = "  ";
-window.ImgCollapsed = "/images/Collapsed.gif";
-window.ImgExpanded = "/images/Expanded.gif";
+window.ImgCollapsed = "images/Collapsed.gif";
+window.ImgExpanded = "images/Expanded.gif";
 window.QuoteKeys = true;
 function $id(id) { return document.getElementById(id); }
 function IsArray(obj) {
@@ -18,10 +18,10 @@ function Process() {
     if (json == "") json = "\"\"";
     var obj = eval("[" + json + "]");
     html = ProcessObject(obj[0], 0, false, false, false);
-    $id("Canvas").innerHTML = "<PRE class='CodeContainer'>" + html + "</PRE>";
+    $id("jsonFormatContent").innerHTML = "<PRE class='CodeContainer'>" + html + "</PRE>";
   } catch (e) {
     alert("JSON数据格式不正确:\n" + e.message);
-    $id("Canvas").innerHTML = "";
+    $id("jsonFormatContent").innerHTML = "";
   }
 }
 window._dateObj = new Date();
@@ -119,7 +119,7 @@ function QuoteKeysClicked() {
 }
 function CollapseAllClicked() {
   EnsureIsPopulated();
-  TraverseChildren($id("Canvas"), function (element) {
+  TraverseChildren($id("jsonFormatContent"), function (element) {
     if (element.className == 'collapsible') {
       MakeContentVisible(element, false);
     }
@@ -127,7 +127,7 @@ function CollapseAllClicked() {
 }
 function ExpandAllClicked() {
   EnsureIsPopulated();
-  TraverseChildren($id("Canvas"), function (element) {
+  TraverseChildren($id("jsonFormatContent"), function (element) {
     if (element.className == 'collapsible') {
       MakeContentVisible(element, true);
     }
@@ -160,7 +160,7 @@ function ExpImgClicked(img) {
 }
 function CollapseLevel(level) {
   EnsureIsPopulated();
-  TraverseChildren($id("Canvas"), function (element, depth) {
+  TraverseChildren($id("jsonFormatContent"), function (element, depth) {
     if (element.className == 'collapsible') {
       if (depth >= level) {
         MakeContentVisible(element, false);
@@ -177,7 +177,7 @@ function SetTab() {
   window.TAB = MultiplyString(2, window.SINGLE_TAB);
 }
 function EnsureIsPopulated() {
-  if (!$id("Canvas").innerHTML && !!$id("RawJson").value) {
+  if (!$id("jsonFormatContent").innerHTML && !!$id("RawJson").value) {
     Process();
   }
 }
@@ -202,12 +202,12 @@ function SelectAllClicked() {
       ? document.body.createTextRange()
       : document.createRange();
   if (!!range.selectNode) {
-    range.selectNode($id("Canvas"));
+    range.selectNode($id("jsonFormatContent"));
   } else if (range.moveToElementText) {
-    range.moveToElementText($id("Canvas"));
+    range.moveToElementText($id("jsonFormatContent"));
   }
   if (!!range.select) {
-    range.select($id("Canvas"));
+    range.select($id("jsonFormatContent"));
   } else {
     window.getSelection().addRange(range);
   }

@@ -6,6 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL 在线编码、解码工具</title>
+    <meta name="author" content="nihility.cn">
+    <meta name="Copyright" content="nihility.cn">
+    <meta name="keywords" content="URL编码,URL解码,URL编码解码,URL网址编码解码">
+    <meta name="description" content="在线 URL 网址编码、解码工具">
     <link rel="stylesheet" href="css/bootstrap.min.css">
 
     <style type="text/css">
@@ -16,7 +20,11 @@
         textarea {
             width: 100%;
             overflow-y: hidden;
-            outline-color: green;
+            outline-color: rgb(4, 160, 4);
+        }
+
+        p {
+            margin: 0 0;
         }
     </style>
 </head>
@@ -54,8 +62,11 @@
             </div>
         </div>
         <div class="margin-adjust">
-            <div class="col border rounded border-success">
-                <h4>说明内容</h4>
+            <div class="col border rounded border-success alert alert-info" style="font-size:16px;">
+                <p>1. URL 编码协议 （RFC3986）规定：URL 中只允许包含英文字母、数字、以及 4 个 <code>- _ . ~</code> 特殊字符和所有的保留字符
+                    <code>! * ' ( ) ; : @ & = + $ , / ? # [ ]</code></p>
+                <p>2. URL 路径或参数中带有中文、特殊字符时，需要对 URL 进行编码（采用十六进制编码格式）</p>
+                <p>3. URL 中不允许包含任何非 ASCII 字符（比如中文），否则就会造成 URL 解析错误</p>
             </div>
         </div>
     </div>
