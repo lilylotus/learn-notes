@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BASE64 在线编码、解码工具</title>
+    <meta name="author" content="nihility.cn">
+    <meta name="Copyright" content="nihility.cn">
+    <meta name="keywords" content="BASE64 在线编码、解码工具">
+    <meta name="description" content="BASE64 在线编码、解码工具">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script type="text/javascript" src="js/base64.js"></script>
+
+    <style type="text/css">
+        .margin-adjust {
+            margin-top: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            overflow-y: hidden;
+            outline-color: rgb(4, 160, 4);
+        }
+
+        p {
+            margin: 0 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="margin-adjust">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" href="urlencode.html">URL编/解码</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="json.html">JSON格式化</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="base64.html">BASE64编/解码</a>
+                </li>
+            </ul>
+        </div>
+        <div class="margin-adjust">
+            <h1 class="text-secondary">BASE64 编码、解码工具</h1>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="base64Content" id="base64ContentId" rows="6" placeholder="请输入要编/解码的 BASE64"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <button type="button" id="base64EncodeBtnId" class="btn btn-success btn-sm">BASE64 编码</button>
+            <button type="button" id="base64DecodeBtnId" class="btn btn-success btn-sm">BASE64 解码</button>
+            <button type="button" id="copyBtnId" class="btn btn-danger btn-sm">复制</button>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="codecContent" id="codecContentId" rows="6"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <div class="col border rounded border-success alert alert-info" style="font-size:16px;">
+                <p>BASE64</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        function isEmptyString(str) {
+            return str == null || str === '';
+        }
+
+        function isNotEmptyString(str) {
+            return !isEmptyString(str);
+        }
+
+        document.getElementById('base64EncodeBtnId').onclick = function () {
+            var base64 = document.getElementById('base64ContentId').value;
+            if (isNotEmptyString(base64)) {
+                document.getElementById('codecContentId').value = base64_encode(base64, false);
+            }
+        }
+
+        document.getElementById('base64DecodeBtnId').onclick = function () {
+            var base64 = document.getElementById('base64ContentId').value;
+            if (isNotEmptyString(base64)) {
+                document.getElementById('codecContentId').value = base64_decode(base64, false, 'text');
+            }
+        }
+
+        document.getElementById('copyBtnId').onclick = function () {
+            var codedContent = document.getElementById('codecContentId').value;
+            if (isNotEmptyString(codedContent)) {
+                navigator.clipboard.writeText(codedContent).then(function () { }, function () {
+                    document.getElementById('codecContentId').select()
+                    document.execCommand('copy')
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>

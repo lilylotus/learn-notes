@@ -40,6 +40,9 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="json.html">JSON格式化</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="base64.html">BASE64编/解码</a>
+                </li>
             </ul>
         </div>
         <div class="margin-adjust">
@@ -76,7 +79,7 @@
             }
         }
         function jsonFormatContentCopyClick() {
-            navigator.clipboard.writeText(document.getElementById('Canvas').textContent);
+            navigator.clipboard.writeText(document.getElementById('jsonFormatContent').textContent);
         }
         function clearJsonContent() {
             document.getElementById('originJsonId').value = '';
