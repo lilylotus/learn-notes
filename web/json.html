@@ -42,6 +42,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="base64.html">BASE64编/解码</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="xml.html">XML格式化</a>
+                </li>
             </ul>
         </div>
         <div class="margin-adjust">
@@ -78,7 +81,20 @@
             }
         }
         function jsonFormatContentCopyClick() {
-            navigator.clipboard.writeText(document.getElementById('jsonFormatContent').textContent);
+            // navigator clipboard 需要 https 等安全上下文
+            if (navigator.clipboard && window.isSecureContext) {
+                // navigator clipboard 向剪贴板写文本
+                return navigator.clipboard.writeText(document.getElementById('jsonFormatContent').innerText);
+            } else {
+                // 执行复制命令并移除文本框
+                var cpInput = document.createElement('textarea');
+                cpInput.setAttribute('readonly', 'readonly');
+                document.body.appendChild(cpInput);
+                cpInput.value = document.getElementById('jsonFormatContent').innerText;
+                cpInput.select();
+                document.execCommand("copy");
+                document.body.removeChild(cpInput);
+            }
         }
         function clearJsonContent() {
             document.getElementById('originJsonId').value = '';

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML 在线格式化工具</title>
+    <meta name="author" content="nihility.cn">
+    <meta name="Copyright" content="nihility.cn">
+    <meta name="keywords" content="XML格式化">
+    <meta name="description" content="在线 XML 格式化工具">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+    <style type="text/css">
+        .margin-adjust {
+            margin-top: 10px;
+        }
+
+        .margin-adjust textarea {
+            width: 100%;
+            outline-color: rgb(4, 160, 4);
+        }
+
+        #FormatContentId {
+            overflow-x: auto;
+            word-break: keep-all;
+            white-space: pre;
+        }
+
+        p {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="margin-adjust">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" href="urlencode.html">URL编/解码</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="json.html">JSON格式化</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="base64.html">BASE64编/解码</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="xml.html">XML格式化</a>
+                </li>
+            </ul>
+        </div>
+        <div class="margin-adjust">
+            <h1 class="text-secondary">XML 格式化工具</h1>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="Content" id="ContentId" rows="6" placeholder="请输入要格式化的 XML 文本"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <button type="button" class="btn btn-success btn-sm" onclick="formatBtnClick()">格式化</button>
+            <button type="button" class="btn btn-success btn-sm" onclick="formatContentCopyClick()">复制</button>
+            <button type="button" class="btn btn-danger btn-sm" onclick="clearContent()">清空</button>
+        </div>
+        <div class="margin-adjust">
+            <div id="FormatContentId" class="col border rounded border-success"></div>
+            <!-- <div class="col border rounded border-success">
+                <textarea name="FormatContent" id="FormatContentId" rows="6" class="border rounded border-success"></textarea>
+            </div> -->
+        </div>
+        <div class="margin-adjust">
+            <div class="col border rounded border-success alert alert-info">
+                <p>XML格式化</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="js/xml.js"></script>
+    
+    <script type="text/javascript">
+        function formatBtnClick() {
+            const ct = document.getElementById('ContentId').value;
+            if (null != ct && '' !== ct) {
+                document.getElementById('FormatContentId').innerText = vkbeautify.xml(ct, 4);
+            }
+        }
+        function formatContentCopyClick() {
+            const txt = document.getElementById('FormatContentId').innerText;
+            if (null != txt && '' != txt) {
+                // navigator clipboard 需要 https 等安全上下文
+                if (navigator.clipboard && window.isSecureContext) {
+                    // navigator clipboard 向剪贴板写文本
+                    return navigator.clipboard.writeText(txt);
+                } else {
+                    // 执行复制命令并移除文本框
+                    // document.getElementById('FormatContentId').select();
+                    // document.execCommand('copy');
+
+                    var cpInput = document.createElement('textarea');
+                    cpInput.setAttribute('readonly', 'readonly');
+                    document.body.appendChild(cpInput);
+                    cpInput.value = txt;
+                    cpInput.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(cpInput);
+                }
+            }
+        }
+        function clearContent() {
+            document.getElementById('ContentId').value = '';
+            document.getElementById('FormatContentId').value = '';
+        }
+    </script>
+</body>
+
+</html>

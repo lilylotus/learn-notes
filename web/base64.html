@@ -43,6 +43,9 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="base64.html">BASE64编/解码</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="xml.html">XML格式化</a>
+                </li>
             </ul>
         </div>
         <div class="margin-adjust">
@@ -99,10 +102,15 @@
         document.getElementById('copyBtnId').onclick = function () {
             var codedContent = document.getElementById('codecContentId').value;
             if (isNotEmptyString(codedContent)) {
-                navigator.clipboard.writeText(codedContent).then(function () { }, function () {
-                    document.getElementById('codecContentId').select()
-                    document.execCommand('copy')
-                })
+                // navigator clipboard 需要 https 等安全上下文
+                if (navigator.clipboard && window.isSecureContext) {
+                    // navigator clipboard 向剪贴板写文本
+                    return navigator.clipboard.writeText(codedContent);
+                } else {
+                    // 执行复制命令并移除文本框
+                    document.getElementById('codecContentId').select();
+                    document.execCommand('copy');
+                }
             }
         }
     </script>
