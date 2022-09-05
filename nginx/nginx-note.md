@@ -483,6 +483,16 @@ if ($request_method = 'OPTIONS') {
 	return 204;
 }
 
+if ( $request_method = 'OPTIONS' ) {
+    add_header 'Access-Control-Allow-Origin' "*";
+    add_header 'Access-Control-Allow-Credentials' 'true';
+    add_header 'Access-Control-Allow-Methods' '*';
+    add_header 'Access-Control-Allow-Headers' '*';
+    add_header 'Content-Length' 0;
+    add_header 'Content-Type' 'text/plain charset=UTF-8';
+    return 206;
+}
+
 # 变量：$http_origin	http://t2.drill.cn:40081
 ```
 
