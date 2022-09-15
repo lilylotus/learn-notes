@@ -1,16 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线工具首页</title>
+    <title>Unicode编码转换</title>
+    <meta name="author" content="nihility.cn">
+    <meta name="Copyright" content="nihility.cn">
+    <meta name="keywords" content="Unicode编码转换">
+    <meta name="description" content="Unicode编码转换">
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <!-- bootstrap-4.6.1 -->
+
+    <style type="text/css">
+        .margin-adjust {
+            margin-top: 10px;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="container" style="margin-top: 20px;">
-        <div>
+
+    <div class="container">
+        <div class="margin-adjust">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link" href="urlencode.html">URL编/解码</a>
@@ -25,10 +37,14 @@
                     <a class="nav-link" href="xml.html">XML格式化</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="unicode.html">Unicode编码转换</a>
+                    <a class="nav-link active" href="unicode.html">Unicode/UTF8编码转换</a>
                 </li>
             </ul>
         </div>
     </div>
+
+    <script src="js/unicode.js" type="text/javascript"></script>
+    <script src="js/utf8.js" type="text/javascript"></script>
 </body>
+
 </html>
