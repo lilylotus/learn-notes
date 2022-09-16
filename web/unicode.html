@@ -16,6 +16,16 @@
         .margin-adjust {
             margin-top: 10px;
         }
+
+        textarea {
+            width: 100%;
+            overflow-y: hidden;
+            outline-color: rgb(4, 160, 4);
+        }
+
+        p {
+            margin: 0 0;
+        }
     </style>
 </head>
 
@@ -41,10 +51,143 @@
                 </li>
             </ul>
         </div>
+
+        <div class="margin-adjust">
+            <h1 class="text-secondary">Unicode编码转换工具</h1>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="content" id="content" rows="4" placeholder="请输入 Unicode 编码转换内容"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <button type="button" id="chineseToUnicode" class="btn btn-success btn-sm"
+                onclick="chineseToUnicode()">中文转Unicode</button>
+            <button type="button" id="unicodeToChinese" class="btn btn-success btn-sm"
+                onclick="unicodeToChinese()">Unicode转中文</button>
+            <button type="button" id="chineseToUtf8" class="btn btn-success btn-sm"
+                onclick="chineseToUtf8()">中文转UTF-8</button>
+            <button type="button" id="utf8ToChinese" class="btn btn-success btn-sm"
+                onclick="utf8ToChinese()">UTF-8转中文</button>
+            <button type="button" id="copyBtnId" class="btn btn-danger btn-sm" onclick="resultCpy()">复制</button>
+        </div>
+        <div class="row margin-adjust">
+            <div class="col">
+                <textarea name="resultContent" id="resultContent" rows="4"
+                    class="border rounded border-success"></textarea>
+            </div>
+        </div>
+        <div class="margin-adjust">
+            <div class="col border rounded border-success alert alert-info" style="font-size:16px;">
+                <p>Unicode编码转换</p>
+            </div>
+        </div>
     </div>
 
-    <script src="js/unicode.js" type="text/javascript"></script>
-    <script src="js/utf8.js" type="text/javascript"></script>
+    <script type="text/javascript">
+
+        function isEmptyString(str) {
+            return str == null || str === '';
+        }
+
+        function isNotEmptyString(str) {
+            return !isEmptyString(str);
+        }
+
+        function left_zero_4(str) {
+            if (str != null && str != '' && str != 'undefined') {
+                if (str.length == 2) {
+                    return '00' + str;
+                }
+            }
+            return str;
+        }
+        function ascii(str) {
+            var value = '';
+            for (var i = 0; i < str.length; i++) {
+                value += '\&#x' + left_zero_4(parseInt(str.charCodeAt(i)).toString(16)) + ';';
+            }
+            return value;
+        }
+        function unicode(str) {
+            var value = '';
+            for (var i = 0; i < str.length; i++) {
+                value += '\\u' + left_zero_4(parseInt(str.charCodeAt(i)).toString(16));
+            }
+            return value;
+        }
+        function unicode1(str) {
+            var value = '';
+            for (var i = 0; i < str.length; i++)
+                value += '&#' + str.charCodeAt(i) + ';';
+            return value;
+        }
+        function reconvert(str) {
+            str = str.replace(/(\\u)(\w{1,4})/gi, function ($0) {
+                return (String.fromCharCode(parseInt((escape($0).replace(/(%5Cu)(\w{1,4})/g, "$2")), 16)));
+            });
+            str = str.replace(/(&#x)(\w{1,4});/gi, function ($0) {
+                return String.fromCharCode(parseInt(escape($0).replace(/(%26%23x)(\w{1,4})(%3B)/g, "$2"), 16));
+            });
+            str = str.replace(/(&#)(\d{1,6});/gi, function ($0) {
+                return String.fromCharCode(parseInt(escape($0).replace(/(%26%23)(\d{1,6})(%3B)/g, "$2")));
+            });
+
+            return str;
+        }
+
+        function chineseToUnicode() {
+            var content = document.getElementById('content').value;
+            if (isNotEmptyString(content)) {
+                document.getElementById('resultContent').value = unicode(content);
+            }
+        }
+
+        function unicodeToChinese() {
+            var content = document.getElementById('content').value;
+            if (isNotEmptyString(content)) {
+                document.getElementById('resultContent').value = reconvert(content);
+            }
+        }
+
+        function resultCpy() {
+            var resultContent = document.getElementById('resultContent').value;
+            if (isNotEmptyString(resultContent)) {
+                // navigator clipboard 需要 https 等安全上下文
+                if (navigator.clipboard && window.isSecureContext) {
+                    // navigator clipboard 向剪贴板写文本
+                    return navigator.clipboard.writeText(resultContent);
+                } else {
+                    // 执行复制命令并移除文本框
+                    document.getElementById('resultContent').select();
+                    document.execCommand('copy');
+                }
+            }
+        }
+
+        function ConvUtf(obj) {
+            return obj.replace(/[^\u0000-\u00FF]/g, function ($0) { return escape($0).replace(/(%u)(\w { 4 })/gi, "&#x$2; ") });
+        }
+        function ResChinese(obj) {
+            return unescape(obj.replace(/&#x/g, '%u').replace(/; /g, ''));
+        }
+
+        function chineseToUtf8() {
+            var content = document.getElementById('content').value;
+            if (isNotEmptyString(content)) {
+                document.getElementById('resultContent').value = ConvUtf(content);
+            }
+        }
+        function utf8ToChinese() {
+            var content = document.getElementById('content').value;
+            if (isNotEmptyString(content)) {
+                document.getElementById('resultContent').value = ResChinese(content);
+            }
+        }
+
+    </script>
+
 </body>
 
 </html>
