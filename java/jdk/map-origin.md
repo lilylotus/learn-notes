@@ -44,7 +44,7 @@ HashMap 可以存放 null 键和 null 值，但不是线程并发安全的，还
 
 ---
 
-##### 1. HashMap 初始化
+#### 1. HashMap 初始化
 
 ```java
 Map<String, String> map = new HashMap<>();
@@ -133,3 +133,34 @@ newTab[e.hash & (newCap - 1)] = e;
 ```
 
 <font color="blue">注意：</font>当出现 hash 碰撞时，相同 hash key 的 value 数量大于 `TREEIFY_THRESHOLD = 8` 时，会由链表转为红黑树。
+
+---
+
+## map 比较
+
+|         **类**         | **并发性** |       **有序性**       |     **底层数据结构**      | **初始容量** | **负载因子** | **实例化方式** | **一致性** | **k/v是否可为null** |
+| :--------------------: | :--------: | :--------------------: | :-----------------------: | :----------: | :----------: | :------------: | :--------: | :-----------------: |
+|        HashMap         |   不支持   |          无序          |     数组+链表/红黑树      |      16      |     0.75     |     懒加载     |     -      |     k/v可为null     |
+|     LinkedHashMap      |   不支持   | 有序<br>插入序或访问序 |  数组+单向链表+双向链表   |      -       |      -       |       -        |     -      |     k/v可为null     |
+|        TreeMap         |   不支持   |   自然序<br>左小右大   |          红黑树           |      -       |      -       |       -        |     -      |     仅v能为null     |
+|     ThreadLocalMap     |   不支持   |          无序          |           数组            |      16      |     0.75     |     懒加载     |     -      |     仅v能为null     |
+|       HashTable        |    支持    |          无序          |        数组加链表         |      11      |     0.75     |   初始化创建   |  强一致性  |    均不能为null     |
+| ConcurrentHashMap(1.7) |    支持    |          无序          |     分段锁+数组+链表      |      16      |     0.75     |     懒加载     |  强一致性  |    均不能为null     |
+| ConcurrentHashMap(1.8) |    支持    |          无序          | 数组+链表/红黑树+特殊结构 |      16      |     0.75     |     懒加载     |  弱一致性  |    均不能为null     |
+| ConcurrentSkipListMap  |    支持    |    自然序(左小右大)    |          跳跃表           |      -       |      -       |       -        |  弱一致性  |    均不能为null     |
+
+## 性能比较
+
+|           类           |    get    |      put      |    remove     |
+| :--------------------: | :-------: | :-----------: | :-----------: |
+|        HashMap         |  >=O(1)   | O(1)~O(log n) | O(1)~O(log n) |
+|     LinkedHashMap      |  >=O(1)   | O(1)~O(log n) | O(1)~O(log n) |
+|        TreeMap         | O(log n)  |   O(log n)    |   O(log n)    |
+|     ThreadLocalMap     | O(1)~O(n) |   O(1)~O(n)   |   O(1)~O(n)   |
+|       HashTable        |   >O(1)   |   O(1)~O(n)   |   O(1)~O(n)   |
+| ConcurrentHashMap(1.7) |   >O(1)   | O(1)~O(log n) | O(1)~O(log n) |
+| ConcurrentHashMap(1.8) |   >O(1)   | O(1)~O(log n) | O(1)~O(log n) |
+| ConcurrentSkipListMap  | O(log n)  |   O(log n)    |   O(log n)    |
+
+- LRU（Least Recently Used，最近最少使用）
+- LFU（Least Frequently Used，最不经常使用）
