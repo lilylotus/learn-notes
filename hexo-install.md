@@ -103,11 +103,53 @@ if (menu.is(":visible") && topDistance < 280) {
         content: "#"
 ```
 
-- 设置 cactus 访问固定地址前缀
+## hexo 配置
+
+- 指定访问地址前缀
 
 ```yaml
 # cactus/_config.yml
 # 指定固定前缀 -> http://127.0.0.1:4000/blog/
 root: /blog/
+```
+
+- 添加 markdown 对 mermaid 的支持
+
+```bash
+# 安装 mermaid 插件
+$ npm install --save hexo-filter-mermaid-diagrams
+```
+
+下载 [mermaid js](https://unpkg.com/browse/mermaid@9.0.0/dist/) 脚本，[mermaid.min.js](https://unpkg.com/browse/mermaid@9.0.0/dist/mermaid.min.js) 和 [mermaid.min.js.map](https://unpkg.com/browse/mermaid@9.0.0/dist/mermaid.min.js.map) ，放到 themes/<主题>/source/js 目录下。
+
+修改 <主题> 的脚本配置文件 （themes/<主题>/layout/_partial/scripts.ejs）文件，支持 marmaid 解析。
+
+```javascript
+<% if (theme.mermaid.enable) { %>
+  <%- js('js/mermaid.min.js') %>
+  <script type="text/javascript">
+      $(document).ready(function() {
+        var mermaid_config = {
+            startOnLoad: true,
+            theme: '<%- theme.mermaid.theme %>',
+            flowchart:{ useMaxWidth: false, htmlLabels: true }
+        }
+        mermaid.initialize(mermaid_config);
+      });
+  </script>
+<% } %>
+```
+
+在主题中添加 marmaid 配置参数
+
+```yaml
+# mermaid chart
+mermaid: ## mermaid url https://github.com/knsv/mermaid
+  enable: true  # default true
+  version: "7.1.2" # default v7.1.2
+  # Available themes: default | dark | forest | neutral
+  theme: default
+  options:  # find more api options from https://github.com/knsv/mermaid/blob/master/src/mermaidAPI.js
+    #startOnload: true  // default true
 ```
 
