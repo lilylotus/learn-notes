@@ -105,15 +105,55 @@ if (menu.is(":visible") && topDistance < 280) {
 
 ## hexo 配置
 
-- 指定访问地址前缀
+### 指定博客地址前缀
 
 ```yaml
-# cactus/_config.yml
+# hexo/_config.yml
 # 指定固定前缀 -> http://127.0.0.1:4000/blog/
 root: /blog/
 ```
 
-- 添加 markdown 对 mermaid 的支持
+### 常用导航链接
+
+- 添加 about （关于）链接页面
+
+```sh
+$ hexo new page about
+```
+
+下一步，在 `source/about/index.md` 页面添加 `type: about`  的 front-matter 配置。
+
+- 添加 tags （标签）链接页面
+
+```sh
+$ hexo new page tags
+```
+
+下一步，在 `source/tags/index.md` 页面添加 `type: tags`  的 front-matter 配置。
+
+还可以在开启首页标签列表展示，配置主题的 `themes/<主题>/_config.yml` -> `tags_overview` 选项为 `true` 。
+
+- 添加 categories （分类）链接页面
+
+```sh
+$ hexo new page categories
+```
+
+下一步，在 `source/categories/index.md` 页面添加 `type: categories`  的 front-matter 配置。
+
+- 页面添加完成后，配置导航栏显示链接
+
+```yaml
+# themes/<主题>/_config.yml
+nav:
+  about: /about/
+  tag: /tags/
+  category: /categories/
+```
+
+具体的界面展示字段配置，看 `themes/<主题>/languages/<当前配置语言字段映射配置文件>` 。
+
+### 安装 mermaid 插件
 
 ```bash
 # 安装 mermaid 插件
