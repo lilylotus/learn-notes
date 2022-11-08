@@ -126,12 +126,12 @@ void BiasedLocking::init() {
 
 ## 1.1 java header 表头格式 64bit
 
-![java object header mark](../images/java-object-header-mark.png)
+![java object header mark](images/java-object-header-mark.png)
 On a 64-bit jvm, the object header consists of 16 bytes. Arrays are additionally 4 bytes.
 在64位jvm上，对象标头由16个字节组成。数组是另外4个字节
 
 *64 bit jvm 指针压缩*
-![jvm pointer compression](..//images/jvm-pointer-compression.png)
+![jvm pointer compression](images/jvm-pointer-compression.png)
 
 对象标头由12个字节组成。数组是另外4个字节。
 关于指针压缩的一些知识。
@@ -286,7 +286,7 @@ hashCode: 36aa7bc2
 ### 1.3.3 Locking Data
 
 Java同步采用了复杂的状态机制。由于可以同步每个 Java 对象，因此锁定状态应与任何 Java 对象相关联。标记词占据了大部分状态。
-![synchronize](../images/Synchronization.gif)
+![synchronize](images/Synchronization.gif)
 
 这些锁定转换的不同部分可以在对象标头中看到。例如，当Java锁偏向特定对象时，我们需要在对象附近记录有关该锁的信息。 <font color="red">biased locking</font>
 *注意：* 偏向所的宽限期 (grace period) 要大于 5 秒。
