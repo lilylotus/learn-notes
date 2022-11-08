@@ -1,4 +1,6 @@
-# JDK 1.8 虚拟机（JVM）的结构
+# Java 虚拟机（JVM）运行时数据区结构
+
+参考 [JavaSE 11 运行时数据区域规范](https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-2.html#jvms-2.5)，参考 [JavaSE 8 运行时数据区域规范](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html#jvms-2.5)
 
 ## 引用（Reference）类型和值（Value）
 
@@ -6,11 +8,31 @@
 数据的元素类型可是：原始类型、类(class)类型、接口类型
 引用类型默认值为 `null` (指向没有对象)
 
+类型标识：
+
+| 原始类型 | 类名 | 包装类型 | 类名 |
+| ---- | ---- | ---- | ---- |
+| short | short | Short | java.lang.Short |
+| int | int | Integer | java.lang.Integer |
+| float | float | Float | java.lang.Float |
+| double | double | Double | java.lang.Double |
+| long | long | Long | java.lang.Long |
+| boolean | boolean | Boolean | java.lang.Boolean |
+| byte | byte |  |  |
+| short[] | [S | Short[] | [Ljava.lang.Short; |
+| int[] | [I | Integer[] | [Ljava.lang.Integer; |
+| float[] | [F | Float[] | [Ljava.lang.Float; |
+| double[] | [D | Double[] | [Ljava.lang.Double; |
+| long[] | [J | Long[] | [Ljava.lang.Long; |
+| boolean[] | [Z | Boolean[] | [Ljava.lang.Boolean; |
+| byte[] | [B | | |
+
+
 ## 运行时（Run-Time）数据区
 
 Java 虚拟机定义了在程序执行期间使用的各种运行时数据区域。其中一些数据区是在 Java 虚拟机启动时创建的，只有在 Java 虚拟机退出时才会被销毁。其他数据区域是每个线程。每个线程的数据区域在创建线程时创建，并在线程退出时销毁。
 
-![jvm run-time area](../images/jvm.png)
+![jvm run-time area](images/jvm.png)
 
 ### 堆（Heap）
 

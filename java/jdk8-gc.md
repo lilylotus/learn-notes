@@ -73,7 +73,7 @@
 
 可以理解为有两个阶段： 1. 首先标记出所有需要回收的垃圾对象 2. 对标记的对象占用的内存空间进行释放。
 
-![mark-sweep](../images/gc-mark-sweep.png)
+![mark-sweep](images/gc-mark-sweep.png)
 
 算法缺点：
 
@@ -86,7 +86,7 @@
 
 标记复制算法把内存空间分成大小相同的两个区域（运行区、预留区）。所有创建的对象都放到运行区，当运行区内存不够时，将运行区收集/标记后的存活对象全部复制到预留区，然后清空整个运行区，在把预留区和运行区对换。垃圾就在两个区域变换时被清除，同时没有了内存碎片产生。
 
-![mark-copy](../images/gc-mark-copy.png)
+![mark-copy](images/gc-mark-copy.png)
 
 标记-复制算法在大量垃圾对象的情况时，只需复制少量的存活对象且不会产生内存碎片问题，新的对象内存分配只需移动堆的指针在顺序分配就好，兼容的效率和内存碎片问题。
 
@@ -101,7 +101,7 @@
 
 标记-整理算法的标记阶段和上面的算法一致，在整理阶段不是进行直接清理，而是令所有存活的对象向内存的一端空间移动，然后直接清理掉存活对象边界以外的内存空间。
 
-![](../images/gc-mark-compact.png)
+![](images/gc-mark-compact.png)
 
 标记-整理算法解决了内存碎片问题，也不存在空间的浪费问题。
 
@@ -120,12 +120,12 @@
 
 JVM 运行数据区域内存布局
 
-![jvm run-time area](../images/jvm.png)
+![jvm run-time area](images/jvm.png)
 
 JVM 堆内存布局，此处仅需关注红框部分区域内存，GC 也是在这内存区域执行。
-![jvm heap area](../images/jvm-heap.png)
+![jvm heap area](images/jvm-heap.png)
 
-![jvm jmm](../images/jvm-jmm.png)
+![jvm jmm](images/jvm-jmm.png)
 
 ## 标准版 HotSpot 虚拟机垃圾收集
 

@@ -1,12 +1,8 @@
-[Java 个版本的 jsl/jvm 参考文档](https://docs.oracle.com/javase/specs/)
 
-[Jdk8 的 jvm 说明文档](https://docs.oracle.com/javase/specs/)
 
-[如何找到 Class 文件](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/findingclasses.html#sthref6)
+# 类加载流程
 
-[TOC]
-
-# java 类加载器 （Classloader）的加载流程
+[JavaSE doc : 如何找到 Class 文件](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/findingclasses.html#sthref6)， 参考 [JavaSE 11 类加载、链接、初始化](https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-5.html)，参考 [JavaSE 8 类加载、链接、初始化](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-5.html)
 
 【引用维基百科中对 Java 类加载器的介绍】Java 类加载器（Java Classloader）是 Java 运行环境 （Java Runtime Environment）的一个部件，负责**动态加载** Java 类到 Java 虚拟机的内存空间当中。类通常是按需加载，即第一次使用该类时才加载。
 
