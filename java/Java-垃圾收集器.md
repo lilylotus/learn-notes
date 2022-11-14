@@ -268,6 +268,21 @@ Minor 收集可以与正在进行的 major 循环交错，并且以类似于并�
 
 - CMS 提供 **`CMSScavengeBeforeRemark`** 参数，用来保证 Remark 前强制进行一次 **Minor GC**。
 
+- -XX:-UseParNewGC ：搭配 ParNew 收集器就是 Serial 的多线程版本，除了使用多收集线程外其余都与 Serial 收集器一摸一样。
+
+- -XX:+UseCMSCompactAtFullCollection ： 在上一次 CMS 并发 GC 执行过后，还要执行多少次 full GC 才会做压缩，默认是 0
+
+- -XX:CMSInitiatingOccupancyFraction=70 ： 设定 CMS 在内存占用率达到 70% 时开始 GC (因浮动垃圾，一般较早 GC)
+
+```
+-XX:+UseConcMarkSweepGC -XX:-UseParNewGC
+-XX:+UseCMSCompactAtFullCollection
+-XX:CMSInitiatingOccupancyFraction=70
+-XX:+CMSParallelRemarkEnabled
+-XX:SoftRefLRUPolicyMSPerMB=0
+-XX:+CMSClassUnloadingEnabled
+```
+
 总结来说，**CMS** 的设计聚焦在获取最短的时延，为此它 “不遗余力” 地做了很多工作，包括尽量让应用程序和 GC 线程并发、增加可中断的并发预清理阶段、引入卡表等，虽然这些操作牺牲了一定吞吐量但获得了更短的回收停顿时间。
 
 ### G1 并发收集器
@@ -320,6 +335,16 @@ G1 提供了两种 GC 模式，**Young GC** 和 **Mixed GC**，两种都是完�
 | -XX:ConcGCThreads=n                | 并发标记阶段，并行执行的线程数                               |
 | -XX:InitiatingHeapOccupancyPercent | 设置触发标记周期的 Java 堆占用率阈值。默认值是 45%。这里的 java 堆占比指的是 non_young_capacity_bytes，包括 old+humongous |
 
+#### 参数调优
+
+```
+-XX:+UseG1GC
+-XX:G1HeapRegionSize=16m
+-XX:G1ReservePercent=25
+-XX:InitiatingHeapOccupancyPercent=30
+-XX:SoftRefLRUPolicyMSPerMB=0
+```
+
 # 常用收集器参数
 
 ## GC 使用参数
@@ -343,12 +368,14 @@ JDK 8 ：
 
 ```bash
 -verbose:gc # 详细的堆大小信息
--Xloggc:gc.log # GC 日志输出文件路径
+-Xloggc:gc_%p_%t.log # GC 日志输出文件路径
 -XX:+PrintGCDetails # 打印 GC 详情
 -XX:+PrintGCTimeStamps # 打印 GC 发生的时间戳
 
 -XX:+PrintTenuringDistribution # 打印 GC 发生时的分代信息
 -XX:+PrintGCApplicationStoppedTime # 打印 GC 停顿时长
+
+-XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m
 ```
 
 JDK 9 和以上：
@@ -358,6 +385,9 @@ JDK 9 和以上：
 -Xlog:gc:<file-path>
 # 详细日志
 -Xlog:gc*:<file-path>
+
+# 完整示例
+-Xlog:gc*:file=dir/gc_%p_%t.log:time,tags:filecount=5,filesize=30M
 ```
 
 ## 堆内存分配参数
