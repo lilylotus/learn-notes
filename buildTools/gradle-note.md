@@ -511,3 +511,27 @@ tasks.named<BootJar>("bootJar") {
 }
 ```
 
+#### 5. 调整资源位置
+
+[SourceDirectory 参数说明文档](https://docs.gradle.org/current/dsl/org.gradle.api.file.SourceDirectorySet.html)
+
+```groovy
+sourceSets {
+    main {
+        resources {
+            // 添加多个资源目录，把这个路径下的资源合并到当前项目资源下
+            srcDirs "${project(':resources').getProjectDir()}/src/main/resources"
+            // 添加单个资源目录
+            srcDir "other/resources"
+        }
+        java {
+            srcDirs "java/dirs"
+            srcDir "java/dir"
+        }
+    }
+    test {
+        
+    }
+}
+```
+
