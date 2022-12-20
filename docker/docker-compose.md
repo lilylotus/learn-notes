@@ -601,3 +601,60 @@ REDIS_DIR_DATA=/data/container/compose/redis/data
 REDIS_CONTAINER_NAME=redis
 ```
 
+## volumes 绑定
+
+```yaml
+version: "3.9"
+
+volumes:
+  resources:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /volumes
+  mysql:
+    driver: local
+  redis:
+    driver: local
+      
+services:
+  ubuntu:
+    image: ubuntu:22.04
+    container_name: ubuntu
+    restart: always
+    volumes:
+      - resources:/mnt/data
+
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=mariadb
+      - MYSQL_USER=mariadb
+      - MYSQL_PASSWORD=mariadb
+      - MYSQL_DATABASE=mariadb
+    command: ["--max-allowed-packet=128M", "--innodb-log-file-size=64M"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "root", "--password=mariadb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql:/var/lib/mysql
+      
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: always
+    command: ["--databases", "1"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis:/data
+```
+
