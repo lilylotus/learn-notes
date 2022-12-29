@@ -204,3 +204,38 @@ public class RocketTxConsumerListener implements RocketMQListener<String> {
 }
 ```
 
+## 常见问题
+
+### 发送报错
+
+```
+org.apache.rocketmq.spring.core.RocketMQTemplate:565 - syncSend failed. destination:xxxx, message:GenericMessage [payload=byte[355], headers={contentType=application/json, id=db642bc3-de60-e86b-9697-fc953d71a755, timestamp=1672047867866}], detail exception info:
+org.apache.rocketmq.client.exception.MQBrokerException: CODE: 2  DESC: [TIMEOUT_CLEAN_QUEUE]broker busy, start flow control for a while, period in queue: 396ms, size of queue: 7 BROKER: 192.168.56.101:10911
+For more information, please visit the url, http://rocketmq.apache.org/docs/faq/
+```
+
+broker 添加配置
+
+```properties
+# 主从异步复制
+brokerRole=ASYNC_MASTER
+# 异步刷盘
+flushDiskType=ASYNC_FLUSH
+# 线上关闭自动创建 topic - false
+autoCreateTopicEnable=true
+# 发送消息的最大线程数，默认 1
+sendMessageThreadPoolNums=32
+# 使用可重入锁
+useReentrantLockWhenPutMessage=true
+# 发送消息线程等待时间，默认200ms
+waitTimeMillsInSendQueue=1000
+# 开启临时存储池
+transientStorePoolEnable=true
+# 开启 Slave 读权限（分担 master 压力）
+slaveReadEnable=true
+# 关闭堆内存数据传输
+transferMsgByHeap=false
+# 开启文件预热
+warmMapedFileEnable=true
+```
+
