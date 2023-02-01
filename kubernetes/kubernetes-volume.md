@@ -76,20 +76,98 @@ hostPath 的用途如下:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: hostPath
+  name: host-path-pod
 spec:
   containers:
-  - image: harbor.nihility.cn/library/myapp:v1
-    name: container
+  - image: busybox:glibc
+    name: host-path-pod-container
+    command: ["tail", "-f", "/dev/null"]
     volumeMounts:
-    - mountPath: /test-pd
-      name: test-volume
+    - mountPath: /data
+      name: host-path-volume
   volumes:
-  - name: test-volume
+  - name: host-path-volume
     hostPath:
-      # directory location on host
-      path: /data
-      # this field is optional
+      path: /minikube/data
       type: Directory
+```
+
+## nfs
+
+[kubernetes volume nfs](https://kubernetes.io/docs/concepts/storage/volumes/#nfs)
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nfs-pod
+spec:
+  containers:
+  - image: busybox:glibc
+    name: nfs-pod-container
+    command: ["tail", "-f", "/dev/null"]
+    volumeMounts:
+    - mountPath: /data
+      name: nfs-volume
+  volumes:
+  - name: nfs-volume
+    nfs:
+      server: 192.168.56.101
+      path: /nfs/data
+      #readOnly: true
+```
+
+## PV / PVC - 持久卷(PersistentVolume)
+
+```yaml
+# pv
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+  labels:
+    release: stable
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 192.168.56.101
+    path: /nfs/data
+
+---
+# pvc
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  selector:
+    matchLabels:
+      release: stable
+---
+# pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pv-nfs-pod
+spec:
+  containers:
+  - image: busybox:glibc
+    name: nfs-pod-container
+    command: ["tail", "-f", "/dev/null"]
+    volumeMounts:
+    - mountPath: /data
+      name: nfs-pv-volume
+  volumes:
+  - name: nfs-pv-volume
+    persistentVolumeClaim:
+      claimName: nfs-pvc
 ```
 
