@@ -132,10 +132,10 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteMany
+  storageClassName: nfs
   nfs:
     server: 192.168.56.101
     path: /nfs/data
-
 ---
 # pvc
 apiVersion: v1
@@ -148,6 +148,8 @@ spec:
       storage: 10Gi
   accessModes:
     - ReadWriteMany
+  storageClassName: nfs
+  #volumeName: nfs-pv
   selector:
     matchLabels:
       release: stable
