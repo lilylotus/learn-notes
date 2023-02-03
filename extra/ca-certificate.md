@@ -1,8 +1,8 @@
 [参考文档（为什么 HTTPS 需要 7 次握手以及 9 倍时延）](https://draveness.me/whys-the-design-https-latency/)
 
-### openssl 问题
+## openssl 问题
 
-#### 问题一
+### 问题一
 
 openssl: error while loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory
 
@@ -78,57 +78,79 @@ openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificat
 
 
 
-### 证书签发
+## 证书签发
 
-#### 生成 CA 根证书
+参考文档 [证书双向认证](https://blog.csdn.net/cug_heshun2013/article/details/90735278) [ssl证书CA双向认证完整实现步骤](https://blog.csdn.net/hd243608836/article/details/118706090)
+
+所谓证书双向认证是指：
+
+![](../images/ca.jpg)
+
+- 服务端使用`ca.crt`校验客户端的`client.crt`和`client.key`
+- 客户端使用`ca.crt`校验服务端的`server.crt`和`server.key`
+
+### 生成 CA 根证书
 
 生成 CA 密钥对   --->  生成根证书签发申请  ---> 根证书签发
 
 ```bash
 # 1. 生成 CA 密钥对
 # openssl genrsa -out file.pem 2048[4096] RSA
-openssl genrsa -out /root/cas/ca/cakey.pem 2048 RSA
+openssl genrsa -out ca/ca-key.pem 2048 RSA
 
 # 2. 生成根证书的签发申请
 # 证书访问的时候必须以域名的形式出现
-openssl req -new -key /root/cas/ca/cakey.pem -out /root/cas/ca/cacert.csr -subj /CN=drill.cn
+# -subj "/C=CN/ST=BJ/L=BJ/O=HD/OU=dev/CN=ca/emailAddress=ca@world.com"
+openssl req -new -key ca/ca-key.pem -out ca/ca-cert.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/CN=localhost"
 
-# 3. 生成根证书签发申请
-openssl x509 -req -days 3650 -sha1 -extensions v3_ca -signkey /root/cas/ca/cakey.pem -in /root/cas/ca/cacert.csr -CAcreateserial -out /root/cas/ca/ca.cer
+# 3. 生成根证书签发申请 (自签证书)
+openssl x509 -req -days 3650 -sha1 -extensions v3_ca -signkey ca/ca-key.pem -in ca/ca-cert.csr -CAcreateserial -out ca/ca.cer
+
+#转换证书格式 
+openssl pkcs12 -export -clcerts -in ca/ca.cer -inkey ca/ca-key.pem -out ca/ca.p12
+
+#查看证书
+openssl x509 -in ca.crt -text -noout
 ```
 
-####  生成服务端证书
+###  生成服务端证书
 
 CA 根证书   --->  生成服务器私钥 ---> 服务器证书签发申请  ---> 服务器证书签发
 
 ```bash
 # 1. 生成要私钥
-openssl genrsa -aes256 -out /root/cas/server/serverkey.pem 2048
+openssl genrsa -aes256 -out server/server-key.pem 2048
 
 # 2. 生成服务端证书签发申请
-openssl req -new -key /root/cas/server/serverkey.pem -out /root/cas/server/server.csr -subj /CN=drill.cn
+openssl req -new -key server/server-key.pem -out server/server.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/CN=localhost"
 
 # 3. 生成服务端签发申请
-openssl x509 -req -days 3560 -sha1 -extensions v3_req -CA /root/cas/ca/ca.cer -CAkey /root/cas/ca/cakey.pem -CAserial /root/cas/server/ca.srl -CAcreateserial -in /root/cas/server/server.csr -out /root/cas/server/server.cer
+openssl x509 -req -days 3560 -sha1 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -CAcreateserial -in server/server.csr -out server/server.cer
+
+# 4. 转换证书格式
+openssl pkcs12 -export -clcerts -in server/server.cer -inkey server/server-key.pem -out server/server.p12
 ```
 
-####  客户端证书
+###  客户端证书
 
 服务端根证书 ---> 生成客户端私钥 ---> 生成客户端签发申请 ---> 客户端证书签发
 
 ```bash
 # 1. 生成客户端私钥
-openssl genrsa -aes256 -out /root/cas/client/client-key.pem 2048
+openssl genrsa -aes256 -out client/client-key.pem 2048
 
 # 2. 生成客户端签发申请
-openssl req -new -key /root/cas/client/client-key.pem -out /root/cas/client/client.csr -subj /CN=drill.cn
+openssl req -new -key client/client-key.pem -out client/client.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/CN=localhost"
 
 # 3. 客户端证书签发
 # 该证书仅针对 drill.com 有效
-openssl x509 -req -days 3650 -sha1 -CA /root/cas/ca/ca.cer -CAkey /root/cas/ca/cakey.pem -CAserial /root/cas/server/ca.srl -in /root/cas/client/client.csr -out /root/cas/client/client.cer
+openssl x509 -req -days 3650 -sha1 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -in client/client.csr -out client/client.cer
+
+# 转换证书格式
+openssl pkcs12 -export -clcerts -in client/client.cer -inkey client/client-key.pem -out client/client.p12
 ```
 
-#### JAVA 证书
+### JAVA 证书
 
 上面生成的证书目前在 JAVA 环境下还不能使用，需与转换为 "PKCS#12" 编码格式密钥文件才可以被 JAVA 的 keytool 工具管理。
 
@@ -150,11 +172,17 @@ keytool -importcert -trustcacerts -alias drill.cn -file /root/cas/ca/ca.cer -key
 keytool -list -keystore /root/cas/tomcat/client.p12 -storetype pkcs12 -v
 ```
 
-### tomcat 使用证书
+生成 JKS 文件
+
+```bash
+keytool -keystore truststore.jks -keypass 123456 -storepass 123456 -alias ca -import -trustcacerts -file ca.cer
+```
+
+## tomcat 使用证书
 
 tomcat 配置文件 `conf/server.xml`
 
-#### tomcat 单向认证
+### tomcat 单向认证
 
 > 单向认证：只是在服务端提供一个公共的证书，所有的客户端连接之后都可以获得此公钥。
 > 加密后，服务端可以利用私钥进行解密。
@@ -167,7 +195,7 @@ tomcat 配置文件 `conf/server.xml`
         keystoreType="pkcs12" keystorePass="luckluck" \>
 ```
 
-#### tomcat 双向认证
+### tomcat 双向认证
 
 ```
  <Connector port="443" protocol="HTTP/1.1"
@@ -179,3 +207,78 @@ tomcat 配置文件 `conf/server.xml`
         truststoreType="jks"
         truststorePass="luckluck"/>
 ```
+
+## 证书签发脚本
+
+### ca.sh
+
+```bash
+# ca
+#!/bin/bash
+
+# Create directory hierarchy. 创建目录结构
+mkdir -p ca
+rm -f ca/*
+
+# 生成 RSA 密钥对
+CA_KEY_PATH=./ca/ca.key
+CA_CSR_PATH=./ca/ca.csr
+CA_CER_PATH=./ca/ca.cer
+
+openssl genrsa -des3 -out ${CA_KEY_PATH} 2048
+#  -subj "/C=CN/ST=Shanghai/L=Shanghai/O=default/OU=default/CN=ca.luck.com/emailAddress=ca@luck.com" 
+openssl req -new -key ${CA_KEY_PATH} -out ${CA_CSR_PATH}
+openssl x509 -req -days 3650 -signkey ${CA_KEY_PATH} -in ${CA_CSR_PATH} -CAcreateserial -out ${CA_CER_PATH}
+
+```
+
+### server.sh
+
+```bash
+#!/bin/bash
+
+mkdir server
+rm -f server/*
+
+# 签发服务器证书
+CA_KEY_PATH=./ca/ca.key
+CA_CER_PATH=./ca/ca.cer
+SERVER_KEY_PATH=./server/server.key
+SERVER_CSR_PATH=./server/server.csr
+SERVER_SRL_PATH=./server/server.srl
+SERVER_CER_PATH=./server/server.cer
+SERVER_P12_PATH=./server/server.p12
+
+openssl genrsa -out ${SERVER_KEY_PATH} 2048 RSA
+# -subj '/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ssl.luck.com/emailAddress=ssl@luck.com'
+openssl req -new -key ${SERVER_KEY_PATH} -out ${SERVER_CSR_PATH}
+openssl x509 -req -days 3560 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${SERVER_SRL_PATH} -CAcreateserial -in ${SERVER_CSR_PATH} -out ${SERVER_CER_PATH}
+openssl pkcs12 -export -clcerts -in ${SERVER_CER_PATH} -inkey ${SERVER_KEY_PATH} -out ${SERVER_P12_PATH}
+
+```
+
+### client.sh
+
+```bash
+#!/bin/bash
+
+mkdir client
+rm -f client/*
+
+# 签发client证书
+CA_KEY_PATH=./ca/ca.key
+CA_CER_PATH=./ca/ca.cer
+CLIENT_KEY_PATH=./client/client.key
+CLIENT_CSR_PATH=./client/client.csr
+CLIENT_SRL_PATH=./server/server.srl
+CLIENT_CER_PATH=./client/client.cer
+CLIENT_P12_PATH=./client/client.p12
+
+openssl genrsa -aes256 -out ${CLIENT_KEY_PATH} 2048
+# -subj '/C=CN/ST=Shanghai/L=Shanghai/O=Default Company Ltd/CN=ss.luck.com/emailAddress=ssl@luck.com'
+openssl req -new -key ${CLIENT_KEY_PATH} -out ${CLIENT_CSR_PATH}
+openssl x509 -req -days 3650 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${CLIENT_SRL_PATH} -in ${CLIENT_CSR_PATH} -out ${CLIENT_CER_PATH}
+openssl pkcs12 -export -clcerts -in ${CLIENT_CER_PATH} -inkey ${CLIENT_KEY_PATH} -out ${CLIENT_P12_PATH}
+
+```
+
