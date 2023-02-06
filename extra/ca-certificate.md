@@ -248,11 +248,25 @@ SERVER_CSR_PATH=./server/server.csr
 SERVER_SRL_PATH=./server/server.srl
 SERVER_CER_PATH=./server/server.cer
 SERVER_P12_PATH=./server/server.p12
+SERVER_EXT_PATH=./server/server.ext
+
+# 解决 chrome 不安全
+cat <<EOF > ${SERVER_EXT_PATH}
+[SAN]
+authorityKeyIdentifier = keyid,issuer
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @subj_alt_names
+
+[subj_alt_names]
+DNS.1 = *.luck.com
+DNS.2 = ssl.luck.com
+EOF
 
 openssl genrsa -out ${SERVER_KEY_PATH} 2048 RSA
 # -subj '/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ssl.luck.com/emailAddress=ssl@luck.com'
 openssl req -new -key ${SERVER_KEY_PATH} -out ${SERVER_CSR_PATH}
-openssl x509 -req -days 3560 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${SERVER_SRL_PATH} -CAcreateserial -in ${SERVER_CSR_PATH} -out ${SERVER_CER_PATH}
+openssl x509 -req -sha256 -extfile ${SERVER_EXT_PATH} -extensions SAN -days 3560 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${SERVER_SRL_PATH} -CAcreateserial -in ${SERVER_CSR_PATH} -out ${SERVER_CER_PATH}
 openssl pkcs12 -export -clcerts -in ${SERVER_CER_PATH} -inkey ${SERVER_KEY_PATH} -out ${SERVER_P12_PATH}
 
 ```
@@ -280,5 +294,159 @@ openssl req -new -key ${CLIENT_KEY_PATH} -out ${CLIENT_CSR_PATH}
 openssl x509 -req -days 3650 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${CLIENT_SRL_PATH} -in ${CLIENT_CSR_PATH} -out ${CLIENT_CER_PATH}
 openssl pkcs12 -export -clcerts -in ${CLIENT_CER_PATH} -inkey ${CLIENT_KEY_PATH} -out ${CLIENT_P12_PATH}
 
+```
+
+### 完整脚本
+
+```bash
+#!/bin/bash
+
+# Create directory hierarchy. 创建目录结构
+echo "create ca certificate"
+mkdir -p ca
+rm -f ca/*
+
+# 生成 RSA 密钥对
+CA_KEY_PATH=./ca/ca.key
+CA_CSR_PATH=./ca/ca.csr
+CA_CER_PATH=./ca/ca.cer
+
+openssl genrsa -des3 -out ${CA_KEY_PATH} 2048
+openssl req -new -key ${CA_KEY_PATH} -out ${CA_CSR_PATH} -subj "/C=CN/ST=Shanghai/L=Shanghai/O=default/OU=default/CN=ca.luck.com/emailAddress=ca@luck.com"
+openssl x509 -req -sha256 -days 3650 -signkey ${CA_KEY_PATH} -in ${CA_CSR_PATH} -CAcreateserial -out ${CA_CER_PATH}
+
+echo "create server certificate"
+mkdir server
+rm -f server/*
+
+# 签发服务器证书
+SERVER_KEY_PATH=./server/server.key
+SERVER_CSR_PATH=./server/server.csr
+SERVER_SRL_PATH=./server/server.srl
+SERVER_CER_PATH=./server/server.cer
+SERVER_P12_PATH=./server/server.p12
+SERVER_EXT_PATH=./server/server.ext
+
+# 解决 chrome 不安全
+cat <<EOF > ${SERVER_EXT_PATH}
+[SAN]
+authorityKeyIdentifier = keyid,issuer
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectAltName = @subj_alt_names
+
+[subj_alt_names]
+DNS.1 = *.luck.com
+DNS.2 = ssl.luck.com
+EOF
+
+openssl genrsa -out ${SERVER_KEY_PATH} 2048 RSA
+# -subj '/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ssl.luck.com/emailAddress=ssl@luck.com'
+openssl req -new -key ${SERVER_KEY_PATH} -out ${SERVER_CSR_PATH} -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ssl.luck.com/emailAddress=ssl@luck.com"
+openssl x509 -req -sha256 -extfile ${SERVER_EXT_PATH} -extensions SAN -days 3560 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${SERVER_SRL_PATH} -CAcreateserial -in ${SERVER_CSR_PATH} -out ${SERVER_CER_PATH}
+openssl pkcs12 -export -clcerts -in ${SERVER_CER_PATH} -inkey ${SERVER_KEY_PATH} -out ${SERVER_P12_PATH}
+
+
+echo "create client certificate"
+mkdir client
+rm -f client/*
+
+# 签发client证书
+CLIENT_KEY_PATH=./client/client.key
+CLIENT_CSR_PATH=./client/client.csr
+CLIENT_SRL_PATH=${SERVER_SRL_PATH}
+CLIENT_CER_PATH=./client/client.cer
+CLIENT_P12_PATH=./client/client.p12
+
+openssl genrsa -aes256 -out ${CLIENT_KEY_PATH} 2048
+# -subj '/C=CN/ST=Shanghai/L=Shanghai/O=Default Company Ltd/CN=ss.luck.com/emailAddress=ssl@luck.com'
+openssl req -new -key ${CLIENT_KEY_PATH} -out ${CLIENT_CSR_PATH} -subj "/C=CN/ST=Shanghai/L=Shanghai/O=luck/OU=luck/CN=ss.luck.com/emailAddress=ssl@luck.com"
+openssl x509 -req -sha256 -days 3650 -CA ${CA_CER_PATH} -CAkey ${CA_KEY_PATH} -CAserial ${CLIENT_SRL_PATH} -in ${CLIENT_CSR_PATH} -out ${CLIENT_CER_PATH}
+openssl pkcs12 -export -clcerts -in ${CLIENT_CER_PATH} -inkey ${CLIENT_KEY_PATH} -out ${CLIENT_P12_PATH}
+
+```
+
+## java https 客户端
+
+```bash
+keytool -keystore ca.truststore -keypass 123456 -storepass 123456 -alias LuckCA -import -trustcacerts -file ca.cer
+```
+
+```java
+public class HttpsClientCall {
+
+    /**
+     * 客户端证书路径，用了本地绝对路径，需要修改
+     */
+    private static final String CLIENT_CERT_FILE = "C:\\Users\\intel\\Desktop\\ssl2\\client\\client.p12";
+    /**
+     * 客户端证书密码
+     */
+    private static final String CLIENT_PWD = "123456";
+    /**
+     * 信任库路径，即 keytool 生成的那个自定义名称的库文件
+     */
+    private static final String TRUST_STORE_FILE = "C:\\Users\\intel\\Desktop\\ssl2\\ca\\ca.truststore";
+    /**
+     * 信任库密码，即 keytool 时的密码
+     */
+    private static final String TRUST_STORE_PWD = "123456";
+
+
+    private static KeyStore loadKeyStore(String keyStorePath, String password, String type)
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        KeyStore ks = KeyStore.getInstance(type);
+        try (FileInputStream is = new FileInputStream(keyStorePath)) {
+            ks.load(is, password.toCharArray());
+        }
+        return ks;
+    }
+
+    private static String readResponseBody(InputStream inputStream) throws IOException {
+        StringBuilder sb = new StringBuilder(128);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append(System.lineSeparator());
+            }
+        }
+        return sb.toString();
+    }
+
+    public static void httpsCall()
+            throws NoSuchAlgorithmException, CertificateException, KeyStoreException,
+            IOException, UnrecoverableKeyException, KeyManagementException {
+        // 初始化密钥库
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
+        KeyStore keyStore = loadKeyStore(CLIENT_CERT_FILE, CLIENT_PWD, "PKCS12");
+        keyManagerFactory.init(keyStore, CLIENT_PWD.toCharArray());
+
+        // 初始化信任库
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
+        KeyStore trustKeyStore = loadKeyStore(TRUST_STORE_FILE, TRUST_STORE_PWD, "JKS");
+        trustManagerFactory.init(trustKeyStore);
+
+        // 初始化SSL上下文
+        SSLContext ctx = SSLContext.getInstance("TLSv1.2");
+        ctx.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+        SSLSocketFactory sslSocketFactory = ctx.getSocketFactory();
+
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslSocketFactory);
+
+        URL urlObj = new URL("https://ssl.luck.com");
+        HttpsURLConnection con = (HttpsURLConnection) urlObj.openConnection();
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36");
+        con.setRequestProperty("Accept-Language", "zh-CN;en-US,en;q=0.5");
+        con.setRequestMethod("GET");
+        String res = readResponseBody(con.getInputStream());
+
+        System.out.println(res);
+    }
+
+    public static void main(String[] args) throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
+        httpsCall();
+    }
+
+}
 ```
 
