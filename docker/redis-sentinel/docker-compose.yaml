@@ -1,66 +1,87 @@
-version: "3.6"
+version: "3.9"
 services:
   master:
-    build: ./master
+    image: redis:6.2.8
+    container_name: master
+    restart: always
     ports:
-      - "${MASTER_PORT:-8001}:6379"
+      - 16381:6379
     volumes:
-      - "./master:/data"
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --replica-announce-ip ${HOST_IP} --replica-announce-port 16381
     networks:
-      - backend
+      - redis-sentinel
   slave1:
-    build: ./slave1
-    ports:
-      - "${SLAVE1_PORT:-8002}:6379"
-    volumes:
-      - "./slave1:/data"
-    networks:
-      - backend
+    image: redis:6.2.8
+    container_name: slave1
+    restart: always
     depends_on:
       - master
+    ports:
+      - 16382:6379
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --replicaof master 6379 --masterauth redis --replica-announce-ip ${HOST_IP} --replica-announce-port 16382
+    networks:
+      - redis-sentinel
   slave2:
-    build: ./slave2
-    ports:
-      - "${SLAVE2_PORT:-8003}:6379"
-    volumes:
-      - "./slave2:/data"
-    networks:
-      - backend
+    image: redis:6.2.8
+    container_name: slave2
+    restart: always
     depends_on:
       - master
-  sentinel1:
-    build: ./sentinel1
     ports:
-      - "${SENTINEL1_PORT:-28001}:6379"
+      - 16383:6379
     volumes:
-      - "./sentinel1:/data"
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --replicaof master 6379 --masterauth redis --replica-announce-ip ${HOST_IP} --replica-announce-port 16383
     networks:
-      - backend
+      - redis-sentinel
+  sentinel1:
+    image: redis:6.2.8
+    container_name: sentinel1
+    restart: always
     depends_on:
       - master
       - slave1
       - slave2
+    ports:
+      - 16386:26379
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis-sentinel
   sentinel2:
-    build: ./sentinel2
-    ports:
-      - "${SENTINEL2_PORT:-28002}:6379"
-    volumes:
-      - "./sentinel2:/data"
-    networks:
-      - backend
+    image: redis:6.2.8
+    container_name: sentinel2
+    restart: always
     depends_on:
-      - sentinel1
+      - master
+      - slave1
+      - slave2
+    ports:
+      - 16387:26379
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis-sentinel
   sentinel3:
-    build: ./sentinel3
-    ports:
-      - "${SENTINEL3_PORT:-28003}:6379"
-    volumes:
-      - "./sentinel3:/data"
-    networks:
-      - backend
+    image: redis:6.2.8
+    container_name: sentinel3
+    restart: always
     depends_on:
-      - sentinel2
+      - master
+      - slave1
+      - slave2
+    ports:
+      - 16388:26379
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis-sentinel
 
 networks:
-  backend:
-    attachable: true
+  redis-sentinel:

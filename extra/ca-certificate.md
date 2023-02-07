@@ -104,7 +104,7 @@ openssl genrsa -out ca/ca-key.pem 2048 RSA
 openssl req -new -key ca/ca-key.pem -out ca/ca-cert.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/CN=localhost"
 
 # 3. 生成根证书签发申请 (自签证书)
-openssl x509 -req -days 3650 -sha1 -extensions v3_ca -signkey ca/ca-key.pem -in ca/ca-cert.csr -CAcreateserial -out ca/ca.cer
+openssl x509 -req -days 3650-sha256 -extensions v3_ca -signkey ca/ca-key.pem -in ca/ca-cert.csr -CAcreateserial -out ca/ca.cer
 
 #转换证书格式 
 openssl pkcs12 -export -clcerts -in ca/ca.cer -inkey ca/ca-key.pem -out ca/ca.p12
@@ -125,7 +125,7 @@ openssl genrsa -aes256 -out server/server-key.pem 2048
 openssl req -new -key server/server-key.pem -out server/server.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/CN=localhost"
 
 # 3. 生成服务端签发申请
-openssl x509 -req -days 3560 -sha1 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -CAcreateserial -in server/server.csr -out server/server.cer
+openssl x509 -req -days 3560 -sha256 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -CAcreateserial -in server/server.csr -out server/server.cer
 
 # 4. 转换证书格式
 openssl pkcs12 -export -clcerts -in server/server.cer -inkey server/server-key.pem -out server/server.p12
@@ -144,7 +144,7 @@ openssl req -new -key client/client-key.pem -out client/client.csr -subj "/C=CN/
 
 # 3. 客户端证书签发
 # 该证书仅针对 drill.com 有效
-openssl x509 -req -days 3650 -sha1 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -in client/client.csr -out client/client.cer
+openssl x509 -req -days 3650 -sha256 -extensions v3_req -CA ca/ca.cer -CAkey ca/ca-key.pem -CAserial server/ca.srl -in client/client.csr -out client/client.cer
 
 # 转换证书格式
 openssl pkcs12 -export -clcerts -in client/client.cer -inkey client/client-key.pem -out client/client.p12

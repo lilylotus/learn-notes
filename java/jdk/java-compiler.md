@@ -120,7 +120,26 @@ javac -d D:\jvm *.java
 jar -cvfm boot.jar META-INF/MANIFEST.MF -C bootDir .
 jar cvfm jvm.jar manifest
 
+# 打包
+jar cvf boot.jar target/demo/DemoTest.class
+jar cvf boot.jar .
+# 更新 jar 包的 main class
+jar ufe boot.jar demo.DemoTest
+
 # 打包当前目录中的所有内容到 jar 包， 0 仅打包不压缩
 jar cf0M xxx.jar *
+```
+
+```bash
+# 创建一个自定义的manifest-custom.mf文件
+vim manifest.mf
+# 打包 这里要注意如果使用时 cvmf 需要替换 mf 与 jar 文件名的指令位置
+jar cvfm boot.jar manifest.mf -C target .
+
+# manifest.mf
+Manifest-Version: 1.0
+Class-Path: . bcprov-jdk15on-1.60.jar libthrift-0.10.0.jar 
+ slf4j-api-1.7.35.jar sdk-for-1.6.jar fpe-1.0.0.jar
+Main-Class: demo.DemoTest
 ```
 
