@@ -1,11 +1,13 @@
-#### 隐藏 nginx 版本号
+### nginx issue
+
+## 隐藏 nginx 版本号
 
 ```
 # 在 http 模块当中配置
 server_tokens off;
 ```
 
-#### location 路径匹配问题
+## location 路径匹配问题
 
 后台文件路径 /opt/nginx/images/a.jpg
 
@@ -22,7 +24,7 @@ location /image/ {
 访问地址 host:/image/a.jpg 映射路径 /opt/nginx/images/image/a.jpg
 ```
 
-##### location 下 root 和 alias 路径处理
+### location 下 root 和 alias 路径处理
 
 alias 指定的目录是准确的，给 location 指定一个目录。
 root 指定目录的上级目录，并且该上级目录要含有 locatoin 指定名称的同名目录。
@@ -49,7 +51,7 @@ location /images/ {
 以上写法可以达到相同的效果
 ```
 
-#### location 和 proxy_pass 代理
+### location 和 proxy_pass 代理
 
 proxy_pass 代理地址是否携带反斜杠区别。
 
@@ -124,11 +126,11 @@ location ~ /(e|f)/ { proxy_pass http://10.0.41.80:51000; }
 
 若是 location 的 direction 和 proxy_pass 代理的地址 URI 一样，proxy_pass 就不会改变 URI 地址。
 
-#### 代理参数配置
+## 代理参数配置
 
 示例 [nginx proxy config params](./nginx-proxy-params.conf)
 
-##### 代理 header 配置
+### 代理 header 配置
 
 ```
 location /proxy {
@@ -165,7 +167,7 @@ proxy_set_header X-Real-IP $remote_addr;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
 
-##### buffer 配置
+### buffer 配置
 
 ```
 // 开启内容缓冲，nignx 会把后端返回的内容先放到缓冲区当中，然后再返回给客户端。
@@ -190,5 +192,93 @@ proxy_buffering on;
 proxy_buffer_size 32k;
 proxy_buffers 4 64k;
 proxy_busy_buffers_size 96k;
+```
+
+## 跨域处理 (CROS)
+
+```
+location / {
+    # 允许跨域的请求，可以自定义变量$http_origin，*表示所有
+    add_header 'Access-Control-Allow-Origin' *;
+    # 允许携带cookie请求
+    add_header 'Access-Control-Allow-Credentials' 'true';
+    # 允许跨域请求的方法：GET,POST,OPTIONS,PUT
+    add_header 'Access-Control-Allow-Methods' 'GET,POST,OPTIONS,PUT';
+    # 允许请求时携带的头部信息，*表示所有
+    add_header 'Access-Control-Allow-Headers' *;
+    # 允许发送按段获取资源的请求
+    add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+    # 一定要有！！！否则Post请求无法进行跨
+    # 在发送Post跨域请求前，会以Options方式发送预检请求，服务器接受时才会正式请求
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Max-Age' 1728000;
+        add_header 'Content-Type' 'text/plain; charset=utf-8';
+        add_header 'Content-Length' 0;
+        # 对于Options方式的请求返回204，表示接受跨域请求
+        return 204;
+    }
+}
+```
+
+## 防盗链
+
+```
+# 在动静分离的location中开启防盗链机制  
+location ~ .*\.(html|htm|gif|jpg|jpeg|bmp|png|ico|txt|js|css){  
+    # 最后面的值在上线前可配置为允许的域名地址  
+    valid_referers blocked 192.168.12.129;  
+    if ($invalid_referer) {  
+        # 可以配置成返回一张禁止盗取的图片  
+        # rewrite   ^/ http://xx.xx.com/NO.jpg;  
+        # 也可直接返回403  
+        return   403;  
+    }  
+      
+    root   /soft/nginx/static_resources;  
+    expires 7d;  
+}
+```
+
+## SSL
+
+```
+server {
+    # 监听HTTPS默认的443端口
+    listen 443;
+    # 配置自己项目的域名
+    server_name www.xxx.com;
+    # 打开SSL加密传输
+    ssl on;
+    # 输入域名后，首页文件所在的目录
+    root html;
+    # 配置首页的文件名
+    index index.html index.htm index.jsp index.ftl;
+    # 配置自己下载的数字证书
+    ssl_certificate  certificate/xxx.pem;
+    # 配置自己下载的服务器私钥
+    ssl_certificate_key certificate/xxx.key;
+    # 停止通信时，加密会话的有效期，在该时间段内不需要重新交换密钥
+    ssl_session_timeout 5m;
+    # TLS 握手时，服务器采用的密码套件
+    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    # 服务器支持的 TLS 版本
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    # 开启由服务器决定采用的密码套件
+    ssl_prefer_server_ciphers on;
+
+    location / {
+        ....
+    }
+}
+
+# --------- HTTP 请求转 HTTPS -------------
+server {
+    # 监听HTTP默认的80端口
+    listen 80;
+    # 如果80端口出现访问该域名的请求
+    server_name www.xxx.com;
+    # 将请求改写为HTTPS（这里写你配置了HTTPS的域名）
+    rewrite ^(.*)$ https://www.xxx.com;
+}
 ```
 
