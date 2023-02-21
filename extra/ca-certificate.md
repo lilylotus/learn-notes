@@ -40,6 +40,12 @@ Typically, x.509 certificates can have a [variety of file extension types that y
 - Distinguished encoding rules (.DER)
 - Privacy-enhanced electronic mail (.PEM)
 
+常见的证书有三种：
+
+1. 带有私钥的证书：由 PublicKey Cryptography Standards #12，即 PKCS#12 标准定义，包含了公钥和私钥的二进制格式的证书形式，以 pfx 作为证书文件后缀名，PKCS#12 可以增加加密保护，有助于传输证书及对应的私钥。
+2. 二进制编码的证书：由 X.509 公钥证书格式标准定义，证书中没有私钥，包含 DER 编码二进制格式的公钥，以 cer 作为证书文件后缀名。
+3. Base64 编码的证书：由 X.509 公钥证书格式标准定义，证书中没有私钥，包含 BASE64 编码格式的公钥，也是以 cer 作为证书文件后缀名。
+
 #### OpenSSL: Convert CRT to PEM:
 
 Type the following code into your OpenSSL client:

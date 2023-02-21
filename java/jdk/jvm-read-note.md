@@ -63,7 +63,7 @@ VM 栈中的帧随着方法进入、退出而有条不紊的进行着出栈入�
 
 [Java JVM 内存结构](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-2.html)
 
-![JVM](../../images/jvm.png)
+![JVM](../../images/jvm-run-time-area.png)
 
 ![JVM内存](../../images/jvm_jmm.png)
 
