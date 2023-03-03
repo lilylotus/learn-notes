@@ -193,3 +193,35 @@ mermaid: ## mermaid url https://github.com/knsv/mermaid
     #startOnload: true  // default true
 ```
 
+## 创建博客
+
+参考 [Hexo 创建新帖子](https://hexo.io/docs/writing.html)
+
+### 创建新帖子
+
+```bash
+$ hexo new "My New Post"
+```
+
+### 生成静态文件
+
+```bash
+$ hexo generate
+# 简写
+$ hexo g
+```
+
+### 运行服务：
+
+```bash
+$ hexo server
+# 简写
+$ hexo s
+```
+
+### 清空已生成的静态资源
+
+```bash
+$ hexo clean
+```
+
