@@ -71,7 +71,7 @@ EOF
 
 # 5. ssh config
 echo $(date "+%Y-%m-%d %H:%M:%S") "ssh config" >> ${LOGPATH}
-wget -P /root ftp://${PXESERVER}/pub/sh/id_rsa.pub && mkdir -p /root/.ssh ; cat /root/id_rsa.pub >> /root/.ssh/authorized_keys
+wget -P /root ftp://${PXESERVER}/pub/sh/id_rsa.pub && mkdir -p /root/.ssh ; cat /root/id_rsa.pub >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
 
 # 6. config timezone
 echo $(date "+%Y-%m-%d %H:%M:%S") "config timezone" >> ${LOGPATH}
@@ -101,7 +101,7 @@ fi
 cat <<EOF > /etc/docker/daemon.json
 {
     "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com"],
-    "graph": "/data/docker",
+    "data-root": "/data/docker",
     "exec-opts": ["native.cgroupdriver=systemd"],
     "storage-driver": "overlay2",
     "log-driver": "json-file",
