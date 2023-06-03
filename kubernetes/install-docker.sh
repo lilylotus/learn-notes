@@ -45,7 +45,7 @@ fi
 cat <<EOF > /etc/docker/daemon.json
 {
     "registry-mirrors": ["https://9ebf40sv.mirror.aliyuncs.com","https://registry.docker-cn.com"],
-    "graph": "/data/docker",
+    "data-root": "/data/docker",
     "exec-opts": ["native.cgroupdriver=systemd"],
     "log-driver": "json-file",
     "log-opts": {"max-size": "100m"}

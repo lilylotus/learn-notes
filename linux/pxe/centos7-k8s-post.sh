@@ -22,6 +22,8 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 
 sysctl -p /etc/sysctl.d/optimize.conf
+# Apply sysctl params without reboot
+# sysctl --system
 
 # 修改 swap 虚拟内存的使用规则，设置为10 说明当内存使用量超过 90% 才会使用 swap 空间
 echo "10" > /proc/sys/vm/swappiness
